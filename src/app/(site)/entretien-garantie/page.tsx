@@ -62,6 +62,7 @@ export default function EntretienGarantie() {
       </Section>
 
       <LegalPage
+        niveau={2}
         surtitre="Garantie"
         titre="Ce que couvre la garantie"
         miseAJour="[à dater lors de la mise en ligne]"

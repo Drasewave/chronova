@@ -8,8 +8,9 @@ import "./globals.css";
 
 const newsreader = Newsreader({
   subsets: ["latin"],
+  // Les graisses sont déclarées même si la police est variable : à poids égal
+  // sur le réseau, cela empêche un `font-bold` égaré de sortir du système.
   weight: ["400", "500"],
-  style: ["normal", "italic"],
   display: "swap",
   variable: "--font-newsreader",
 });
@@ -23,7 +24,9 @@ const hanken = Hanken_Grotesk({
 
 const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  // Une seule graisse : les références techniques ne sont jamais mises en gras,
+  // et la 500 partait dans le navigateur sans que rien ne l'utilise.
+  weight: ["400"],
   display: "swap",
   variable: "--font-plex-mono",
 });

@@ -16,10 +16,17 @@ export function ModelCard({
   catalogue,
   modele,
   priorite = false,
+  niveau = 3,
 }: {
   catalogue: Catalogue;
   modele: WatchModelView;
   priorite?: boolean;
+  /**
+   * Niveau du nom du modèle. 3 sous un titre de section, 2 quand la grille est
+   * directement sous le titre de la page : la hiérarchie ne doit pas sauter de
+   * niveau, c'est ce qui permet de parcourir une page au lecteur d'écran.
+   */
+  niveau?: 2 | 3;
 }) {
   const base = defaultConfiguration(catalogue, modele);
   const variante = altConfiguration(catalogue, modele);
@@ -59,7 +66,11 @@ export function ModelCard({
         </div>
 
         <div className="mt-5 flex items-baseline justify-between gap-4">
-          <h3 className="type-title-2 text-fg">{modele.name}</h3>
+          {niveau === 2 ? (
+            <h2 className="type-title-2 text-fg">{modele.name}</h2>
+          ) : (
+            <h3 className="type-title-2 text-fg">{modele.name}</h3>
+          )}
           <Pill>{modele.styleLabel}</Pill>
         </div>
 

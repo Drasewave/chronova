@@ -12,19 +12,26 @@ export function LegalPage({
   titre,
   chapo,
   miseAJour,
+  niveau = 1,
   children,
 }: {
   surtitre: string;
   titre: string;
   chapo?: string;
   miseAJour: string;
+  /** 2 quand le gabarit sert de section à l'intérieur d'une page plus large. */
+  niveau?: 1 | 2;
   children: ReactNode;
 }) {
   return (
     <Section fond="papier">
       <header className="measure">
         <p className="type-mono text-fg-soft">{surtitre}</p>
-        <h1 className="type-display-2 mt-4">{titre}</h1>
+        {niveau === 1 ? (
+          <h1 className="type-display-2 mt-4">{titre}</h1>
+        ) : (
+          <h2 className="type-display-2 mt-4">{titre}</h2>
+        )}
         {chapo && <p className="type-lead mt-6 text-fg-soft">{chapo}</p>}
         <p className="type-mono mt-8 text-fg-soft">Mise à jour · {miseAJour}</p>
       </header>

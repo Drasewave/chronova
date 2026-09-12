@@ -44,12 +44,18 @@ export function Section({
 export function SectionHeader({
   surtitre,
   titre,
+  niveau = 2,
   intro,
   action,
   className,
 }: {
   surtitre?: string;
   titre: ReactNode;
+  /**
+   * Niveau du titre. Une page dont ce bloc est le titre principal passe 1 ;
+   * partout ailleurs on reste en 2, pour ne pas trouer la hiérarchie.
+   */
+  niveau?: 1 | 2;
   intro?: ReactNode;
   action?: ReactNode;
   className?: string;
@@ -58,7 +64,11 @@ export function SectionHeader({
     <header className={cn("flex flex-col gap-6 md:flex-row md:items-end md:justify-between", className)}>
       <div className="max-w-[46ch]">
         {surtitre && <p className="type-mono mb-4 text-fg-soft">{surtitre}</p>}
-        <h2 className="type-display-2">{titre}</h2>
+        {niveau === 1 ? (
+          <h1 className="type-display-2">{titre}</h1>
+        ) : (
+          <h2 className="type-display-2">{titre}</h2>
+        )}
         {intro && <p className="type-lead measure mt-5 text-fg-soft">{intro}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}

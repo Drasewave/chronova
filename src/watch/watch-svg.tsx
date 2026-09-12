@@ -44,8 +44,13 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cl
     <svg
       viewBox="0 0 1000 1000"
       className={className}
-      role="img"
-      aria-label={label}
+      // Un rendu sans intitulé est décoratif — le second coloris d'une carte,
+      // par exemple : on le retire de l'arbre d'accessibilité plutôt que de
+      // laisser un « image » anonyme dans la liste du lecteur d'écran.
+      role={label ? "img" : undefined}
+      aria-label={label || undefined}
+      aria-hidden={label ? undefined : true}
+      focusable="false"
       xmlns="http://www.w3.org/2000/svg"
     >
       <Defs uid={id} render={render} />
