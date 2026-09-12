@@ -3,7 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 /**
- * Vide toutes les tables applicatives sans toucher au schéma.
+ * Vide les tables applicatives sans toucher au schéma.
  *
  * `prisma migrate reset` rejoue les migrations, ce qui est long et inutile ici :
  * on veut seulement repartir d'une base propre avant de réamorcer. Les sessions
@@ -60,5 +60,12 @@ if (manquantes.length > 0) {
 
 const liste = TABLES.map((table) => `"${table}"`).join(", ");
 await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${liste} RESTART IDENTITY CASCADE`);
-console.log(`Purge : ${TABLES.length} tables vidées.`);
+
+// Les comptes ne sont pas dans la liste : effacer `User` déconnecterait
+// l'horloger de sa propre session. On retire seulement les clients d'exemple,
+// une fois leurs commandes parties, et jamais un compte d'atelier.
+const clients = await prisma.user.deleteMany({ where: { isSample: true, role: "CLIENT" } });
+
+console.log(`Purge : ${TABLES.length} tables vidées, ${clients.count} client(s) d'exemple supprimé(s).`);
+console.log("Les comptes d'atelier et les sessions ouvertes sont conservés.");
 await prisma.$disconnect();

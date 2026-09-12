@@ -99,7 +99,9 @@ const exemples = {
   modèles: await prisma.watchModel.count({ where: { isSample: true } }),
   options: await prisma.option.count({ where: { isSample: true } }),
   pièces: await prisma.part.count({ where: { isSample: true } }),
-  clients: await prisma.user.count({ where: { isSample: true } }),
+  // Le compte d'atelier porte aussi `isSample` : le compter parmi les clients
+  // ferait croire qu'il reste une fiche fictive de plus à supprimer.
+  clients: await prisma.user.count({ where: { isSample: true, role: "CLIENT" } }),
   commandes: await prisma.order.count({ where: { isSample: true } }),
   demandes: await prisma.inquiry.count({ where: { isSample: true } }),
 };
