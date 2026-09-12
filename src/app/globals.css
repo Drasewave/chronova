@@ -354,6 +354,27 @@
   .link-underline-out:hover {
     background-size: 0% 1px;
   }
+
+  /* Conteneur qui défile horizontalement (le kanban de l'atelier).
+     La barre reste visible : sur une tablette, rien n'indiquerait sinon qu'il
+     reste des colonnes à droite. Elle est dessinée au filet, comme le reste. */
+  .defilement-atelier {
+    scroll-snap-type: x proximity;
+    scrollbar-color: var(--accent-decor) var(--rule);
+    scrollbar-width: thin;
+  }
+
+  .defilement-atelier::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .defilement-atelier::-webkit-scrollbar-track {
+    background: var(--rule);
+  }
+
+  .defilement-atelier::-webkit-scrollbar-thumb {
+    background: var(--accent-decor);
+  }
 }
 
 /* Reflet qui traverse le verre au survol d'une carte. Une animation CSS prend le

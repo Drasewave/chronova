@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Chronova">
+  <!-- Le cadran de l'animation d'entrée, réduit à ce qui reste lisible à 16 px :
+       le cercle, quatre index cardinaux, les aiguilles à 10 h 10. -->
+  <rect width="32" height="32" fill="#F5F0E8"/>
+  <circle cx="16" cy="16" r="11.5" fill="none" stroke="#34302A" stroke-width="1.5"/>
+  <g stroke="#34302A" stroke-width="1.5" stroke-linecap="butt">
+    <path d="M16 6.5v2M16 23.5v-2M6.5 16h2M25.5 16h-2"/>
+  </g>
+  <g stroke="#34302A" stroke-linecap="round" fill="none">
+    <path d="M16 16 10.5 12.5" stroke-width="1.8"/>
+    <path d="M16 16 20.5 9.5" stroke-width="1.4"/>
+  </g>
+  <circle cx="16" cy="16" r="1.1" fill="#7E5F37"/>
+</svg>

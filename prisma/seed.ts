@@ -19,6 +19,7 @@ import { PARTS, RULES, SAMPLE_CATALOGUE, STEPS } from "@/lib/data/catalogue";
 import { SAMPLE_MODELS } from "@/lib/data/models";
 import { FAQ } from "@/lib/content/home";
 import { buildConfiguration } from "@/lib/configurateur/configuration";
+import { recomposerStock } from "@/lib/atelier/stock";
 import { getSampleModel } from "@/lib/data/models";
 import type { Selections } from "@/lib/configurateur/types";
 
@@ -84,7 +85,58 @@ async function main() {
   console.log("→ Demandes et après-vente");
   await demandes(clients);
 
+  console.log("→ Journal de stock");
+  await journalStock(pieces);
+
   console.log("Terminé.");
+}
+
+/**
+ * Ferme le journal de stock.
+ *
+ * Les commandes d'exemple ont écrit leurs réservations et leurs sorties
+ * d'assemblage ; il manque l'entrée d'inventaire qui les rend possibles. On la
+ * calcule à rebours pour que les tiroirs finissent exactement sur la quantité
+ * annoncée par la fixture, puis on aligne les deux compteurs de la pièce sur la
+ * somme du journal — celui-ci reste la seule vérité, comme en production.
+ */
+async function journalStock(pieces: Map<string, string>) {
+  const debut = ilYA(400);
+
+  for (const piece of PARTS) {
+    const partId = pieces.get(piece.ref);
+    if (!partId) continue;
+
+    const mouvements = await prisma.stockMovement.findMany({
+      where: { partId },
+      select: { type: true, quantity: true },
+    });
+    const sansInventaire = recomposerStock(mouvements);
+
+    // `enRayon` est ici négatif ou nul : il ne contient que les sorties.
+    const inventaire = piece.quantityOnHand - sansInventaire.enRayon;
+    await prisma.stockMovement.create({
+      data: {
+        partId,
+        type: "ENTREE",
+        quantity: inventaire,
+        reason: "Inventaire de départ (donnée d'exemple)",
+        createdAt: debut,
+      },
+    });
+
+    const etat = recomposerStock([...mouvements, { type: "ENTREE", quantity: inventaire }]);
+    if (etat.enRayon !== piece.quantityOnHand) {
+      throw new Error(
+        `Journal incohérent pour ${piece.ref} : rayon ${etat.enRayon}, attendu ${piece.quantityOnHand}`,
+      );
+    }
+
+    await prisma.part.update({
+      where: { id: partId },
+      data: { quantityOnHand: etat.enRayon, quantityReserved: etat.reserve },
+    });
+  }
 }
 
 async function parametres() {
@@ -141,7 +193,10 @@ async function stock() {
       supplierId: fournisseurs.get(piece.supplier) ?? null,
       purchasePriceCents: piece.purchasePriceCents,
       quantityOnHand: piece.quantityOnHand,
-      quantityReserved: piece.quantityReserved,
+      // Zéro réservé à la création : les réservations sont écrites par les
+      // commandes ci-dessous, comme en production. Les fixer à la main
+      // produirait des compteurs qui ne correspondent à aucune commande.
+      quantityReserved: 0,
       reorderThreshold: piece.reorderThreshold,
       restockDays: piece.restockDays,
       isSample: true,
@@ -438,6 +493,7 @@ async function commandes(clients: Clients, pieces: Map<string, string>) {
     { numero: "CHR-2026-0004", modele: "sentier-38", client: 2, statut: "EN_ASSEMBLAGE", jours: 16, variante: { "bracelet-teinte": "chocolat" } },
     { numero: "CHR-2026-0005", modele: "abysse-40", client: 0, statut: "PIECES_RECUES", jours: 9, variante: { "cadran-teinte": "vert-sauge" } },
     { numero: "CHR-2026-0006", modele: "sentier-38", client: 1, statut: "PIECES_A_COMMANDER", jours: 3, variante: { taille: "39", gravure: "Cap au nord" } },
+    { numero: "CHR-2026-0007", modele: "meridien-39", client: 2, statut: "PAYEE", jours: 1, variante: { "bracelet-type": "cuir", "bracelet-teinte": "fauve" } },
   ] as const;
 
   const ORDRE = [
@@ -532,10 +588,17 @@ async function commandes(clients: Clients, pieces: Map<string, string>) {
     });
 
     // Nomenclature : les pièces que l'horloger devra sortir du stock.
+    // Chaque ligne écrit les mêmes mouvements que le parcours réel — réservation
+    // au paiement, sortie au montage — pour que les compteurs des pièces soient
+    // la somme du journal et non un chiffre décoratif.
     const ligne = commande.items[0]!;
+    const monte = etapeAtteinte >= ORDRE.indexOf("EN_ASSEMBLAGE");
+    const montePar = monte ? ilYA(Math.max(1, scenario.jours - 8)) : null;
+
     for (const entree of configuration.bom) {
       const partId = pieces.get(entree.part.ref);
       if (!partId) continue;
+
       await prisma.orderItemPart.create({
         data: {
           orderItemId: ligne.id,
@@ -543,9 +606,34 @@ async function commandes(clients: Clients, pieces: Map<string, string>) {
           quantity: entree.quantity,
           unitCostCents: entree.unitCostCents,
           reservedAt: creeLe,
-          consumedAt: etapeAtteinte >= ORDRE.indexOf("EN_ASSEMBLAGE") ? ilYA(scenario.jours - 8) : null,
+          consumedAt: montePar,
         },
       });
+
+      await prisma.stockMovement.create({
+        data: {
+          partId,
+          type: "RESERVATION",
+          quantity: -entree.quantity,
+          orderId: commande.id,
+          reason: `Commande ${commande.number}`,
+          createdAt: creeLe,
+        },
+      });
+
+      if (montePar) {
+        await prisma.stockMovement.create({
+          data: {
+            partId,
+            type: "SORTIE_ASSEMBLAGE",
+            quantity: -entree.quantity,
+            orderId: commande.id,
+            reason: `Assemblage ${commande.number}`,
+            createdAt: montePar,
+          },
+        });
+      }
+
     }
 
     // Frise : une entrée par étape franchie, du paiement à l'étape actuelle.
