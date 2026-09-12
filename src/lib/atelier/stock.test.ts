@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recomposerStock, type MouvementStock } from "./stock";
+import { effetMouvement, recomposerStock, type MouvementStock } from "./stock";
 
 /** Le cycle complet d'une pièce, tel que le CRM l'écrit réellement. */
 const CYCLE: MouvementStock[] = [
@@ -42,5 +42,28 @@ describe("recomposerStock", () => {
 
   it("part de zéro sur un journal vide", () => {
     expect(recomposerStock([])).toEqual({ enRayon: 0, reserve: 0, disponible: 0 });
+  });
+});
+
+describe("effetMouvement", () => {
+  it("sépare ce qui quitte le tiroir de ce qui cesse d'être libre", () => {
+    expect(effetMouvement({ type: "ENTREE", quantity: 5 })).toEqual({ rayon: 5, libre: 5 });
+    expect(effetMouvement({ type: "RESERVATION", quantity: -2 })).toEqual({ rayon: 0, libre: -2 });
+    expect(effetMouvement({ type: "LIBERATION", quantity: 2 })).toEqual({ rayon: 0, libre: 2 });
+    // La pièce sort du tiroir, mais elle n'était déjà plus libre.
+    expect(effetMouvement({ type: "SORTIE_ASSEMBLAGE", quantity: -1 })).toEqual({ rayon: -1, libre: 0 });
+    expect(effetMouvement({ type: "PERTE", quantity: -1 })).toEqual({ rayon: -1, libre: -1 });
+  });
+
+  it("les colonnes du journal totalisent les compteurs de la pièce", () => {
+    const total = CYCLE.reduce(
+      (somme, mouvement) => {
+        const effet = effetMouvement(mouvement);
+        return { rayon: somme.rayon + effet.rayon, libre: somme.libre + effet.libre };
+      },
+      { rayon: 0, libre: 0 },
+    );
+    const etat = recomposerStock(CYCLE);
+    expect(total).toEqual({ rayon: etat.enRayon, libre: etat.disponible });
   });
 });

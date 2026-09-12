@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BarresHorizontales, Chiffre, HistogrammeMois, Panneau } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
+import { etatPiece } from "@/lib/atelier/stock";
 import { ETAPES_CLIENT, formatDate, libelleStatut } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
 
@@ -77,9 +78,10 @@ export default async function TableauDeBord() {
   const caMois = moisCourant._sum.totalCents ?? 0;
   const caPrecedent = moisPrecedent._sum.totalCents ?? 0;
 
-  const sousSeuil = pieces.filter(
-    (piece) => piece.quantityOnHand - piece.quantityReserved <= piece.reorderThreshold,
-  );
+  const sousSeuil = pieces.filter((piece) => {
+    const etat = etatPiece(piece);
+    return etat === "rupture" || etat === "a-commander";
+  });
 
   // Six derniers mois, y compris les mois sans commande : un trou est une information.
   const mois = Array.from({ length: 6 }, (_, decalage) => {
@@ -201,8 +203,11 @@ export default async function TableauDeBord() {
           titre="Stock sous le seuil"
           aide="Quantité libre inférieure ou égale au seuil d'alerte."
           action={
-            <Link href="/atelier/stock" className="type-mono link-underline text-accent">
-              Tout le stock
+            <Link
+              href={sousSeuil.length > 0 ? "/atelier/stock?filtre=alertes" : "/atelier/stock"}
+              className="type-mono link-underline text-accent"
+            >
+              {sousSeuil.length > 0 ? "Les commander" : "Tout le stock"}
             </Link>
           }
         >
@@ -215,7 +220,7 @@ export default async function TableauDeBord() {
                 return (
                   <li key={piece.id} className="border-b border-rule last:border-0">
                     <Link
-                      href={`/atelier/stock/${piece.id}`}
+                      href={`/atelier/stock/${piece.reference}`}
                       className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
                     >
                       <span className="type-mono text-fg-soft">{piece.reference}</span>
