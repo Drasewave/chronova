@@ -470,7 +470,14 @@ async function commandes(clients: Clients, pieces: Map<string, string>) {
         selections: configuration.selections as never,
         engravingText: configuration.selections["gravure"] ?? null,
         wristSizeMm: Number(configuration.selections["poignet"] ?? 0) || null,
-        snapshot: { summary: configuration.summary, price: configuration.price } as never,
+        // L'instantané doit suffire à réafficher la montre : il porte donc le
+        // rendu, pas seulement le résumé et le prix.
+        snapshot: {
+          render: configuration.render,
+          summary: configuration.summary,
+          price: configuration.price,
+          leadTime: configuration.leadTime,
+        } as never,
         priceCents: configuration.price.totalCents,
         partsCostCents: configuration.partsCostCents,
         leadTimeDays: configuration.leadTime.days,
@@ -510,7 +517,11 @@ async function commandes(clients: Clients, pieces: Map<string, string>) {
         items: {
           create: {
             configurationId: config.id,
-            snapshot: { modele: modele.name, summary: configuration.summary } as never,
+            snapshot: {
+              modele: modele.name,
+              render: configuration.render,
+              summary: configuration.summary,
+            } as never,
             quantity: 1,
             unitPriceCents: configuration.price.totalCents,
             partsCostCents: configuration.partsCostCents,
