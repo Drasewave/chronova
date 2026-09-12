@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
+import { BoutonPaiement } from "@/components/panier/bouton-paiement";
 import { SamplePill } from "@/components/ui/pill";
 import { Section } from "@/components/ui/section";
 import { useCart } from "@/lib/panier/cart";
@@ -115,9 +116,10 @@ export function PanierComplet() {
             Tarifs de démonstration, modifiables depuis l&apos;atelier.
           </span>
         </p>
-        <p className="type-caption mt-4 max-w-[46ch] text-right text-fg-soft">
-          Le paiement Stripe et le suivi de commande arrivent à l&apos;étape suivante du projet.
-          Les frais de port seront ajoutés à cette étape.
+        <BoutonPaiement className="mt-6 w-full sm:w-72" />
+        <p className="type-caption mt-3 max-w-[46ch] text-right text-fg-soft">
+          Les frais de port sont ajoutés au paiement. La configuration est refigée côté serveur à
+          ce moment-là : c&apos;est ce prix-là qui fait foi.
         </p>
       </div>
     </Section>

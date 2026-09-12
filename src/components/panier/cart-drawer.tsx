@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ButtonLink } from "@/components/ui/button";
+import { BoutonPaiement } from "@/components/panier/bouton-paiement";
 import { IconCroix } from "@/components/ui/icons";
 import { SamplePill } from "@/components/ui/pill";
 import { useCart } from "@/lib/panier/cart";
@@ -127,12 +128,10 @@ export function CartDrawer() {
                 <SamplePill />
                 <span className="type-caption text-fg-soft">Tarifs de démonstration.</span>
               </p>
-              <ButtonLink href="/panier" onClick={close} className="mt-5 w-full">
-                Voir le panier
+              <BoutonPaiement className="mt-5" />
+              <ButtonLink href="/panier" onClick={close} variant="contour" className="mt-3 w-full">
+                Voir le détail du panier
               </ButtonLink>
-              <p className="type-caption mt-3 text-center text-fg-soft">
-                Le paiement arrive à l&apos;étape suivante du projet.
-              </p>
             </footer>
           </>
         )}

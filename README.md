@@ -17,18 +17,16 @@ dans `docs/`. Les lire avant d'ajouter quoi que ce soit fait gagner du temps.
 | 1 | Arborescence, design system, schéma de données | ✅ `docs/` |
 | 2 | Design system codé, animation d'entrée, page d'accueil | ✅ |
 | 3 | Configurateur (rendu SVG, étapes, prix, compatibilités), panier | ✅ |
-| 4 | Collection, paiement Stripe, compte client | à venir |
+| 4 | Collection, pages du site, connexion, compte client, paiement Stripe | ✅ |
 | 5 | CRM : commandes, clients, stock, catalogue | à venir |
 | 6 | Données d'exemple, finitions, tests, mise en ligne | à venir |
 
-Les liens vers les pages des phases suivantes (`/collection`, `/l-horloger`,
-`/contact`, `/sur-mesure`…) renvoient pour l'instant vers la page 404 du site.
+Le back-office `/atelier` n'existe pas encore : c'est la phase 5.
 
-Le panier est volontairement arrivé avec le configurateur : sans lui, le bouton
-« Ajouter au panier » n'aurait mené nulle part. Il vit aujourd'hui dans le
-navigateur (`localStorage`) et ne stocke que la RÉFÉRENCE de chaque
-configuration — le prix est recalculé à la lecture. La phase 4 le remplacera par
-un panier serveur et figera un instantané au moment du paiement.
+Le panier vit dans le navigateur (`localStorage`) et conserve un instantané de
+chaque configuration. **Ce prix n'engage rien** : au départ vers le paiement, le
+serveur ne reçoit que le modèle, la configuration et la quantité, et refait tout
+le chiffrage à partir du catalogue en base.
 
 ## Installation
 
@@ -72,14 +70,38 @@ commencée : le site tourne actuellement sur des données d'exemple en dur.
 
 | Variable | Utilité | Requise à partir de |
 |---|---|---|
-| `DATABASE_URL` | Connexion PostgreSQL | phase 3 |
-| `AUTH_SECRET` | Signature des sessions Auth.js (`npx auth secret`) | phase 4 |
-| `AUTH_URL` | URL publique du site | phase 4 |
-| `RESEND_API_KEY` | Envoi des e-mails transactionnels | phase 4 |
-| `RESEND_FROM` | Expéditeur des e-mails | phase 4 |
-| `STRIPE_SECRET_KEY` | Paiement | phase 4 |
-| `STRIPE_WEBHOOK_SECRET` | Vérification du webhook de paiement | phase 4 |
-| `NEXT_PUBLIC_SITE_URL` | Liens absolus, métadonnées, sitemap | phase 4 |
+| `DATABASE_URL` | Connexion PostgreSQL | tout de suite |
+| `AUTH_SECRET` | Signature des sessions Auth.js (`npx auth secret`) | tout de suite |
+| `AUTH_URL` | URL publique du site | tout de suite |
+| `RESEND_API_KEY` | Envoi des e-mails transactionnels | mise en ligne |
+| `RESEND_FROM` | Expéditeur des e-mails | mise en ligne |
+| `STRIPE_SECRET_KEY` | Paiement | mise en ligne |
+| `STRIPE_WEBHOOK_SECRET` | Vérification du webhook de paiement | mise en ligne |
+| `NEXT_PUBLIC_SITE_URL` | Liens absolus, métadonnées, sitemap | mise en ligne |
+
+### Deux replis de développement, jamais actifs en production
+
+- **Sans `RESEND_API_KEY`**, les e-mails — dont les liens de connexion — sont
+  écrits dans la console du serveur au lieu d'être envoyés. En production,
+  l'absence de clé lève une erreur : un lien de connexion perdu dans des logs
+  serait un bug silencieux.
+- **Sans `STRIPE_SECRET_KEY`**, le bouton « Passer au paiement » enregistre la
+  commande, réserve le stock et ouvre le suivi client comme si Stripe avait
+  confirmé, avec une pastille « Paiement simulé » bien visible. Ce repli est
+  conditionné à `NODE_ENV !== "production"` : il ne peut pas se déclencher sur un
+  site en ligne, où l'absence de clé affiche un message clair.
+
+### Webhook Stripe
+
+C'est le webhook qui fait foi, jamais le retour du navigateur. En local :
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+La signature est vérifiée sur le corps brut de la requête, et la confirmation
+est idempotente : Stripe peut livrer deux fois le même évènement sans que le
+stock soit réservé en double.
 
 ## Commandes
 
