@@ -34,6 +34,9 @@ export function Header() {
 
   return (
     <header
+      // L'en-tête ne bouge pas pendant une transition de page : c'est le seul
+      // point fixe qui dit au lecteur que le contenu a changé, pas l'écran.
+      style={{ viewTransitionName: "entete-site" }}
       className={cn(
         "sticky top-0 z-40 bg-bg transition-[border-color] duration-300",
         defile ? "border-b border-rule" : "border-b border-transparent",

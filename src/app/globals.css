@@ -400,6 +400,75 @@
   }
 }
 
+/* ───────────────────────── Transitions de page ────────────────────────── */
+
+/* L'overlay de transition capte les clics : on les laisse passer à la page,
+   sinon un clic pendant l'animation est perdu. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Fondu court et léger décalage vertical : la page se pose, elle ne glisse
+   pas. 250 ms, le temps d'être remarqué sans retarder la lecture. */
+::view-transition-old(root) {
+  animation: 160ms var(--ease) both fondu-page reverse;
+}
+
+::view-transition-new(root) {
+  animation:
+    250ms var(--ease) 80ms both fondu-page,
+    300ms var(--ease) both montee-page;
+}
+
+@keyframes fondu-page {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes montee-page {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* L'en-tête est ancré : ni fondu, ni déplacement, et au-dessus du reste. */
+::view-transition-group(entete-site) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(entete-site) {
+  display: none;
+}
+
+::view-transition-new(entete-site) {
+  animation: none;
+}
+
+/* La montre passe de la carte à la fiche. Un flou léger à mi-parcours masque
+   l'interpolation pixel à pixel d'un SVG qui change de taille. */
+::view-transition-group(.morph) {
+  animation-duration: 380ms;
+  animation-timing-function: var(--ease);
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: flou-morph;
+}
+
+@keyframes flou-morph {
+  30% {
+    filter: blur(3px);
+  }
+}
+
 /* ─────────────────────────── Mouvement coupé ──────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -413,5 +482,15 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Les pseudo-éléments de transition de vue ne sont pas atteints par le
+     sélecteur universel : il faut les nommer. */
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
   }
 }

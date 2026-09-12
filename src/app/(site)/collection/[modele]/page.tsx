@@ -6,6 +6,7 @@ import { Pill, SamplePill } from "@/components/ui/pill";
 import { PhotoPlaceholder } from "@/components/ui/placeholder";
 import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeader } from "@/components/ui/section";
+import { ViewTransition } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
 import { WatchSvg } from "@/watch/watch-svg";
 import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
@@ -80,12 +81,14 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
         </nav>
 
         <div className="mt-10 grid items-center gap-12 lg:grid-cols-[1.05fr_1fr]">
-          <InteractiveWatch
-            id="fiche"
-            render={base.render}
-            label={`${model.name}, configuration de départ`}
-            className="mx-auto w-[min(88%,32rem)] lg:w-full"
-          />
+          <ViewTransition name={`montre-${model.slug}`} share="morph" default="none">
+            <InteractiveWatch
+              id="fiche"
+              render={base.render}
+              label={`${model.name}, configuration de départ`}
+              className="mx-auto w-[min(88%,32rem)] lg:w-full"
+            />
+          </ViewTransition>
 
           <div>
             <Pill>{model.styleLabel}</Pill>

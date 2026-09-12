@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
 import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
@@ -30,7 +31,10 @@ export function ModelCard({
         className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--focus)]"
       >
         <div className="relative overflow-hidden rounded-card border border-rule bg-bg-alt p-5 transition-colors duration-300 ease-atelier group-hover:border-accent-decor">
-          <div className="relative transition-transform duration-[450ms] ease-atelier group-hover:rotate-3">
+          {/* Élément partagé : au clic, cette montre est la même que celle de
+              la fiche — elle s'y déplace et grandit au lieu de disparaître. */}
+          <ViewTransition name={`montre-${modele.slug}`} share="morph" default="none">
+            <div className="relative transition-transform duration-[450ms] ease-atelier group-hover:rotate-3">
             <WatchSvg
               id={`carte-${modele.slug}`}
               render={base.render}
@@ -50,7 +54,8 @@ export function ModelCard({
                 className="h-auto w-full"
               />
             </div>
-          </div>
+            </div>
+          </ViewTransition>
         </div>
 
         <div className="mt-5 flex items-baseline justify-between gap-4">
