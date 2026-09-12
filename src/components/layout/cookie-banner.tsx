@@ -42,22 +42,23 @@ export function CookieBanner() {
       role="dialog"
       aria-label="Gestion des cookies"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-rule bg-panel shadow-sheet"
-      style={{ padding: "var(--gutter)" }}
+      // Une barre basse et courte : sur un écran d'ordinateur portable, trois
+      // lignes de texte recouvraient le bouton principal de la page d'accueil.
+      // Le détail complet vit sur sa page, à un lien d'ici.
+      style={{ paddingInline: "var(--gutter)", paddingBlock: "0.875rem" }}
     >
-      <div className="mx-auto flex max-w-content flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <p className="type-body measure text-fg">
-          Ce site dépose uniquement les cookies nécessaires à son fonctionnement (panier, session).
-          La mesure d&apos;audience, si elle est activée un jour, ne le sera qu&apos;avec votre
-          accord.{" "}
+      <div className="mx-auto flex max-w-content flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <p className="type-caption measure text-fg">
+          Uniquement les cookies nécessaires au fonctionnement du site : panier et session.{" "}
           <Link href="/cookies" className="link-underline text-accent">
             Détail des cookies
           </Link>
         </p>
-        <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-          <Button variant="contour" onClick={() => decider("necessaire")} className="sm:w-44">
+        <div className="flex shrink-0 gap-3">
+          <Button variant="contour" onClick={() => decider("necessaire")} className="flex-1 sm:w-40 sm:flex-none">
             Tout refuser
           </Button>
-          <Button variant="contour" onClick={() => decider("tout")} className="sm:w-44">
+          <Button variant="contour" onClick={() => decider("tout")} className="flex-1 sm:w-40 sm:flex-none">
             Tout accepter
           </Button>
         </div>
