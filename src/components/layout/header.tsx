@@ -7,12 +7,14 @@ import { ButtonLink } from "@/components/ui/button";
 import { IconCompte, IconCroix, IconMenu, IconPanier } from "@/components/ui/icons";
 import { Wordmark } from "@/components/layout/wordmark";
 import { NAV_PRINCIPALE } from "@/lib/navigation";
+import { useCart } from "@/lib/panier/cart";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const [ouvert, setOuvert] = useState(false);
   const [defile, setDefile] = useState(false);
   const chemin = usePathname();
+  const panier = useCart();
 
   useEffect(() => setOuvert(false), [chemin]);
 
@@ -70,13 +72,28 @@ export function Header() {
           >
             <IconCompte />
           </Link>
-          <Link
-            href="/panier"
-            className="inline-flex size-11 items-center justify-center text-fg transition-colors duration-200 hover:text-accent"
-            aria-label="Panier, 0 article"
+          <button
+            type="button"
+            onClick={panier.open}
+            className="relative inline-flex size-11 items-center justify-center text-fg transition-colors duration-200 hover:text-accent"
+            aria-label={
+              panier.count === 0
+                ? "Panier, vide"
+                : `Panier, ${panier.count} montre${panier.count > 1 ? "s" : ""}`
+            }
           >
             <IconPanier />
-          </Link>
+            {panier.count > 0 && (
+              /* 13 px, le plancher typographique du projet : la pastille
+                 s'agrandit plutôt que le texte ne rétrécisse. */
+              <span
+                aria-hidden="true"
+                className="type-mono absolute -right-0.5 top-0.5 grid size-5 place-items-center rounded-pill bg-accent text-on-accent"
+              >
+                {panier.count}
+              </span>
+            )}
+          </button>
           <ButtonLink href="/composer" className="ml-2 hidden md:inline-flex" size="sm">
             Composer ma montre
           </ButtonLink>

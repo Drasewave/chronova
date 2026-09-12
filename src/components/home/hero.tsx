@@ -1,6 +1,7 @@
 import { ButtonLink } from "@/components/ui/button";
 import { SamplePill } from "@/components/ui/pill";
 import { InteractiveWatch } from "@/watch/interactive-watch";
+import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import { getSampleModel } from "@/lib/data/models";
 import { formatPrice } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ import { formatPrice } from "@/lib/utils";
 export function Hero() {
   const vedette = getSampleModel("abysse-40");
   if (!vedette) return null;
+  const configuration = defaultConfiguration(vedette);
 
   return (
     <section
@@ -35,7 +37,7 @@ export function Hero() {
         <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
           <InteractiveWatch
             id="hero"
-            render={vedette.render}
+            render={configuration.render}
             label={`${vedette.name} : cadran bleu abysse soleillé, lunette de plongée à insert céramique, bracelet acier trois maillons`}
             className="mx-auto w-[min(88%,34rem)] lg:w-[min(100%,35rem)]"
           />
@@ -44,7 +46,7 @@ export function Hero() {
             <Spec terme="Modèle" valeur={vedette.name} />
             <Spec terme="Boîtier" valeur={`${vedette.diameterMm} mm`} />
             <Spec terme="Étanchéité" valeur={`${vedette.waterResistM} m`} />
-            <Spec terme="Calibre" valeur={vedette.movement} />
+            <Spec terme="Calibre" valeur={configuration.render.movement} />
           </dl>
 
           <p className="mt-5 flex flex-wrap items-center justify-center gap-3">

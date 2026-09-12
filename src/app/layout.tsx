@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, IBM_Plex_Mono, Newsreader } from "next/font/google";
 import { Grain } from "@/components/layout/grain";
 import { INTRO_BOOT } from "@/components/intro/intro-boot";
+import { CartDrawer } from "@/components/panier/cart-drawer";
+import { CartProvider } from "@/lib/panier/cart";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -58,7 +60,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             En tête de <body> : le script s'exécute avant que le rideau ne soit
             analysé, donc avant tout affichage. */}
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT }} />
-        {children}
+        {/* Le panier est fourni à la racine : l'en-tête, et donc son bouton
+            panier, apparaît aussi sur des pages hors du groupe (site) — la 404
+            par exemple. */}
+        <CartProvider>
+          {children}
+          <CartDrawer />
+        </CartProvider>
         <Grain />
       </body>
     </html>

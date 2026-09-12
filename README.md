@@ -16,13 +16,19 @@ dans `docs/`. Les lire avant d'ajouter quoi que ce soit fait gagner du temps.
 |---|---|---|
 | 1 | Arborescence, design system, schéma de données | ✅ `docs/` |
 | 2 | Design system codé, animation d'entrée, page d'accueil | ✅ |
-| 3 | Configurateur (rendu SVG, étapes, prix, compatibilités) | à venir |
-| 4 | Collection, panier, paiement Stripe, compte client | à venir |
+| 3 | Configurateur (rendu SVG, étapes, prix, compatibilités), panier | ✅ |
+| 4 | Collection, paiement Stripe, compte client | à venir |
 | 5 | CRM : commandes, clients, stock, catalogue | à venir |
 | 6 | Données d'exemple, finitions, tests, mise en ligne | à venir |
 
-Les liens de navigation vers les pages des phases suivantes (`/collection`,
-`/composer`, `/contact`…) renvoient pour l'instant vers la page 404 du site.
+Les liens vers les pages des phases suivantes (`/collection`, `/l-horloger`,
+`/contact`, `/sur-mesure`…) renvoient pour l'instant vers la page 404 du site.
+
+Le panier est volontairement arrivé avec le configurateur : sans lui, le bouton
+« Ajouter au panier » n'aurait mené nulle part. Il vit aujourd'hui dans le
+navigateur (`localStorage`) et ne stocke que la RÉFÉRENCE de chaque
+configuration — le prix est recalculé à la lecture. La phase 4 le remplacera par
+un panier serveur et figera un instantané au moment du paiement.
 
 ## Installation
 
@@ -69,7 +75,8 @@ npm run dev          # développement
 npm run build        # build de production
 npm run start        # serveur de production
 npm run typecheck    # TypeScript, sans émission
-npm run test         # Vitest (contrastes du design system, géométrie du cadran)
+npm run test         # Vitest : contrastes du design system, géométrie du cadran,
+                     # prix, délais, compatibilités, stock, nomenclature, URL
 ```
 
 ## Ajouter une option au configurateur

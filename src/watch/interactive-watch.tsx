@@ -9,7 +9,11 @@ import { WatchSvg, type WatchSvgProps } from "./watch-svg";
  * `prefers-reduced-motion`. Le SVG lui-même reste un composant sans état : seul
  * le décalage du dégradé change.
  */
-export function InteractiveWatch({ className, ...props }: WatchSvgProps) {
+export function InteractiveWatch({
+  className,
+  svgClassName = "h-auto w-full",
+  ...props
+}: WatchSvgProps & { svgClassName?: string }) {
   const [sheen, setSheen] = useState({ x: 0, y: 0 });
   const boite = useRef<HTMLDivElement>(null);
   const trame = useRef(0);
@@ -54,7 +58,7 @@ export function InteractiveWatch({ className, ...props }: WatchSvgProps) {
 
   return (
     <div ref={boite} className={className}>
-      <WatchSvg {...props} sheen={sheen} className="h-auto w-full" />
+      <WatchSvg {...props} sheen={sheen} className={svgClassName} />
     </div>
   );
 }

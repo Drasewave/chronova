@@ -32,6 +32,8 @@
 
   --radius-field: 2px;
   --radius-card: 4px;
+  /* 999 px réservé aux pastilles de couleur et aux compteurs. */
+  --radius-pill: 999px;
 
   /* Une seule ombre, teintée brun, réservée aux éléments flottants. */
   --shadow-lift: 0 2px 32px -12px rgb(52 48 42 / 0.28);

@@ -46,6 +46,8 @@ export interface WatchRender {
   strapColor: string;
 
   crystal: Crystal;
+  /** Traitement antireflet interne du saphir. */
+  antiGlare: boolean;
   movement: Movement;
   /** Certains montages se passent de date : le cadran reste épuré. */
   showDate?: boolean;

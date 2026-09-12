@@ -7,13 +7,17 @@ import { Dial } from "./parts/dial";
 import { Hands } from "./parts/hands";
 import { Indices } from "./parts/indices";
 import { Strap } from "./parts/strap";
+import { ProfileView } from "./parts/profile";
+import { BackView } from "./parts/back";
 import { DEFAULT_TIME, SIZE_SCALE } from "./geometry";
-import type { WatchRender } from "./types";
+import type { WatchRender, WatchView } from "./types";
 
 export interface WatchSvgProps {
   /** Identifiant stable : préfixe tous les `id` internes du SVG. */
   id: string;
   render: WatchRender;
+  /** Face, profil ou dos. Les trois partagent le même repère et les mêmes dégradés. */
+  view?: WatchView;
   /** `compact` allège la trame (cartes, miniatures du panier et du CRM). */
   detail?: "full" | "compact";
   /** Décalage du reflet, -1 à 1. Piloté par le pointeur dans `InteractiveWatch`. */
@@ -29,7 +33,7 @@ export interface WatchSvgProps {
  * client (configurateur). Changer une option ne remonte jamais l'arbre : seuls
  * des attributs `fill` et `transform` changent.
  */
-export function WatchSvg({ id, render, detail = "full", sheen, className, label }: WatchSvgProps) {
+export function WatchSvg({ id, render, view = "face", detail = "full", sheen, className, label }: WatchSvgProps) {
   const scale = SIZE_SCALE[render.caseSize] ?? 1;
   const time = render.time ?? DEFAULT_TIME;
   const guards = render.bezelStyle === "plongee";
@@ -46,9 +50,58 @@ export function WatchSvg({ id, render, detail = "full", sheen, className, label 
     >
       <Defs uid={id} render={render} />
 
-      <ellipse cx="500" cy="516" rx="430" ry="418" fill={`url(#${id}-shadow)`} />
+      {/* Ombre portée : large sous une montre vue de face, rasante de profil. */}
+      {view === "profil" ? (
+        <ellipse cx="500" cy="640" rx="330" ry="120" fill={`url(#${id}-shadow)`} />
+      ) : (
+        <ellipse cx="500" cy="516" rx="430" ry="418" fill={`url(#${id}-shadow)`} />
+      )}
 
       <g transform={`translate(500 500) scale(${scale}) translate(-500 -500)`}>
+        {view === "profil" ? (
+          <ProfileView uid={id} render={render} />
+        ) : view === "dos" ? (
+          <>
+            <Strap
+              uid={id}
+              kind={render.strapKind}
+              color={render.strapColor}
+              metal={render.caseMetal}
+              detail={detail}
+            />
+            <BackView uid={id} render={render} />
+          </>
+        ) : (
+          <FaceView uid={id} render={render} detail={detail} sheen={sheen} time={time} guards={guards} isGmt={isGmt} showDate={showDate} />
+        )}
+      </g>
+    </svg>
+  );
+}
+
+/** Vue de face : l'empilement complet, du bracelet au reflet du verre. */
+function FaceView({
+  uid,
+  render,
+  detail,
+  sheen,
+  time,
+  guards,
+  isGmt,
+  showDate,
+}: {
+  uid: string;
+  render: WatchRender;
+  detail: "full" | "compact";
+  sheen?: { x: number; y: number };
+  time: { hours: number; minutes: number; seconds: number };
+  guards: boolean;
+  isGmt: boolean;
+  showDate: boolean;
+}) {
+  const id = uid;
+  return (
+    <>
         <Strap
           uid={id}
           kind={render.strapKind}
@@ -99,8 +152,7 @@ export function WatchSvg({ id, render, detail = "full", sheen, className, label 
           time={time}
         />
 
-        <Crystal uid={id} kind={render.crystal} antiGlare sheen={sheen} />
-      </g>
-    </svg>
+        <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} />
+    </>
   );
 }

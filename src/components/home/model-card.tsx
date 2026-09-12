@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
+import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
 import type { SampleModel } from "@/lib/data/models";
 import { formatPrice } from "@/lib/utils";
 
@@ -10,6 +11,9 @@ import { formatPrice } from "@/lib/utils";
  * est configurable, sans une ligne de texte de plus.
  */
 export function ModelCard({ modele, priorite = false }: { modele: SampleModel; priorite?: boolean }) {
+  const base = defaultConfiguration(modele);
+  const variante = altConfiguration(modele);
+
   return (
     <article className="carte-montre group">
       <Link
@@ -20,7 +24,7 @@ export function ModelCard({ modele, priorite = false }: { modele: SampleModel; p
           <div className="relative transition-transform duration-[450ms] ease-atelier group-hover:rotate-3">
             <WatchSvg
               id={`carte-${modele.slug}`}
-              render={modele.render}
+              render={base.render}
               detail={priorite ? "full" : "compact"}
               label={`${modele.name}, ${modele.styleLabel.toLowerCase()}, ${modele.diameterMm} millimètres`}
               className="h-auto w-full"
@@ -31,7 +35,7 @@ export function ModelCard({ modele, priorite = false }: { modele: SampleModel; p
             >
               <WatchSvg
                 id={`carte-alt-${modele.slug}`}
-                render={modele.altRender}
+                render={variante.render}
                 detail="compact"
                 label=""
                 className="h-auto w-full"
@@ -54,7 +58,7 @@ export function ModelCard({ modele, priorite = false }: { modele: SampleModel; p
           </div>
           <div className="flex gap-2">
             <dt className="sr-only">Calibre</dt>
-            <dd className="type-mono text-fg-soft">{modele.movement}</dd>
+            <dd className="type-mono text-fg-soft">{base.render.movement}</dd>
           </div>
           <div className="flex gap-2">
             <dt className="sr-only">Étanchéité</dt>
