@@ -4,6 +4,8 @@ import type { Selections } from "./types";
 export interface PriceLine {
   groupKey: string;
   groupLabel: string;
+  /** L'étape d'où vient le choix : « Forme » seul ne dit pas de quoi on parle. */
+  stepLabel: string;
   label: string;
   amountCents: number;
 }
@@ -39,6 +41,7 @@ export function computePrice(
           lines.push({
             groupKey: group.key,
             groupLabel: group.label,
+            stepLabel: step.label,
             label: `« ${valeur.trim()} »`,
             amountCents: montant,
           });
@@ -51,6 +54,7 @@ export function computePrice(
         lines.push({
           groupKey: group.key,
           groupLabel: group.label,
+          stepLabel: step.label,
           label: option.label,
           amountCents: option.priceDeltaCents,
         });

@@ -73,6 +73,22 @@ export function buildConfiguration(
   };
 }
 
+/**
+ * Regroupe le récapitulatif par étape, dans l'ordre du configurateur.
+ *
+ * Sans cela, la liste enchaîne « Forme », « Traitement », « Teinte », « Forme »
+ * — et rien ne dit si l'on parle des aiguilles, du verre ou du bracelet.
+ */
+export function grouperParEtape(lignes: SummaryLine[]): [string, SummaryLine[]][] {
+  const groupes = new Map<string, SummaryLine[]>();
+  for (const ligne of lignes) {
+    const liste = groupes.get(ligne.stepLabel);
+    if (liste) liste.push(ligne);
+    else groupes.set(ligne.stepLabel, [ligne]);
+  }
+  return [...groupes];
+}
+
 /** Configuration de départ d'un modèle, et sa variante de survol. */
 export function defaultConfiguration(catalogue: Catalogue, model: WatchModelView): Configuration {
   return buildConfiguration(catalogue, model, model.defaultSelections);

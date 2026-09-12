@@ -190,7 +190,9 @@ export function IntroCurtain() {
           document.body.style.overflow = "";
           setFini(true);
         }}
-        className="type-mono absolute bottom-8 right-[var(--gutter)] text-ink-soft link-underline hover:text-brass"
+        // Il ne reste visible que deux secondes et demie : sa cible doit être
+        // franche, d'où les 44 px de hauteur malgré un libellé d'un mot.
+        className="type-mono link-underline absolute bottom-6 right-[calc(var(--gutter)-0.75rem)] inline-flex min-h-11 items-center px-3 text-ink-soft hover:text-brass"
       >
         Passer
       </button>

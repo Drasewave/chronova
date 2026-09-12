@@ -142,7 +142,7 @@ export default async function TableauDeBord() {
           titre="À faire cette semaine"
           aide="Par date d'expédition annoncée, la plus proche en premier."
           action={
-            <Link href="/atelier/commandes" className="type-mono link-underline text-accent">
+            <Link href="/atelier/commandes" className="type-mono lien-atelier link-underline text-accent">
               Tout le kanban
             </Link>
           }
@@ -205,7 +205,7 @@ export default async function TableauDeBord() {
           action={
             <Link
               href={sousSeuil.length > 0 ? "/atelier/stock?filtre=alertes" : "/atelier/stock"}
-              className="type-mono link-underline text-accent"
+              className="type-mono lien-atelier link-underline text-accent"
             >
               {sousSeuil.length > 0 ? "Les commander" : "Tout le stock"}
             </Link>
@@ -243,7 +243,7 @@ export default async function TableauDeBord() {
           <Panneau
             titre="Demandes non lues"
             action={
-              <Link href="/atelier/demandes" className="type-mono link-underline text-accent">
+              <Link href="/atelier/demandes" className="type-mono lien-atelier link-underline text-accent">
                 Toutes les demandes
               </Link>
             }

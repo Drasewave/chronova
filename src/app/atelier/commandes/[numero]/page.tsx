@@ -13,7 +13,7 @@ import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
 import { prisma } from "@/lib/db";
 import { ETAPES_CLIENT, formatDate, libelleStatut } from "@/lib/commandes/etapes";
-import type { SummaryLine } from "@/lib/configurateur/configuration";
+import { grouperParEtape, type SummaryLine } from "@/lib/configurateur/configuration";
 import type { WatchRender } from "@/watch/types";
 import { formatPrice } from "@/lib/utils";
 
@@ -313,12 +313,12 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
             <Panneau titre="Contrôle" aide="Étanchéité, puis marche suivie sur 72 heures.">
               <form action={enregistrerControle} className="flex flex-col gap-3">
                 <input type="hidden" name="numero" value={commande.number} />
-                <label className="flex items-center gap-3">
+                <label className="flex min-h-11 items-center gap-3">
                   <input
                     type="checkbox"
                     name="etancheite"
                     defaultChecked={commande.qc?.waterTestPassed ?? false}
-                    className="size-5 accent-[var(--accent)]"
+                    className="size-6 accent-[var(--accent)]"
                   />
                   <span className="type-ui text-fg">Étanchéité conforme</span>
                 </label>
@@ -337,12 +337,12 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
                     className="type-body rounded-field border border-rule bg-bg p-3 text-fg"
                   />
                 </label>
-                <label className="flex items-center gap-3">
+                <label className="flex min-h-11 items-center gap-3">
                   <input
                     type="checkbox"
                     name="valide"
                     defaultChecked={commande.qc?.passed ?? false}
-                    className="size-5 accent-[var(--accent)]"
+                    className="size-6 accent-[var(--accent)]"
                   />
                   <span className="type-ui text-fg">Contrôle validé, montre bonne pour le départ</span>
                 </label>
@@ -374,8 +374,8 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
                 <Champ name="alt" label="Ce que montre la photo" required />
                 <Champ name="legende" label="Légende pour le client" />
                 <Champ name="url" label="Adresse du fichier" />
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" name="visible" defaultChecked className="size-5 accent-[var(--accent)]" />
+                <label className="flex min-h-11 items-center gap-3">
+                  <input type="checkbox" name="visible" defaultChecked className="size-6 accent-[var(--accent)]" />
                   <span className="type-caption text-fg">Visible par le client</span>
                 </label>
                 <Bouton>Ajouter</Bouton>
@@ -403,17 +403,6 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
       </div>
     </div>
   );
-}
-
-/** Regroupe les lignes du récapitulatif par étape, dans l'ordre du configurateur. */
-function grouperParEtape(lignes: SummaryLine[]): [string, SummaryLine[]][] {
-  const groupes = new Map<string, SummaryLine[]>();
-  for (const ligne of lignes) {
-    const liste = groupes.get(ligne.stepLabel);
-    if (liste) liste.push(ligne);
-    else groupes.set(ligne.stepLabel, [ligne]);
-  }
-  return [...groupes];
 }
 
 function Ligne({ terme, valeur, fort }: { terme: string; valeur: string; fort?: boolean }) {

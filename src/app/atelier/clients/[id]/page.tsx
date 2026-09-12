@@ -129,13 +129,13 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
               <form action={changerEtiquettes} className="flex flex-col gap-3">
                 <input type="hidden" name="client" value={client.id} />
                 {etiquettes.map((etiquette) => (
-                  <label key={etiquette.id} className="flex items-center gap-3">
+                  <label key={etiquette.id} className="flex min-h-11 items-center gap-3">
                     <input
                       type="checkbox"
                       name="etiquette"
                       value={etiquette.id}
                       defaultChecked={client.tags.some((t) => t.id === etiquette.id)}
-                      className="size-5 accent-[var(--accent)]"
+                      className="size-6 accent-[var(--accent)]"
                     />
                     <span className="type-ui text-fg">{etiquette.label}</span>
                   </label>

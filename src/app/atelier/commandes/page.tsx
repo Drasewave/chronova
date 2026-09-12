@@ -36,7 +36,7 @@ export default async function Kanban() {
             prévient le client.
           </p>
         </div>
-        <Link href="/atelier/commandes/liste" className="type-ui link-underline text-accent">
+        <Link href="/atelier/commandes/liste" className="type-ui lien-atelier link-underline text-accent">
           Vue liste et export
         </Link>
       </header>
@@ -76,7 +76,7 @@ export default async function Kanban() {
                         <div className="flex items-baseline justify-between gap-3">
                           <Link
                             href={`/atelier/commandes/${commande.number}`}
-                            className="type-mono link-underline text-accent"
+                            className="type-mono lien-atelier link-underline text-accent"
                           >
                             {commande.number}
                           </Link>

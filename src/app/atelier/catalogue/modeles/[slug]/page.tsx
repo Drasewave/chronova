@@ -59,7 +59,7 @@ export default async function FicheModele(props: PageProps<"/atelier/catalogue/m
           <h1 className="type-display-2 mt-2">{enregistre.name}</h1>
           <p className="type-body mt-2 text-fg-soft">{enregistre.tagline}</p>
         </div>
-        <Link href={`/collection/${slug}`} className="type-ui link-underline text-accent">
+        <Link href={`/collection/${slug}`} className="type-ui lien-atelier link-underline text-accent">
           Voir la fiche publique
         </Link>
       </header>
@@ -173,12 +173,12 @@ export default async function FicheModele(props: PageProps<"/atelier/catalogue/m
                 </div>
               </fieldset>
 
-              <label className="flex items-center gap-3 border-t border-rule pt-5">
+              <label className="flex min-h-11 items-center gap-3 border-t border-rule pt-5">
                 <input
                   type="checkbox"
                   name="publie"
                   defaultChecked={enregistre.isPublished}
-                  className="size-5 accent-[var(--accent)]"
+                  className="size-6 accent-[var(--accent)]"
                 />
                 <span className="type-ui text-fg">Visible sur le site</span>
               </label>

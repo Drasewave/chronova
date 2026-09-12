@@ -116,12 +116,12 @@ export function EditeurOption({
         </Liste>
       </Champ>
 
-      <label className="flex items-center gap-3">
+      <label className="flex min-h-11 items-center gap-3">
         <input
           type="checkbox"
           name="actif"
           defaultChecked={option.isActive}
-          className="size-5 accent-[var(--accent)]"
+          className="size-6 accent-[var(--accent)]"
         />
         <span className="type-ui text-fg">Proposée dans le configurateur</span>
       </label>

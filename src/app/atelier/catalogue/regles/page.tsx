@@ -113,12 +113,12 @@ export default async function Regles() {
               <Zone name="message" rows={2} placeholder="Nécessite le mouvement GMT." required />
             </Champ>
 
-            <label className="flex items-center gap-3">
+            <label className="flex min-h-11 items-center gap-3">
               <input
                 type="checkbox"
                 name="actif"
                 defaultChecked
-                className="size-5 accent-[var(--accent)]"
+                className="size-6 accent-[var(--accent)]"
               />
               <span className="type-ui text-fg">Règle appliquée</span>
             </label>
@@ -175,7 +175,7 @@ export default async function Regles() {
                         type="checkbox"
                         name="actif"
                         defaultChecked={regle.isActive}
-                        className="size-5 accent-[var(--accent)]"
+                        className="size-6 accent-[var(--accent)]"
                       />
                       <span className="type-ui text-fg">Appliquée</span>
                     </label>

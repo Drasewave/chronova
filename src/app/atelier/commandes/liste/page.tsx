@@ -55,11 +55,11 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
           <a
             href="/api/atelier/commandes"
             download
-            className="type-ui link-underline text-accent"
+            className="type-ui lien-atelier link-underline text-accent"
           >
             Exporter en CSV
           </a>
-          <Link href="/atelier/commandes" className="type-ui link-underline text-accent">
+          <Link href="/atelier/commandes" className="type-ui lien-atelier link-underline text-accent">
             Revenir au kanban
           </Link>
         </div>

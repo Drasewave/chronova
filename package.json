@@ -15,7 +15,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "tsx prisma/purge.ts && tsx prisma/seed.ts",
-    "db:purge": "tsx prisma/purge.ts"
+    "db:purge": "tsx prisma/purge.ts",
+    "db:verifier": "tsx prisma/verifier.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

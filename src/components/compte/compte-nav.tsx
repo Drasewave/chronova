@@ -41,7 +41,10 @@ export function CompteNav({ prenom }: { prenom: string }) {
       </ul>
 
       <form action={seDeconnecter} className="mt-8">
-        <button type="submit" className="type-ui link-underline text-fg-soft hover:text-alert">
+        <button
+          type="submit"
+          className="type-ui link-underline inline-flex min-h-11 items-center text-fg-soft hover:text-alert"
+        >
           Se déconnecter
         </button>
       </form>

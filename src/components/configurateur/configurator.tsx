@@ -7,7 +7,7 @@ import { SamplePill } from "@/components/ui/pill";
 import { OptionGrid } from "./option-grid";
 import { StepSection } from "./step-section";
 import { WatchStage } from "./watch-stage";
-import { buildConfiguration } from "@/lib/configurateur/configuration";
+import { buildConfiguration, grouperParEtape } from "@/lib/configurateur/configuration";
 import { evaluateRules, isGroupVisible, normalizeSelections } from "@/lib/configurateur/rules";
 import { encodeConfig } from "@/lib/configurateur/url";
 import { excludedOptionsFor, type WatchModelView } from "@/lib/data/models";
@@ -271,7 +271,7 @@ function Resume({
           {configuration.price.lines.map((ligne) => (
             <div key={`${ligne.groupKey}-${ligne.label}`} className="flex justify-between gap-4">
               <dt className="type-caption text-fg-soft">
-                {ligne.groupLabel} · {ligne.label}
+                {ligne.stepLabel}, {ligne.groupLabel.toLowerCase()} · {ligne.label}
               </dt>
               <dd className="type-caption text-fg" data-numeric>
                 +{formatPrice(ligne.amountCents)}
@@ -319,14 +319,26 @@ function Recapitulatif({
         Voici la montre telle qu&apos;elle sera montée, pièce par pièce.
       </p>
 
-      <dl className="mt-8 border-t border-rule">
-        {configuration.summary.map((ligne) => (
-          <div key={ligne.groupKey} className="flex justify-between gap-6 border-b border-rule py-3">
-            <dt className="type-caption text-fg-soft">{ligne.groupLabel}</dt>
-            <dd className="type-ui text-right text-fg">{ligne.value}</dd>
-          </div>
+      {/* Groupé par étape : hors de la sienne, « Forme » ou « Teinte » ne veut
+          rien dire — celle des aiguilles ou celle du verre ? */}
+      <div className="mt-8">
+        {grouperParEtape(configuration.summary).map(([etape, lignes]) => (
+          <section key={etape} className="mt-8 first:mt-0">
+            <h3 className="type-mono border-b border-accent-decor pb-2 text-fg-soft">{etape}</h3>
+            <dl>
+              {lignes.map((ligne) => (
+                <div
+                  key={ligne.groupKey}
+                  className="flex justify-between gap-6 border-b border-rule py-3"
+                >
+                  <dt className="type-caption text-fg-soft">{ligne.groupLabel}</dt>
+                  <dd className="type-ui text-right text-fg">{ligne.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         ))}
-      </dl>
+      </div>
 
       <div className="mt-8 rounded-card border border-rule bg-panel p-6">
         <div className="flex items-baseline justify-between gap-4">
@@ -338,7 +350,7 @@ function Recapitulatif({
         {configuration.price.lines.map((ligne) => (
           <div key={`${ligne.groupKey}-${ligne.label}`} className="mt-2 flex justify-between gap-4">
             <span className="type-caption text-fg-soft">
-              {ligne.groupLabel} · {ligne.label}
+              {ligne.stepLabel}, {ligne.groupLabel.toLowerCase()} · {ligne.label}
             </span>
             <span className="type-caption text-fg" data-numeric>
               +{formatPrice(ligne.amountCents)}

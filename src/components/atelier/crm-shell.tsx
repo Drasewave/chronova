@@ -109,11 +109,11 @@ export function CrmShell({
               <BasculeTheme theme={theme} onChange={changerTheme} />
             </div>
             <form action={seDeconnecter} className="mt-4">
-              <button type="submit" className="type-caption link-underline text-fg-soft hover:text-alert">
+              <button type="submit" className="type-caption lien-atelier link-underline text-fg-soft hover:text-alert">
                 Se déconnecter
               </button>
             </form>
-            <Link href="/" className="type-caption link-underline mt-3 block text-fg-soft hover:text-accent">
+            <Link href="/" className="type-caption lien-atelier link-underline mt-1 text-fg-soft hover:text-accent">
               Voir le site public
             </Link>
           </div>

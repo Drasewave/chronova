@@ -355,6 +355,15 @@
     background-size: 0% 1px;
   }
 
+  /* Lien isolé du CRM — pas un lien dans une phrase, mais une commande à part
+     entière. Sur une tablette posée à l'établi, il lui faut 44 px de haut :
+     l'apparence ne change pas, seule la zone de frappe grandit. */
+  .lien-atelier {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
   /* Conteneur qui défile horizontalement (le kanban de l'atelier).
      La barre reste visible : sur une tablette, rien n'indiquerait sinon qu'il
      reste des colonnes à droite. Elle est dessinée au filet, comme le reste. */

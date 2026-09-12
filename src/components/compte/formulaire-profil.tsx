@@ -106,7 +106,7 @@ export function FormulaireProfil({
         />
       </div>
 
-      <label className="flex items-start gap-3">
+      <label className="flex min-h-11 items-start gap-3 py-1">
         <input
           type="checkbox"
           name="newsletter"
