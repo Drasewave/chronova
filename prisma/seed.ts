@@ -153,7 +153,13 @@ async function parametres() {
       label: "Montant à partir duquel le port est offert (centimes)",
       value: { cents: 100000, exemple: true },
     },
-    { key: "garantie.duree_mois", label: "Durée de garantie (mois)", value: { aRemplir: true } },
+    {
+      key: "garantie.duree_mois",
+      label: "Durée de garantie (mois)",
+      // La clé existe même vide : un réglage sans forme n'offre aucun champ à
+      // remplir dans le CRM, et resterait donc « à remplir » pour toujours.
+      value: { mois: 0, aRemplir: true },
+    },
     {
       key: "legal.identite",
       label: "Identité légale de l'atelier",
