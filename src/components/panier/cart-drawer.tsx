@@ -14,7 +14,7 @@ import { formatPrice } from "@/lib/utils";
  * configuration — pas une photo de catalogue : c'est la montre qui sera montée.
  */
 export function CartDrawer() {
-  const { lines, isOpen, close, remove, setQuantity, totalCents, count } = useCart();
+  const { items, isOpen, close, remove, setQuantity, totalCents, count } = useCart();
   const dialogue = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function CartDrawer() {
           </button>
         </header>
 
-        {lines.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-start justify-center gap-5 px-6">
             <p className="type-body text-fg-soft">
               Votre panier est vide. Une montre se compose en quelques minutes.
@@ -62,7 +62,7 @@ export function CartDrawer() {
         ) : (
           <>
             <ul className="flex-1 overflow-y-auto px-6">
-              {lines.map((ligne) => (
+              {items.map((ligne) => (
                 <li key={ligne.id} className="flex gap-4 border-b border-rule py-5">
                   <Link
                     href={`/composer/${ligne.modelSlug}?c=${encodeURIComponent(ligne.shareParam)}`}
@@ -71,20 +71,20 @@ export function CartDrawer() {
                   >
                     <WatchSvg
                       id={`panier-${ligne.id}`}
-                      render={ligne.configuration.render}
+                      render={ligne.snapshot.render}
                       detail="compact"
-                      label={`${ligne.model.name}, configuration personnalisée`}
+                      label={`${ligne.snapshot.modelName}, configuration personnalisée`}
                       className="h-auto w-full"
                     />
                   </Link>
 
                   <div className="min-w-0 flex-1">
-                    <p className="type-ui text-fg">{ligne.model.name}</p>
+                    <p className="type-ui text-fg">{ligne.snapshot.modelName}</p>
                     <p className="type-caption mt-1 text-fg-soft">
-                      {resumeCourt(ligne.configuration.summary)}
+                      {resumeCourt(ligne.snapshot.summary)}
                     </p>
                     <p className="type-mono mt-2 text-fg-soft">
-                      Assemblage {ligne.configuration.leadTime.days} jours
+                      Assemblage {ligne.snapshot.leadTimeDays} jours
                     </p>
 
                     <div className="mt-3 flex items-center justify-between gap-3">
@@ -100,7 +100,7 @@ export function CartDrawer() {
                         />
                       </label>
                       <span className="type-ui text-fg" data-numeric>
-                        {formatPrice(ligne.configuration.price.totalCents * ligne.quantity)}
+                        {formatPrice(ligne.snapshot.priceCents * ligne.quantity)}
                       </span>
                     </div>
 
@@ -142,7 +142,7 @@ export function CartDrawer() {
 }
 
 /** Trois choix suffisent à reconnaître une configuration dans une liste. */
-function resumeCourt(summary: { groupKey: string; value: string }[]): string {
+function resumeCourt(summary: readonly { groupKey: string; value: string }[]): string {
   const cles = ["cadran-teinte", "aiguilles-forme", "bracelet-type"];
   return cles
     .map((cle) => summary.find((ligne) => ligne.groupKey === cle)?.value)

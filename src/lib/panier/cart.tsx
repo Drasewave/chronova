@@ -9,43 +9,49 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { buildConfiguration, type Configuration } from "@/lib/configurateur/configuration";
-import { decodeConfig } from "@/lib/configurateur/url";
-import { getSampleModel, type SampleModel } from "@/lib/data/models";
+import type { SummaryLine } from "@/lib/configurateur/configuration";
+import type { WatchRender } from "@/watch/types";
 
 const CLE = "chronova:panier";
 
 /**
- * Une ligne de panier ne stocke QUE la référence de la configuration : le modèle
- * et le paramètre de partage. Prix, rendu et nomenclature sont recalculés à la
- * lecture par `buildConfiguration`, donc toujours cohérents avec le catalogue.
+ * Instantané d'une configuration au moment où elle est mise au panier.
  *
- * Au paiement (phase 4), le serveur figera un instantané : c'est à ce moment-là,
- * et seulement là, que le prix cesse de suivre le catalogue.
+ * Le panier ne recalcule rien : il affiche ce qui a été vu au moment du choix.
+ * C'est ce qui lui permet de vivre dans le navigateur, sans catalogue, et donc
+ * de ne ralentir aucune page. Le prix qui fera foi est recalculé côté serveur au
+ * moment du paiement, à partir de `shareParam` — un panier ancien ne peut donc
+ * pas faire passer un tarif périmé.
  */
+export interface CartSnapshot {
+  modelName: string;
+  summary: SummaryLine[];
+  priceCents: number;
+  leadTimeDays: number;
+  render: WatchRender;
+}
+
 export interface CartItem {
   id: string;
   modelSlug: string;
+  /** La configuration, sous la forme du paramètre `?c=` : elle est rejouable. */
   shareParam: string;
   quantity: number;
-}
-
-export interface CartLine extends CartItem {
-  model: SampleModel;
-  configuration: Configuration;
+  snapshot: CartSnapshot;
 }
 
 interface CartApi {
-  lines: CartLine[];
+  items: CartItem[];
   count: number;
   totalCents: number;
   ready: boolean;
   isOpen: boolean;
   open: () => void;
   close: () => void;
-  add: (modelSlug: string, shareParam: string) => void;
+  add: (modelSlug: string, shareParam: string, snapshot: CartSnapshot) => void;
   remove: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
+  clear: () => void;
 }
 
 const Contexte = createContext<CartApi | null>(null);
@@ -58,7 +64,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const brut = localStorage.getItem(CLE);
-      if (brut) setItems(JSON.parse(brut) as CartItem[]);
+      if (brut) {
+        const lus = JSON.parse(brut) as CartItem[];
+        // Une ligne écrite par une version antérieure n'a pas d'instantané :
+        // on l'ignore plutôt que de faire planter le panier.
+        setItems(lus.filter((item) => item?.snapshot?.render));
+      }
     } catch {
       // Stockage indisponible : le panier reste en mémoire pour la session.
     }
@@ -74,9 +85,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, ready]);
 
-  const add = useCallback((modelSlug: string, shareParam: string) => {
+  const add = useCallback((modelSlug: string, shareParam: string, snapshot: CartSnapshot) => {
     setItems((prev) => {
-      const existante = prev.find((item) => item.modelSlug === modelSlug && item.shareParam === shareParam);
+      const existante = prev.find(
+        (item) => item.modelSlug === modelSlug && item.shareParam === shareParam,
+      );
       if (existante) {
         return prev.map((item) =>
           item.id === existante.id ? { ...item, quantity: item.quantity + 1 } : item,
@@ -84,7 +97,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [
         ...prev,
-        { id: `${modelSlug}-${Date.now().toString(36)}`, modelSlug, shareParam, quantity: 1 },
+        {
+          id: `${modelSlug}-${Date.now().toString(36)}`,
+          modelSlug,
+          shareParam,
+          quantity: 1,
+          snapshot,
+        },
       ];
     });
     setOpen(true);
@@ -98,26 +117,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       quantity <= 0
         ? prev.filter((item) => item.id !== id)
-        : prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
+        : prev.map((item) => (item.id === id ? { ...item, quantity: Math.min(9, quantity) } : item)),
     );
   }, []);
 
-  const lines = useMemo(() => {
-    return items.flatMap((item) => {
-      const model = getSampleModel(item.modelSlug);
-      if (!model) return [];
-      return [{ ...item, model, configuration: buildConfiguration(model, decodeConfig(item.shareParam)) }];
-    });
-  }, [items]);
+  const clear = useCallback(() => setItems([]), []);
 
   const valeur = useMemo<CartApi>(
     () => ({
-      lines,
-      count: lines.reduce((somme, ligne) => somme + ligne.quantity, 0),
-      totalCents: lines.reduce(
-        (somme, ligne) => somme + ligne.configuration.price.totalCents * ligne.quantity,
-        0,
-      ),
+      items,
+      count: items.reduce((somme, item) => somme + item.quantity, 0),
+      totalCents: items.reduce((somme, item) => somme + item.snapshot.priceCents * item.quantity, 0),
       ready,
       isOpen,
       open: () => setOpen(true),
@@ -125,8 +135,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       add,
       remove,
       setQuantity,
+      clear,
     }),
-    [lines, ready, isOpen, add, remove, setQuantity],
+    [items, ready, isOpen, add, remove, setQuantity, clear],
   );
 
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;

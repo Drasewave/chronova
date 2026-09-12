@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
 import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
-import type { SampleModel } from "@/lib/data/models";
+import type { WatchModelView } from "@/lib/data/models";
+import type { Catalogue } from "@/lib/configurateur/catalogue";
 import { formatPrice } from "@/lib/utils";
 
 /**
@@ -10,9 +11,17 @@ import { formatPrice } from "@/lib/utils";
  * verre et le second coloris apparaît en fondu — trois indices que la montre
  * est configurable, sans une ligne de texte de plus.
  */
-export function ModelCard({ modele, priorite = false }: { modele: SampleModel; priorite?: boolean }) {
-  const base = defaultConfiguration(modele);
-  const variante = altConfiguration(modele);
+export function ModelCard({
+  catalogue,
+  modele,
+  priorite = false,
+}: {
+  catalogue: Catalogue;
+  modele: WatchModelView;
+  priorite?: boolean;
+}) {
+  const base = defaultConfiguration(catalogue, modele);
+  const variante = altConfiguration(catalogue, modele);
 
   return (
     <article className="carte-montre group">

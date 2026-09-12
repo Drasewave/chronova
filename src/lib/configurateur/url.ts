@@ -1,4 +1,4 @@
-import { GROUP_INDEX, OPTION_INDEX } from "@/lib/data/catalogue";
+import type { Catalogue } from "./catalogue";
 import type { Selections } from "./types";
 
 const SEPARATEUR_PAIRE = "~";
@@ -24,7 +24,7 @@ export function encodeConfig(selections: Selections): string {
  * a été partagé est ignorée, pas une erreur. `normalizeSelections` complètera
  * ensuite les groupes obligatoires restés vides.
  */
-export function decodeConfig(valeur: string | null | undefined): Selections {
+export function decodeConfig(catalogue: Catalogue, valeur: string | null | undefined): Selections {
   if (!valeur) return {};
   const selections: Selections = {};
 
@@ -34,7 +34,7 @@ export function decodeConfig(valeur: string | null | undefined): Selections {
 
     const groupe = paire.slice(0, coupure);
     const brut = decodeURIComponent(paire.slice(coupure + 1));
-    const entree = GROUP_INDEX.get(groupe);
+    const entree = catalogue.groupIndex.get(groupe);
     if (!entree) continue;
 
     if (entree.group.selection === "texte") {
@@ -43,7 +43,7 @@ export function decodeConfig(valeur: string | null | undefined): Selections {
       continue;
     }
 
-    if (OPTION_INDEX.has(`${groupe}${SEPARATEUR_VALEUR}${brut}`)) selections[groupe] = brut;
+    if (catalogue.optionIndex.has(`${groupe}${SEPARATEUR_VALEUR}${brut}`)) selections[groupe] = brut;
   }
 
   return selections;

@@ -41,16 +41,29 @@ npm run dev          # http://localhost:3000
 > Next bloque ses ressources internes depuis une autre origine, ce qui empêche
 > l'hydratation (voir `allowedDevOrigins` dans `next.config.ts`).
 
-### Base de données (à partir de la phase 3)
+### Base de données
 
 PostgreSQL, en local comme en production — un seul schéma Prisma, avec `enum` et
 colonnes `Json`. SQLite obligerait à maintenir un schéma différent, donc des
 écarts qui n'apparaîtraient qu'en production.
 
 ```bash
-docker compose up -d           # postgres:16-alpine
-# ou une base Neon/Supabase gratuite : seule DATABASE_URL change
+cp .env.example .env           # DATABASE_URL pour la CLI Prisma
+cp .env.example .env.local     # ... et pour l'application
+
+npm run db:migrate             # crée le schéma
+npm run db:seed                # catalogue, stock, clients et commandes d'exemple
+npm run db:reset               # repart de zéro (migrations + seed)
 ```
+
+La base doit être joignable **au moment du build** : la page d'accueil, la
+collection et le choix de modèle sont prérendus avec les données du catalogue,
+puis revalidés toutes les cinq minutes (`export const revalidate`).
+
+> `npm audit` signale des vulnérabilités dans `mysql2` et `deepmerge-ts`. Elles
+> proviennent de la CLI Prisma, qui est une dépendance de développement et n'est
+> jamais exécutée en production ; le pilote MySQL n'est de toute façon pas
+> utilisé. Le seul correctif proposé est un retour à Prisma 6.
 
 ## Variables d'environnement
 

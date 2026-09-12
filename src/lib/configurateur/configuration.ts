@@ -1,6 +1,6 @@
-import { STEPS } from "@/lib/data/catalogue";
-import { excludedOptionsFor, type SampleModel } from "@/lib/data/models";
+import { excludedOptionsFor, type WatchModelView } from "@/lib/data/models";
 import type { WatchRender } from "@/watch/types";
+import type { Catalogue } from "./catalogue";
 import { buildBom, partsCost, type BomLine } from "./bom";
 import { computeLeadTime, computePrice, type LeadTime, type PriceBreakdown } from "./price";
 import { normalizeSelections } from "./rules";
@@ -36,16 +36,20 @@ export interface Configuration {
  * et CRM en dépendent tous, ce qui garantit qu'un même choix donne partout le
  * même prix, le même délai et la même nomenclature.
  */
-export function buildConfiguration(model: SampleModel, brutes: Selections): Configuration {
-  const selections = normalizeSelections(brutes, excludedOptionsFor(model));
-  const bom = buildBom(selections);
+export function buildConfiguration(
+  catalogue: Catalogue,
+  model: WatchModelView,
+  brutes: Selections,
+): Configuration {
+  const selections = normalizeSelections(catalogue, brutes, excludedOptionsFor(model));
+  const bom = buildBom(catalogue, selections);
 
   const summary: SummaryLine[] = [];
-  for (const step of STEPS) {
+  for (const step of catalogue.steps) {
     for (const group of step.groups) {
       const valeur = selections[group.key];
       if (!valeur) continue;
-      const libelle = describeSelection(group.key, valeur);
+      const libelle = describeSelection(catalogue, group.key, valeur);
       if (!libelle) continue;
       summary.push({
         stepLabel: step.label,
@@ -59,9 +63,9 @@ export function buildConfiguration(model: SampleModel, brutes: Selections): Conf
   return {
     modelSlug: model.slug,
     selections,
-    render: resolveRender(selections),
-    price: computePrice(model.basePriceCents, selections),
-    leadTime: computeLeadTime(model.assemblyDays, selections),
+    render: resolveRender(catalogue, selections),
+    price: computePrice(catalogue, model.basePriceCents, selections),
+    leadTime: computeLeadTime(catalogue, model.assemblyDays, selections),
     bom,
     partsCostCents: partsCost(bom),
     shareParam: encodeConfig(selections),
@@ -70,10 +74,10 @@ export function buildConfiguration(model: SampleModel, brutes: Selections): Conf
 }
 
 /** Configuration de départ d'un modèle, et sa variante de survol. */
-export function defaultConfiguration(model: SampleModel): Configuration {
-  return buildConfiguration(model, model.defaultSelections);
+export function defaultConfiguration(catalogue: Catalogue, model: WatchModelView): Configuration {
+  return buildConfiguration(catalogue, model, model.defaultSelections);
 }
 
-export function altConfiguration(model: SampleModel): Configuration {
-  return buildConfiguration(model, { ...model.defaultSelections, ...model.altSelections });
+export function altConfiguration(catalogue: Catalogue, model: WatchModelView): Configuration {
+  return buildConfiguration(catalogue, model, { ...model.defaultSelections, ...model.altSelections });
 }

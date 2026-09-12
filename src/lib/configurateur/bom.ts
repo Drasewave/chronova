@@ -1,4 +1,4 @@
-import { OPTION_INDEX, PART_INDEX, STEPS } from "@/lib/data/catalogue";
+import type { Catalogue } from "./catalogue";
 import type { Part, Selections } from "./types";
 
 export interface BomLine {
@@ -16,16 +16,16 @@ export interface BomLine {
  * paiement (réservation du stock) et par le CRM (fiche d'assemblage). Il ne peut
  * donc pas y avoir deux nomenclatures divergentes pour la même montre.
  */
-export function buildBom(selections: Selections): BomLine[] {
+export function buildBom(catalogue: Catalogue, selections: Selections): BomLine[] {
   const lignes = new Map<string, BomLine>();
 
-  for (const step of STEPS) {
+  for (const step of catalogue.steps) {
     for (const group of step.groups) {
       const valeur = selections[group.key];
       if (!valeur || group.selection === "texte") continue;
 
-      const option = OPTION_INDEX.get(`${group.key}:${valeur}`)?.option;
-      const part = option?.partRef ? PART_INDEX.get(option.partRef) : undefined;
+      const option = catalogue.optionIndex.get(`${group.key}:${valeur}`)?.option;
+      const part = option?.partRef ? catalogue.partIndex.get(option.partRef) : undefined;
       if (!option || !part) continue;
 
       const existante = lignes.get(part.ref);

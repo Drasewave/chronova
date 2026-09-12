@@ -1,0 +1,744 @@
+// Chronova — schéma de données.
+//
+// PostgreSQL en local comme en production : le schéma utilise des `enum`, des
+// colonnes `Json` et des tableaux, que SQLite ne saurait pas reproduire à
+// l'identique. Voir docs/03-schema-donnees.md pour les décisions structurantes.
+//
+// Règle tenue partout : TOUS LES MONTANTS SONT EN CENTIMES ENTIERS.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────── Comptes ────────────────────────────────────
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  emailVerified    DateTime?
+  name             String?
+  phone            String?
+  role             Role      @default(CLIENT)
+  wristSizeMm      Int?
+  preferences      String?
+  crmNotes         String?
+  stripeCustomerId String?   @unique
+  newsletter       Boolean   @default(false)
+  // RGPD : efface les données personnelles sans détruire la comptabilité.
+  anonymizedAt     DateTime?
+  isSample         Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  accounts  Account[]
+  sessions  Session[]
+  addresses Address[]
+  orders    Order[]
+  carts     Cart[]
+  inquiries Inquiry[]
+  cases     ServiceCase[]
+  consents  ConsentLog[]
+  notes     InternalNote[]
+  tags      CustomerTag[] @relation("UserTags")
+
+  @@index([role])
+}
+
+// Trois modèles imposés par l'adaptateur Prisma d'Auth.js.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Address {
+  id                String  @id @default(cuid())
+  userId            String
+  label             String?
+  fullName          String
+  line1             String
+  line2             String?
+  postalCode        String
+  city              String
+  country           String  @default("FR")
+  phone             String?
+  isDefaultShipping Boolean @default(false)
+  isDefaultBilling  Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CustomerTag {
+  id    String @id @default(cuid())
+  label String @unique
+  tone  String @default("neutre")
+
+  users User[] @relation("UserTags")
+}
+
+enum ConsentType {
+  NEWSLETTER
+  COOKIES_MESURE
+  COOKIES_MARKETING
+}
+
+model ConsentLog {
+  id        String      @id @default(cuid())
+  userId    String?
+  email     String?
+  type      ConsentType
+  granted   Boolean
+  source    String
+  createdAt DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, type])
+}
+
+// ────────────────────────────── Catalogue ───────────────────────────────────
+
+enum WatchStyle {
+  PLONGEE
+  TERRAIN
+  GMT
+  HABILLEE
+}
+
+model WatchModel {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  name           String
+  tagline        String
+  summary        String
+  style          WatchStyle
+  diameterMm     Int
+  // Diamètres proposés sur cette ligne ; les autres sont exclus du configurateur.
+  availableSizes String[]
+  lugToLugMm     Float
+  thicknessMm    Float
+  lugWidthMm     Int
+  waterResistM   Int
+  movementNote   String
+  basePriceCents Int
+  assemblyDays   Int        @default(14)
+  // Configuration signature, et sa variante montrée au survol de la carte.
+  defaultSelections Json
+  altSelections     Json
+  isPublished    Boolean    @default(true)
+  sortIndex      Int        @default(0)
+  seoTitle       String?
+  seoDescription String?
+  isSample       Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  configurations Configuration[]
+}
+
+model ConfigStep {
+  id        String @id @default(cuid())
+  key       String @unique
+  label     String
+  intro     String
+  sortIndex Int    @default(0)
+
+  groups OptionGroup[]
+}
+
+enum SelectionType {
+  UNIQUE
+  TEXTE
+  MESURE
+}
+
+model OptionGroup {
+  id               String        @id @default(cuid())
+  key              String        @unique
+  stepId           String
+  label            String
+  help             String?
+  selection        SelectionType @default(UNIQUE)
+  // Un groupe facultatif disparaît quand aucune de ses options n'est possible.
+  isOptional       Boolean       @default(false)
+  maxLength        Int?
+  filledPriceCents Int?
+  filledLeadDays   Int?
+  sortIndex        Int           @default(0)
+
+  step    ConfigStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  options Option[]
+
+  @@index([stepId])
+}
+
+model Option {
+  id              String  @id @default(cuid())
+  groupId         String
+  key             String
+  label           String
+  description     String?
+  // Le nom de la teinte est toujours affiché : la couleur seule ne suffit pas.
+  colorName       String?
+  colorHex        String?
+  priceDeltaCents Int     @default(0)
+  leadDaysDelta   Int?
+  // Correctif appliqué au rendu : c'est TOUT le lien entre données et dessin.
+  renderPatch     Json?
+  partId          String?
+  isActive        Boolean @default(true)
+  sortIndex       Int     @default(0)
+  isSample        Boolean @default(false)
+
+  group   OptionGroup         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  part    Part?               @relation(fields: [partId], references: [id], onDelete: SetNull)
+  rules   CompatibilityRule[] @relation("RuleSubject")
+
+  @@unique([groupId, key])
+  @@index([partId])
+}
+
+enum RuleKind {
+  EXIGE_UNE_DE
+  EXCLUT
+}
+
+model CompatibilityRule {
+  id              String   @id @default(cuid())
+  subjectOptionId String
+  kind            RuleKind
+  // Références `groupe:option` : le CRM les choisit dans une liste.
+  targetRefs      String[]
+  // Raison affichée sous l'option grisée. Jamais un message générique.
+  message         String
+  isActive        Boolean  @default(true)
+
+  subject Option @relation("RuleSubject", fields: [subjectOptionId], references: [id], onDelete: Cascade)
+
+  @@index([subjectOptionId])
+}
+
+// ──────────────────────────────── Stock ─────────────────────────────────────
+
+enum PartCategory {
+  BOITIER
+  CADRAN
+  AIGUILLES
+  LUNETTE
+  INSERT
+  COURONNE
+  BRACELET
+  VERRE
+  MOUVEMENT
+  FOND
+  DIVERS
+}
+
+model Supplier {
+  id           String  @id @default(cuid())
+  name         String  @unique
+  contactName  String?
+  email        String?
+  phone        String?
+  website      String?
+  address      String?
+  leadTimeDays Int     @default(21)
+  notes        String?
+
+  parts  Part[]
+  orders PurchaseOrder[]
+}
+
+model Part {
+  id                 String       @id @default(cuid())
+  reference          String       @unique
+  name               String
+  category           PartCategory
+  supplierId         String?
+  purchasePriceCents Int          @default(0)
+  // Caches du journal : la vérité est la somme des StockMovement.
+  quantityOnHand     Int          @default(0)
+  quantityReserved   Int          @default(0)
+  reorderThreshold   Int          @default(2)
+  restockDays        Int          @default(21)
+  storageLocation    String?
+  notes              String?
+  isSample           Boolean      @default(false)
+
+  supplier   Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  options    Option[]
+  movements  StockMovement[]
+  orderParts OrderItemPart[]
+  poLines    PurchaseOrderLine[]
+
+  @@index([category])
+}
+
+enum MovementType {
+  ENTREE
+  RESERVATION
+  LIBERATION
+  SORTIE_ASSEMBLAGE
+  PERTE
+  AJUSTEMENT
+}
+
+model StockMovement {
+  id        String       @id @default(cuid())
+  partId    String
+  type      MovementType
+  quantity  Int
+  orderId   String?
+  actorId   String?
+  reason    String?
+  createdAt DateTime     @default(now())
+
+  part  Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([partId, createdAt])
+}
+
+enum PurchaseStatus {
+  BROUILLON
+  ENVOYEE
+  PARTIELLE
+  RECUE
+  ANNULEE
+}
+
+model PurchaseOrder {
+  id         String         @id @default(cuid())
+  reference  String         @unique
+  supplierId String
+  status     PurchaseStatus @default(BROUILLON)
+  orderedAt  DateTime?
+  expectedAt DateTime?
+  receivedAt DateTime?
+  notes      String?
+  createdAt  DateTime       @default(now())
+
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  lines    PurchaseOrderLine[]
+}
+
+model PurchaseOrderLine {
+  id               String @id @default(cuid())
+  purchaseOrderId  String
+  partId           String
+  quantity         Int
+  quantityReceived Int    @default(0)
+  unitCostCents    Int
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  part          Part          @relation(fields: [partId], references: [id])
+}
+
+// ─────────────────────────────── Commerce ───────────────────────────────────
+
+model Configuration {
+  id             String   @id @default(cuid())
+  // Code court du lien de partage : la chaîne `?c=` du configurateur.
+  shareCode      String
+  modelId        String
+  selections     Json
+  engravingText  String?  @db.VarChar(30)
+  wristSizeMm    Int?
+  // Libellés et prix FIGÉS : modifier le catalogue ne réécrit pas le passé.
+  snapshot       Json
+  priceCents     Int
+  partsCostCents Int
+  leadTimeDays   Int
+  createdAt      DateTime @default(now())
+
+  model      WatchModel  @relation(fields: [modelId], references: [id])
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  inquiries  Inquiry[]
+
+  @@index([modelId])
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String?
+  anonKey   String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+}
+
+model CartItem {
+  id              String @id @default(cuid())
+  cartId          String
+  configurationId String
+  quantity        Int    @default(1)
+
+  cart          Cart          @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  configuration Configuration @relation(fields: [configurationId], references: [id])
+}
+
+enum OrderStatus {
+  EN_ATTENTE_PAIEMENT
+  PAYEE
+  PIECES_A_COMMANDER
+  PIECES_RECUES
+  EN_ASSEMBLAGE
+  CONTROLE
+  EXPEDIEE
+  LIVREE
+  ANNULEE
+  REMBOURSEE
+}
+
+model Order {
+  id                    String      @id @default(cuid())
+  number                String      @unique
+  userId                String?
+  email                 String
+  status                OrderStatus @default(EN_ATTENTE_PAIEMENT)
+  subtotalCents         Int
+  shippingCents         Int         @default(0)
+  totalCents            Int
+  currency              String      @default("eur")
+  stripeSessionId       String?     @unique
+  stripePaymentIntentId String?
+  shippingAddress       Json
+  billingAddress        Json?
+  carrier               String?
+  trackingNumber        String?
+  trackingUrl           String?
+  promisedAt            DateTime?
+  paidAt                DateTime?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  internalNotes         String?
+  isSample              Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items     OrderItem[]
+  events    OrderEvent[]
+  photos    OrderPhoto[]
+  tasks     AssemblyTask[]
+  qc        QualityControl?
+  warranty  Warranty?
+  cases     ServiceCase[]
+  movements StockMovement[]
+
+  @@index([status, createdAt])
+  @@index([userId])
+}
+
+model OrderItem {
+  id              String @id @default(cuid())
+  orderId         String
+  configurationId String
+  // Instantané figé : libellés, teintes et prix au moment de la commande.
+  snapshot        Json
+  quantity        Int    @default(1)
+  unitPriceCents  Int
+  // Coût figé → marge = unitPriceCents − partsCostCents.
+  partsCostCents  Int
+
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  configuration Configuration   @relation(fields: [configurationId], references: [id])
+  parts         OrderItemPart[]
+
+  @@index([orderId])
+}
+
+// Nomenclature générée automatiquement depuis la configuration.
+model OrderItemPart {
+  id            String    @id @default(cuid())
+  orderItemId   String
+  partId        String
+  quantity      Int       @default(1)
+  unitCostCents Int
+  reservedAt    DateTime?
+  consumedAt    DateTime?
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  part      Part      @relation(fields: [partId], references: [id])
+
+  @@index([orderItemId])
+}
+
+// Frise visible par le client.
+model OrderEvent {
+  id         String       @id @default(cuid())
+  orderId    String
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  note       String?
+  isPublic   Boolean      @default(true)
+  emailSent  Boolean      @default(false)
+  actorId    String?
+  createdAt  DateTime     @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+// ─────────────────────────────── Atelier ────────────────────────────────────
+
+model AssemblyTask {
+  id        String    @id @default(cuid())
+  orderId   String
+  label     String
+  sortIndex Int       @default(0)
+  isDone    Boolean   @default(false)
+  doneAt    DateTime?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model QualityControl {
+  id                String    @id @default(cuid())
+  orderId           String    @unique
+  waterTestPassed   Boolean?
+  waterTestBar      Int?
+  // Écart de marche en secondes par jour, mesuré sur 72 h.
+  rateSecondsPerDay Float?
+  amplitudeDegrees  Float?
+  beatErrorMs       Float?
+  testStartedAt     DateTime?
+  testEndedAt       DateTime?
+  passed            Boolean?
+  notes             String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderPhoto {
+  id        String   @id @default(cuid())
+  orderId   String
+  url       String
+  alt       String
+  caption   String?
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+// ────────────────────── Demandes, devis, après-vente ────────────────────────
+
+enum InquiryType {
+  CONTACT
+  SUR_MESURE
+}
+
+enum InquiryStatus {
+  NOUVEAU
+  LU
+  EN_COURS
+  DEVIS_ENVOYE
+  CONVERTI
+  CLOS
+}
+
+model Inquiry {
+  id              String        @id @default(cuid())
+  type            InquiryType
+  status          InquiryStatus @default(NOUVEAU)
+  name            String
+  email           String
+  phone           String?
+  message         String
+  budgetCents     Int?
+  configurationId String?
+  userId          String?
+  isSample        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  configuration Configuration? @relation(fields: [configurationId], references: [id], onDelete: SetNull)
+  quotes        Quote[]
+
+  @@index([status, createdAt])
+}
+
+enum QuoteStatus {
+  BROUILLON
+  ENVOYE
+  ACCEPTE
+  REFUSE
+  EXPIRE
+}
+
+model Quote {
+  id         String      @id @default(cuid())
+  reference  String      @unique
+  inquiryId  String
+  lines      Json
+  totalCents Int
+  validUntil DateTime?
+  status     QuoteStatus @default(BROUILLON)
+  orderId    String?
+  createdAt  DateTime    @default(now())
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+}
+
+enum CaseType {
+  GARANTIE
+  REVISION
+  REPARATION
+}
+
+enum CaseStatus {
+  RECU
+  DIAGNOSTIC
+  DEVIS
+  EN_COURS
+  TERMINE
+  RENVOYE
+}
+
+model ServiceCase {
+  id          String     @id @default(cuid())
+  reference   String     @unique
+  userId      String?
+  orderId     String?
+  type        CaseType
+  status      CaseStatus @default(RECU)
+  description String
+  diagnosis   String?
+  resolution  String?
+  costCents   Int?
+  isSample    Boolean    @default(false)
+  openedAt    DateTime   @default(now())
+  closedAt    DateTime?
+
+  user  User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+}
+
+model Warranty {
+  id       String   @id @default(cuid())
+  orderId  String   @unique
+  startsAt DateTime
+  endsAt   DateTime
+  terms    String
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([endsAt])
+}
+
+model InternalNote {
+  id        String   @id @default(cuid())
+  userId    String?
+  orderId   String?
+  body      String
+  actorId   String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ───────────────────────── Contenu & paramètres ─────────────────────────────
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  subject   String
+  bodyMd    String
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  key       String   @id
+  label     String
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// Uniquement de vrais avis, rattachés à une commande.
+model Testimonial {
+  id          String   @id @default(cuid())
+  authorName  String
+  city        String?
+  body        String
+  orderNumber String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model FaqEntry {
+  id          String  @id @default(cuid())
+  question    String
+  answer      String
+  category    String
+  sortIndex   Int     @default(0)
+  isPublished Boolean @default(true)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  entity    String
+  entityId  String
+  action    String
+  diff      Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}

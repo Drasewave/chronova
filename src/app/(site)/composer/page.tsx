@@ -4,7 +4,7 @@ import { Section, SectionHeader } from "@/components/ui/section";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
-import { SAMPLE_MODELS } from "@/lib/data/models";
+import { getCatalogue, getModels } from "@/lib/data/queries";
 import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -14,7 +14,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/composer" },
 };
 
-export default function ChoixDuModele() {
+/** Le catalogue peut changer depuis le CRM : on rafraîchit la page régulièrement. */
+export const revalidate = 300;
+
+export default async function ChoixDuModele() {
+  const [catalogue, modeles] = await Promise.all([getCatalogue(), getModels()]);
+
   return (
     <Section fond="papier">
       <SectionHeader
@@ -24,8 +29,8 @@ export default function ChoixDuModele() {
       />
 
       <ul className="mt-16 grid gap-10 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8">
-        {SAMPLE_MODELS.map((modele) => {
-          const configuration = defaultConfiguration(modele);
+        {modeles.map((modele) => {
+          const configuration = defaultConfiguration(catalogue, modele);
           return (
             <li key={modele.slug} className="carte-montre group">
               <Link

@@ -7,6 +7,7 @@ import { ModelsSection } from "@/components/home/models-section";
 import { Process } from "@/components/home/process";
 import { Testimonials } from "@/components/home/testimonials";
 import { Watchmaker } from "@/components/home/watchmaker";
+import { getCatalogue, getModels } from "@/lib/data/queries";
 
 export const metadata: Metadata = {
   title: "Chronova — montres mécaniques assemblées à la main",
@@ -15,11 +16,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function Accueil() {
+/** Le catalogue vient de la base : on rafraîchit la page plutôt que de la figer. */
+export const revalidate = 300;
+
+export default async function Accueil() {
+  const [catalogue, modeles] = await Promise.all([getCatalogue(), getModels()]);
+  const vedette = modeles.find((modele) => modele.slug === "abysse-40") ?? modeles[0];
+
   return (
     <>
-      <Hero />
-      <ModelsSection />
+      {vedette && <Hero catalogue={catalogue} vedette={vedette} />}
+      <ModelsSection catalogue={catalogue} modeles={modeles} />
       <ExplodedView />
       <Process />
       <Watchmaker />

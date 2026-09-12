@@ -10,21 +10,37 @@ import { WatchStage } from "./watch-stage";
 import { buildConfiguration } from "@/lib/configurateur/configuration";
 import { evaluateRules, isGroupVisible, normalizeSelections } from "@/lib/configurateur/rules";
 import { encodeConfig } from "@/lib/configurateur/url";
-import { STEPS } from "@/lib/data/catalogue";
-import { excludedOptionsFor, type SampleModel } from "@/lib/data/models";
+import { excludedOptionsFor, type WatchModelView } from "@/lib/data/models";
+import type { Catalogue } from "@/lib/configurateur/catalogue";
 import type { Selections } from "@/lib/configurateur/types";
 import { useCart } from "@/lib/panier/cart";
 import { formatPrice } from "@/lib/utils";
 
-export function Configurator({ model, initial }: { model: SampleModel; initial: Selections }) {
+export function Configurator({
+  catalogue,
+  model,
+  initial,
+}: {
+  catalogue: Catalogue;
+  model: WatchModelView;
+  initial: Selections;
+}) {
   const exclus = useMemo(() => excludedOptionsFor(model), [model]);
-  const [selections, setSelections] = useState<Selections>(() => normalizeSelections(initial, exclus));
+  const [selections, setSelections] = useState<Selections>(() =>
+    normalizeSelections(catalogue, initial, exclus),
+  );
   const [historique, setHistorique] = useState<Selections[]>([]);
   const [lienCopie, setLienCopie] = useState(false);
   const panier = useCart();
 
-  const configuration = useMemo(() => buildConfiguration(model, selections), [model, selections]);
-  const verdicts = useMemo(() => evaluateRules(selections, exclus), [selections, exclus]);
+  const configuration = useMemo(
+    () => buildConfiguration(catalogue, model, selections),
+    [catalogue, model, selections],
+  );
+  const verdicts = useMemo(
+    () => evaluateRules(catalogue, selections, exclus),
+    [catalogue, selections, exclus],
+  );
 
   /**
    * La configuration vit dans l'adresse de la page. `replaceState` plutôt que le
@@ -39,9 +55,9 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
   const appliquer = useCallback(
     (modif: Selections) => {
       setHistorique((pile) => [...pile.slice(-24), selections]);
-      setSelections(normalizeSelections({ ...selections, ...modif }, exclus));
+      setSelections(normalizeSelections(catalogue, { ...selections, ...modif }, exclus));
     },
-    [selections, exclus],
+    [catalogue, selections, exclus],
   );
 
   const choisir = useCallback(
@@ -59,8 +75,8 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
 
   const reinitialiser = useCallback(() => {
     setHistorique((pile) => [...pile.slice(-24), selections]);
-    setSelections(normalizeSelections(model.defaultSelections, exclus));
-  }, [model, selections, exclus]);
+    setSelections(normalizeSelections(catalogue, model.defaultSelections, exclus));
+  }, [catalogue, model, selections, exclus]);
 
   const copierLien = useCallback(async () => {
     try {
@@ -73,6 +89,17 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
   }, []);
 
   const label = `${model.name}, configuration en cours`;
+
+  /** Le panier reçoit un instantané : il n'a pas besoin du catalogue pour vivre. */
+  const ajouterAuPanier = useCallback(() => {
+    panier.add(model.slug, configuration.shareParam, {
+      modelName: model.name,
+      summary: configuration.summary,
+      priceCents: configuration.price.totalCents,
+      leadTimeDays: configuration.leadTime.days,
+      render: configuration.render,
+    });
+  }, [panier, model, configuration]);
 
   return (
     <div className="mx-auto max-w-wide pb-32 lg:pb-0" style={{ paddingInline: "var(--gutter)" }}>
@@ -100,7 +127,7 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
           <WatchStage render={configuration.render} label={label} className="mx-auto w-[min(100%,25rem)]" />
 
           <div className="mt-5 hidden lg:block">
-            <Resume configuration={configuration} model={model} onAjouter={() => panier.add(model.slug, configuration.shareParam)} />
+            <Resume configuration={configuration} model={model} onAjouter={() => ajouterAuPanier()} />
           </div>
         </div>
 
@@ -123,17 +150,17 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
           </header>
 
           <div className="border-t border-rule">
-            {STEPS.map((step, index) => (
+            {catalogue.steps.map((step, index) => (
               <StepSection
                 key={step.key}
                 index={index + 1}
                 label={step.label}
                 intro={step.intro}
                 defaultOpen={index === 0}
-                resume={resumeEtape(step.key, configuration.summary)}
+                resume={resumeEtape(catalogue, step.key, configuration.summary)}
               >
                 {step.groups
-                  .filter((group) => isGroupVisible(group.key, selections, exclus))
+                  .filter((group) => isGroupVisible(catalogue, group.key, selections, exclus))
                   .map((group) =>
                     group.selection === "texte" ? (
                       <GravureField
@@ -148,6 +175,7 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
                     ) : (
                       <OptionGrid
                         key={group.key}
+                        catalogue={catalogue}
                         group={{
                           ...group,
                           options: group.options.filter((option) => !exclus.has(`${group.key}:${option.key}`)),
@@ -170,7 +198,7 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
           <Recapitulatif
             configuration={configuration}
             model={model}
-            onAjouter={() => panier.add(model.slug, configuration.shareParam)}
+            onAjouter={() => ajouterAuPanier()}
           />
         </div>
       </div>
@@ -188,7 +216,7 @@ export function Configurator({ model, initial }: { model: SampleModel; initial: 
           </div>
           <Button
             className="shrink-0 whitespace-nowrap"
-            onClick={() => panier.add(model.slug, configuration.shareParam)}
+            onClick={() => ajouterAuPanier()}
           >
             Ajouter au panier
           </Button>
@@ -204,7 +232,7 @@ function Resume({
   onAjouter,
 }: {
   configuration: ReturnType<typeof buildConfiguration>;
-  model: SampleModel;
+  model: WatchModelView;
   onAjouter: () => void;
 }) {
   const [detail, setDetail] = useState(false);
@@ -279,7 +307,7 @@ function Recapitulatif({
   onAjouter,
 }: {
   configuration: ReturnType<typeof buildConfiguration>;
-  model: SampleModel;
+  model: WatchModelView;
   onAjouter: () => void;
 }) {
   return (
@@ -392,8 +420,12 @@ function GravureField({
 }
 
 /** Résumé d'une étape repliée : les libellés de ses propres groupes. */
-function resumeEtape(stepKey: string, summary: { stepLabel: string; value: string }[]): string {
-  const etape = STEPS.find((step) => step.key === stepKey);
+function resumeEtape(
+  catalogue: Catalogue,
+  stepKey: string,
+  summary: { stepLabel: string; value: string }[],
+): string {
+  const etape = catalogue.steps.find((step) => step.key === stepKey);
   if (!etape) return "";
   return summary
     .filter((ligne) => ligne.stepLabel === etape.label)

@@ -1,3 +1,4 @@
+import { createCatalogue, type Catalogue } from "@/lib/configurateur/catalogue";
 import type { CompatibilityRule, Part, Step } from "@/lib/configurateur/types";
 
 /**
@@ -547,17 +548,15 @@ export const PARTS: Part[] = [
   { ref: "FON-TRA", name: "Fond saphir transparent", category: "fond", supplier: "Atelier Suwa", purchasePriceCents: 3900, quantityOnHand: 6, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
 ];
 
-/** Index pratique : toutes les options du catalogue par référence `groupe:option`. */
-export const OPTION_INDEX = new Map(
-  STEPS.flatMap((step) =>
-    step.groups.flatMap((group) =>
-      group.options.map((option) => [`${group.key}:${option.key}`, { step, group, option }] as const),
-    ),
-  ),
-);
-
-export const GROUP_INDEX = new Map(
-  STEPS.flatMap((step) => step.groups.map((group) => [group.key, { step, group }] as const)),
-);
-
-export const PART_INDEX = new Map(PARTS.map((part) => [part.ref, part] as const));
+/**
+ * Catalogue d'exemple, prêt à l'emploi.
+ *
+ * C'est la source du seed (`prisma/seed.ts`) et la fixture des tests. En
+ * production, la même structure est construite à partir de la base par
+ * `src/lib/data/queries.ts` : le CRM édite la base, pas ce fichier.
+ */
+export const SAMPLE_CATALOGUE: Catalogue = createCatalogue({
+  steps: STEPS,
+  rules: RULES,
+  parts: PARTS,
+});

@@ -2,9 +2,16 @@ import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { ModelCard } from "@/components/home/model-card";
-import { SAMPLE_MODELS } from "@/lib/data/models";
+import type { WatchModelView } from "@/lib/data/models";
+import type { Catalogue } from "@/lib/configurateur/catalogue";
 
-export function ModelsSection() {
+export function ModelsSection({
+  catalogue,
+  modeles,
+}: {
+  catalogue: Catalogue;
+  modeles: WatchModelView[];
+}) {
   return (
     <Section fond="papier" id="modeles">
       <SectionHeader
@@ -19,9 +26,9 @@ export function ModelsSection() {
       />
 
       <div className="mt-16 grid gap-10 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8">
-        {SAMPLE_MODELS.map((modele, index) => (
+        {modeles.map((modele, index) => (
           <Reveal key={modele.slug} delay={index * 60}>
-            <ModelCard modele={modele} priorite={index === 0} />
+            <ModelCard catalogue={catalogue} modele={modele} priorite={index === 0} />
           </Reveal>
         ))}
       </div>

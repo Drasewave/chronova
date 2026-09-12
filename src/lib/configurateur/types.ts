@@ -54,9 +54,12 @@ export interface CompatibilityRule {
   targets: OptionRef[];
   /** Raison affichée sous l'option grisée. Jamais un message générique. */
   message: string;
+  /** Désactivée depuis le CRM : la règle reste stockée mais ne s'applique plus. */
+  isActive?: boolean;
 }
 
 export type PartCategory =
+  | "divers"
   | "boitier"
   | "cadran"
   | "aiguilles"

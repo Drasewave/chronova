@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import type { Catalogue } from "@/lib/configurateur/catalogue";
 import type { CatalogueOption, OptionGroup } from "@/lib/configurateur/types";
 import type { RuleVerdict } from "@/lib/configurateur/rules";
 import { resolveStockState, restockMessage, stockLabel } from "@/lib/configurateur/stock";
@@ -16,12 +17,14 @@ import { cn, formatPrice } from "@/lib/utils";
  * `aria-describedby`, donc lue elle aussi.
  */
 export function OptionGrid({
+  catalogue,
   group,
   value,
   verdicts,
   onChange,
   footnote,
 }: {
+  catalogue: Catalogue;
   group: OptionGroup;
   value: string | undefined;
   verdicts: Map<string, RuleVerdict>;
@@ -47,6 +50,7 @@ export function OptionGrid({
         {group.options.map((option) => (
           <OptionChoice
             key={option.key}
+            catalogue={catalogue}
             nom={nom}
             group={group}
             option={option}
@@ -64,6 +68,7 @@ export function OptionGrid({
 }
 
 function OptionChoice({
+  catalogue,
   nom,
   group,
   option,
@@ -72,6 +77,7 @@ function OptionChoice({
   pastille,
   onChange,
 }: {
+  catalogue: Catalogue;
   nom: string;
   group: OptionGroup;
   option: CatalogueOption;
@@ -80,10 +86,10 @@ function OptionChoice({
   pastille: boolean;
   onChange: (groupKey: string, optionKey: string) => void;
 }) {
-  const stock = resolveStockState(option.partRef);
+  const stock = resolveStockState(catalogue, option.partRef);
   const rupture = stock === "bientot";
   const bloque = verdict?.selectable === false || rupture;
-  const motif = rupture ? restockMessage(option.partRef) : verdict?.reason;
+  const motif = rupture ? restockMessage(catalogue, option.partRef) : verdict?.reason;
   const motifId = `${nom}-${option.key}-motif`;
 
   const champ = (

@@ -4,6 +4,9 @@ import type { WatchStyleKey } from "./types";
 /**
  * Quatre modèles de base, en DONNÉES D'EXEMPLE.
  *
+ * `WatchModelView` est la forme qu'attendent les pages : les fixtures ci-dessous
+ * et le chargement depuis la base (`queries.ts`) produisent exactement la même.
+ *
  * Un modèle n'est pas un dessin : c'est un prix de base, des caractéristiques de
  * boîtier, et une configuration de départ. Le rendu se déduit des sélections par
  * `resolveRender` — il n'existe donc qu'une seule description de chaque montre,
@@ -13,7 +16,7 @@ import type { WatchStyleKey } from "./types";
  * avec une pastille « Exemple » et modifiables depuis le CRM (phase 5).
  */
 
-export interface SampleModel {
+export interface WatchModelView {
   slug: string;
   name: string;
   style: WatchStyleKey;
@@ -31,7 +34,7 @@ export interface SampleModel {
   movementNote: string;
   basePriceCents: number;
   assemblyDays: number;
-  isSample: true;
+  isSample: boolean;
   defaultSelections: Selections;
   /** Second coloris montré au survol de la carte : un correctif, pas un doublon. */
   altSelections: Selections;
@@ -57,7 +60,7 @@ const COMMUN: Selections = {
   "fond-type": "plein",
 };
 
-export const SAMPLE_MODELS: SampleModel[] = [
+export const SAMPLE_MODELS: WatchModelView[] = [
   {
     slug: "abysse-40",
     name: "Abysse 40",
@@ -209,7 +212,7 @@ export const SAMPLE_MODELS: SampleModel[] = [
   },
 ];
 
-export function getSampleModel(slug: string): SampleModel | undefined {
+export function getSampleModel(slug: string): WatchModelView | undefined {
   return SAMPLE_MODELS.find((model) => model.slug === slug);
 }
 
@@ -218,7 +221,7 @@ export function getSampleModel(slug: string): SampleModel | undefined {
  * raison, plutôt que de les masquer : on comprend ainsi que le choix existe
  * ailleurs dans la collection.
  */
-export function excludedOptionsFor(model: SampleModel): ReadonlySet<OptionRef> {
+export function excludedOptionsFor(model: WatchModelView): ReadonlySet<OptionRef> {
   const toutes = ["37", "38", "39", "40"];
   return new Set(
     toutes.filter((taille) => !model.availableSizes.includes(taille)).map((taille) => `taille:${taille}`),

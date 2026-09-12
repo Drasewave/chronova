@@ -1,4 +1,4 @@
-import { GROUP_INDEX, OPTION_INDEX, STEPS } from "@/lib/data/catalogue";
+import type { Catalogue } from "./catalogue";
 import type { Selections } from "./types";
 
 export interface PriceLine {
@@ -21,10 +21,14 @@ export interface PriceBreakdown {
  * Tous les montants sont en centimes entiers, jamais en flottants : c'est
  * l'unité de Stripe et la seule qui ne dérive pas à l'addition.
  */
-export function computePrice(baseCents: number, selections: Selections): PriceBreakdown {
+export function computePrice(
+  catalogue: Catalogue,
+  baseCents: number,
+  selections: Selections,
+): PriceBreakdown {
   const lines: PriceLine[] = [];
 
-  for (const step of STEPS) {
+  for (const step of catalogue.steps) {
     for (const group of step.groups) {
       const valeur = selections[group.key];
       if (!valeur) continue;
@@ -42,7 +46,7 @@ export function computePrice(baseCents: number, selections: Selections): PriceBr
         continue;
       }
 
-      const option = OPTION_INDEX.get(`${group.key}:${valeur}`)?.option;
+      const option = catalogue.optionIndex.get(`${group.key}:${valeur}`)?.option;
       if (option && option.priceDeltaCents !== 0) {
         lines.push({
           groupKey: group.key,
@@ -70,11 +74,15 @@ export interface LeadTime {
  * sous-traitée). Le chiffre affiché au client est celui-ci, et c'est le même qui
  * part dans l'e-mail de confirmation.
  */
-export function computeLeadTime(assemblyDays: number, selections: Selections): LeadTime {
+export function computeLeadTime(
+  catalogue: Catalogue,
+  assemblyDays: number,
+  selections: Selections,
+): LeadTime {
   const reasons: { label: string; days: number }[] = [];
 
   for (const [groupKey, valeur] of Object.entries(selections)) {
-    const entree = GROUP_INDEX.get(groupKey);
+    const entree = catalogue.groupIndex.get(groupKey);
     if (!entree) continue;
 
     if (entree.group.selection === "texte") {
@@ -83,7 +91,7 @@ export function computeLeadTime(assemblyDays: number, selections: Selections): L
       continue;
     }
 
-    const option = OPTION_INDEX.get(`${groupKey}:${valeur}`)?.option;
+    const option = catalogue.optionIndex.get(`${groupKey}:${valeur}`)?.option;
     if (option?.leadDaysDelta) reasons.push({ label: option.label, days: option.leadDaysDelta });
   }
 

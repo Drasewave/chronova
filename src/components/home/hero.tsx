@@ -2,7 +2,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { SamplePill } from "@/components/ui/pill";
 import { InteractiveWatch } from "@/watch/interactive-watch";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
-import { getSampleModel } from "@/lib/data/models";
+import type { Catalogue } from "@/lib/configurateur/catalogue";
+import type { WatchModelView } from "@/lib/data/models";
 import { formatPrice } from "@/lib/utils";
 
 /**
@@ -13,10 +14,8 @@ import { formatPrice } from "@/lib/utils";
  * deux rangées — sans jamais recourir à `order`, qui aurait désolidarisé
  * l'ordre visuel de l'ordre au clavier et au lecteur d'écran.
  */
-export function Hero() {
-  const vedette = getSampleModel("abysse-40");
-  if (!vedette) return null;
-  const configuration = defaultConfiguration(vedette);
+export function Hero({ catalogue, vedette }: { catalogue: Catalogue; vedette: WatchModelView }) {
+  const configuration = defaultConfiguration(catalogue, vedette);
 
   return (
     <section

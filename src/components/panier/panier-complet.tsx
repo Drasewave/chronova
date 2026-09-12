@@ -9,7 +9,7 @@ import { WatchSvg } from "@/watch/watch-svg";
 import { formatPrice } from "@/lib/utils";
 
 export function PanierComplet() {
-  const { lines, ready, totalCents, remove, setQuantity } = useCart();
+  const { items, ready, totalCents, remove, setQuantity } = useCart();
 
   if (!ready) {
     return (
@@ -19,7 +19,7 @@ export function PanierComplet() {
     );
   }
 
-  if (lines.length === 0) {
+  if (items.length === 0) {
     return (
       <Section fond="papier">
         <h1 className="type-display-2">Votre panier est vide</h1>
@@ -39,7 +39,7 @@ export function PanierComplet() {
       <h1 className="type-display-2">Votre panier</h1>
 
       <ul className="mt-12 border-t border-rule">
-        {lines.map((ligne) => (
+        {items.map((ligne) => (
           <li key={ligne.id} className="grid gap-6 border-b border-rule py-8 sm:grid-cols-[10rem_1fr_auto]">
             <Link
               href={`/composer/${ligne.modelSlug}?c=${encodeURIComponent(ligne.shareParam)}`}
@@ -47,17 +47,17 @@ export function PanierComplet() {
             >
               <WatchSvg
                 id={`panier-page-${ligne.id}`}
-                render={ligne.configuration.render}
+                render={ligne.snapshot.render}
                 detail="compact"
-                label={`${ligne.model.name}, configuration personnalisée`}
+                label={`${ligne.snapshot.modelName}, configuration personnalisée`}
                 className="h-auto w-full"
               />
             </Link>
 
             <div>
-              <h2 className="type-title-2">{ligne.model.name}</h2>
+              <h2 className="type-title-2">{ligne.snapshot.modelName}</h2>
               <dl className="mt-4 grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
-                {ligne.configuration.summary.map((entree) => (
+                {ligne.snapshot.summary.map((entree) => (
                   <div key={entree.groupKey} className="flex justify-between gap-4 sm:justify-start">
                     <dt className="type-caption text-fg-soft">{entree.groupLabel}</dt>
                     <dd className="type-caption text-fg">{entree.value}</dd>
@@ -65,7 +65,7 @@ export function PanierComplet() {
                 ))}
               </dl>
               <p className="type-mono mt-4 text-fg-soft">
-                Assemblage estimé {ligne.configuration.leadTime.days} jours
+                Assemblage estimé {ligne.snapshot.leadTimeDays} jours
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-5">
                 <label className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export function PanierComplet() {
             </div>
 
             <p className="type-title-2 text-fg sm:text-right" data-numeric>
-              {formatPrice(ligne.configuration.price.totalCents * ligne.quantity)}
+              {formatPrice(ligne.snapshot.priceCents * ligne.quantity)}
             </p>
           </li>
         ))}

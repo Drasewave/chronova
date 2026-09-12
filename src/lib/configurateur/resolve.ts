@@ -1,5 +1,5 @@
-import { GROUP_INDEX, OPTION_INDEX, STEPS } from "@/lib/data/catalogue";
 import type { WatchRender } from "@/watch/types";
+import type { Catalogue } from "./catalogue";
 import type { Selections } from "./types";
 
 /**
@@ -36,20 +36,22 @@ export const BASE_RENDER: WatchRender = {
  * étapes. Le moteur SVG n'a donc jamais connaissance du catalogue, et le
  * catalogue n'a jamais connaissance du dessin.
  */
-export function resolveRender(selections: Selections): WatchRender {
+export function resolveRender(catalogue: Catalogue, selections: Selections): WatchRender {
   let render: WatchRender = { ...BASE_RENDER };
 
-  for (const step of STEPS) {
+  for (const step of catalogue.steps) {
     for (const group of step.groups) {
       const value = selections[group.key];
       if (!value) continue;
 
       if (group.selection === "texte") {
-        if (group.key === "gravure") render = { ...render, engraving: value.slice(0, group.maxLength ?? 30) };
+        if (group.key === "gravure") {
+          render = { ...render, engraving: value.slice(0, group.maxLength ?? 30) };
+        }
         continue;
       }
 
-      const patch = OPTION_INDEX.get(`${group.key}:${value}`)?.option.render;
+      const patch = catalogue.optionIndex.get(`${group.key}:${value}`)?.option.render;
       if (patch) render = { ...render, ...patch };
     }
   }
@@ -58,9 +60,13 @@ export function resolveRender(selections: Selections): WatchRender {
 }
 
 /** Libellé lisible d'une sélection, pour le récapitulatif et le panier. */
-export function describeSelection(groupKey: string, value: string): string | undefined {
-  const groupe = GROUP_INDEX.get(groupKey);
+export function describeSelection(
+  catalogue: Catalogue,
+  groupKey: string,
+  value: string,
+): string | undefined {
+  const groupe = catalogue.groupIndex.get(groupKey);
   if (!groupe) return undefined;
   if (groupe.group.selection === "texte") return value;
-  return OPTION_INDEX.get(`${groupKey}:${value}`)?.option.label;
+  return catalogue.optionIndex.get(`${groupKey}:${value}`)?.option.label;
 }

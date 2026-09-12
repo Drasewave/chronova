@@ -12,3 +12,8 @@ playwright-report/
 test-results/
 .DS_Store
 tsconfig.tsbuildinfo
+
+/src/generated/prisma
+
+# Client Prisma généré
+src/generated/
