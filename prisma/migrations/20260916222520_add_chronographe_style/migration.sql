@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "WatchStyle" ADD VALUE 'CHRONOGRAPHE';
