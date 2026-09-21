@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { CLE_IDENTITE, IDENTITE_VIDE } from "@/lib/content/legal";
 import { prisma } from "@/lib/db";
 import { envoyerCourriel } from "@/lib/email";
 import type { CaseStatus, InquiryStatus } from "@/generated/prisma/enums";
@@ -300,7 +301,10 @@ export async function enregistrerParametres(donnees: FormData): Promise<void> {
     }
 
     if (valeur && typeof valeur === "object") {
-      const objet = { ...(valeur as Record<string, unknown>) };
+      const objet: Record<string, unknown> = {
+        ...(reglage.key === CLE_IDENTITE ? IDENTITE_VIDE : {}),
+        ...(valeur as Record<string, unknown>),
+      };
       let touche = false;
 
       for (const cle of Object.keys(objet)) {
@@ -332,8 +336,8 @@ export async function enregistrerParametres(donnees: FormData): Promise<void> {
   }
 
   revalidatePath("/atelier/parametres");
-  revalidatePath("/mentions-legales");
-  revalidatePath("/cgv");
+  // L'identité légale figure dans le pied de page, donc sur tout le site.
+  revalidatePath("/", "layout");
 }
 
 /** Sujet et corps d'un e-mail automatique. */

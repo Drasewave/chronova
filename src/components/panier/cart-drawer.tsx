@@ -119,7 +119,7 @@ export function CartDrawer() {
 
             <footer className="border-t border-rule px-6 py-5">
               <div className="flex items-baseline justify-between">
-                <span className="type-ui text-fg">Total</span>
+                <span className="type-ui text-fg">Sous-total TTC</span>
                 <span className="type-title-2 text-fg" data-numeric>
                   {formatPrice(totalCents)}
                 </span>

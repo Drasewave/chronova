@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useId } from "react";
 import { envoyerDemande } from "@/app/actions/demandes";
 import { ETAT_INITIAL } from "@/lib/formulaires/etat";
@@ -43,6 +44,11 @@ export function FormulaireDemande({
     <form action={action} className="flex flex-col gap-6">
       <input type="hidden" name="type" value={type} />
 
+      <p className="type-caption text-fg-soft">
+        Les champs marqués <span aria-hidden="true">*</span>
+        <span className="sr-only">d&apos;un astérisque</span> sont obligatoires.
+      </p>
+
       {/* Leurre anti-robot : jamais affiché, jamais lu par un lecteur d'écran. */}
       <div aria-hidden="true" className="absolute left-[-9999px] h-px w-px overflow-hidden">
         <label htmlFor={`${id}-entreprise`}>Entreprise</label>
@@ -54,7 +60,7 @@ export function FormulaireDemande({
           <select
             id={`${id}-sujet`}
             name="sujet"
-            className="type-ui h-11 w-full rounded-field border border-rule bg-panel px-3 text-fg"
+            className="type-ui h-11 w-full rounded-field border border-field bg-panel px-3 text-fg"
           >
             {sujets.map((sujet) => (
               <option key={sujet} value={sujet}>
@@ -66,10 +72,10 @@ export function FormulaireDemande({
       )}
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <Champ label="Nom" htmlFor={`${id}-nom`} erreur={etat.erreurs?.["nom"]}>
+        <Champ label="Nom" requis htmlFor={`${id}-nom`} erreur={etat.erreurs?.["nom"]}>
           <Entree id={`${id}-nom`} name="nom" autoComplete="name" required erreur={etat.erreurs?.["nom"]} />
         </Champ>
-        <Champ label="Adresse e-mail" htmlFor={`${id}-email`} erreur={etat.erreurs?.["email"]}>
+        <Champ label="Adresse e-mail" requis htmlFor={`${id}-email`} erreur={etat.erreurs?.["email"]}>
           <Entree
             id={`${id}-email`}
             name="email"
@@ -108,6 +114,7 @@ export function FormulaireDemande({
 
       <Champ
         label="Votre message"
+        requis
         htmlFor={`${id}-message`}
         erreur={etat.erreurs?.["message"]}
         aide={
@@ -126,7 +133,7 @@ export function FormulaireDemande({
           aria-describedby={etat.erreurs?.["message"] ? `${id}-message-erreur` : undefined}
           className={cn(
             "type-body w-full rounded-field border bg-panel p-4 text-fg placeholder:text-fg-soft",
-            etat.erreurs?.["message"] ? "border-alert" : "border-rule",
+            etat.erreurs?.["message"] ? "border-alert" : "border-field",
           )}
         />
       </Champ>
@@ -142,8 +149,14 @@ export function FormulaireDemande({
           {enCours ? "Envoi…" : "Envoyer"}
         </Button>
         <p className="type-caption measure text-fg-soft">
-          Vos coordonnées servent uniquement à vous répondre. Elles ne sont ni revendues, ni
-          utilisées pour de la publicité, et vous pouvez demander leur suppression à tout moment.
+          Vos coordonnées et votre message servent uniquement à vous répondre
+          {type === "SUR_MESURE" ? " et à établir un devis" : ""}. Ils sont conservés trois ans au
+          plus, ne sont ni revendus ni utilisés pour de la publicité, et vous pouvez demander leur
+          suppression à tout moment. Détail dans la{" "}
+          <Link href="/confidentialite" className="link-underline text-accent">
+            politique de confidentialité
+          </Link>
+          .
         </p>
       </div>
     </form>
@@ -152,12 +165,14 @@ export function FormulaireDemande({
 
 function Champ({
   label,
+  requis = false,
   htmlFor,
   aide,
   erreur,
   children,
 }: {
   label: string;
+  requis?: boolean;
   htmlFor: string;
   aide?: string;
   erreur?: string;
@@ -167,6 +182,9 @@ function Champ({
     <div>
       <label htmlFor={htmlFor} className="type-ui block text-fg">
         {label}
+        {/* L'astérisque est décoratif : le champ porte déjà `required`, que les
+            lecteurs d'écran annoncent. */}
+        {requis && <span aria-hidden="true"> *</span>}
       </label>
       {aide && <p className="type-caption mt-1 text-fg-soft">{aide}</p>}
       <div className="mt-2">{children}</div>
@@ -191,7 +209,7 @@ function Entree({
       aria-describedby={erreur ? `${id}-erreur` : undefined}
       className={cn(
         "type-ui h-11 w-full rounded-field border bg-panel px-4 text-fg placeholder:text-fg-soft",
-        erreur ? "border-alert" : "border-rule",
+        erreur ? "border-alert" : "border-field",
         className,
       )}
       {...props}

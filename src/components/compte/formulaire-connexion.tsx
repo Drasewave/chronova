@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useId } from "react";
 import { demanderLien } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -37,12 +38,38 @@ export function FormulaireConnexion({ suite }: { suite: string }) {
           aria-describedby={etat.erreurs?.["email"] ? `${id}-email-erreur` : undefined}
           className={cn(
             "type-ui mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
-            etat.erreurs?.["email"] ? "border-alert" : "border-rule",
+            etat.erreurs?.["email"] ? "border-alert" : "border-field",
           )}
         />
         {etat.erreurs?.["email"] && (
           <p id={`${id}-email-erreur`} className="type-caption mt-2 text-alert">
             {etat.erreurs["email"]}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <div className="flex items-start gap-3">
+          <input
+            id={`${id}-cgu`}
+            name="cgu"
+            type="checkbox"
+            required
+            aria-describedby={etat.erreurs?.["cgu"] ? `${id}-cgu-erreur` : undefined}
+            className="mt-0.5 size-5 shrink-0 accent-[var(--accent)]"
+          />
+          <label htmlFor={`${id}-cgu`} className="type-caption text-fg">
+            J&apos;ai lu et j&apos;accepte les{" "}
+            <Link href="/cgu" target="_blank" className="link-underline text-accent">
+              conditions générales d&apos;utilisation
+              <span className="sr-only"> (nouvel onglet)</span>
+            </Link>{" "}
+            <span className="text-fg-soft">(obligatoire)</span>
+          </label>
+        </div>
+        {etat.erreurs?.["cgu"] && (
+          <p id={`${id}-cgu-erreur`} className="type-caption mt-2 text-alert">
+            {etat.erreurs["cgu"]}
           </p>
         )}
       </div>

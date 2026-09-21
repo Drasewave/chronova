@@ -32,15 +32,12 @@ export default async function Connexion(props: PageProps<"/connexion">) {
         </div>
 
         <p className="type-caption mt-8 text-fg-soft">
-          En vous connectant, vous acceptez les{" "}
-          <Link href="/cgv" className="link-underline text-accent">
-            conditions de vente
-          </Link>{" "}
-          et la{" "}
+          Votre adresse e-mail sert à vous identifier et à vous envoyer le lien de connexion, puis
+          les e-mails de suivi de vos commandes. Rien d&apos;autre : le détail est dans la{" "}
           <Link href="/confidentialite" className="link-underline text-accent">
             politique de confidentialité
           </Link>
-          .
+          . Les conditions de vente ne vous sont demandées qu&apos;au moment de commander.
         </p>
       </div>
     </Section>

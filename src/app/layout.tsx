@@ -29,7 +29,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chronova.fr"), // [À REMPLIR : domaine définitif]
+  // [À REMPLIR : domaine définitif] — via NEXT_PUBLIC_SITE_URL, comme le sitemap,
+  // robots.txt et llms.txt : une seule variable décide de toutes les URL absolues.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr"),
   title: {
     default: "Chronova — montres mécaniques assemblées à la main",
     template: "%s · Chronova",
@@ -40,7 +42,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     siteName: "Chronova",
+    title: "Chronova — montres mécaniques assemblées à la main",
+    description:
+      "Chaque Chronova est composée par son futur propriétaire, puis assemblée et réglée à la main, pièce par pièce, dans un atelier indépendant.",
   },
+  twitter: { card: "summary" },
   robots: { index: true, follow: true },
 };
 

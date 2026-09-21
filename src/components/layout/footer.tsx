@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { FillMe } from "@/components/ui/placeholder";
 import { Wordmark } from "@/components/layout/wordmark";
+import { lireIdentiteLegale, mediateurChoisi } from "@/lib/content/legal";
 import { NAV_PIED } from "@/lib/navigation";
 
 const COLONNES = [
@@ -10,7 +10,15 @@ const COLONNES = [
   { titre: "Informations", liens: NAV_PIED.legal },
 ];
 
-export function Footer() {
+/**
+ * Pied de page, identique sur toutes les pages (gabarit du site et 404).
+ *
+ * L'identité affichée vient du même réglage que les mentions légales et les
+ * CGV : nom, adresse et SIRET ne peuvent pas diverger d'une page à l'autre.
+ */
+export async function Footer() {
+  const identite = await lireIdentiteLegale();
+
   return (
     <footer className="border-t border-rule bg-bg-alt" style={{ paddingInline: "var(--gutter)" }}>
       <div className="mx-auto max-w-content" style={{ paddingBlock: "clamp(48px, 6vw, 88px)" }}>
@@ -18,34 +26,12 @@ export function Footer() {
           <div>
             <Wordmark />
             <p className="type-body measure mt-6 text-fg-soft">
-              Une lettre occasionnelle : les montres en cours d&apos;assemblage, les pièces qui
-              arrivent, les coloris qui s&apos;arrêtent. Quelques envois par an, désinscription en un
-              clic, aucune adresse transmise à qui que ce soit.
+              Montres mécaniques composées par leur futur propriétaire, puis assemblées et réglées
+              à la main dans un atelier indépendant.
             </p>
-
-            <form className="mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
-              <div className="flex-1">
-                <label htmlFor="pied-email" className="sr-only">
-                  Votre adresse e-mail
-                </label>
-                <input
-                  id="pied-email"
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  placeholder="prenom@exemple.fr"
-                  className="type-ui h-11 w-full rounded-field border border-rule bg-panel px-4 text-fg placeholder:text-fg-soft"
-                />
-              </div>
-              <Button type="submit" variant="contour" className="shrink-0">
-                S&apos;inscrire
-              </Button>
-            </form>
-            <p className="type-caption mt-3 text-fg-soft">
-              Votre adresse sert uniquement à l&apos;envoi de cette lettre. Vous pouvez demander sa
-              suppression à tout moment.
-            </p>
+            {/* Pas de formulaire d'inscription à la lettre ici : aucun envoi n'existe
+                encore. L'inscription se fait depuis le profil, case décochée par
+                défaut et consentement horodaté. */}
           </div>
 
           <div className="grid gap-10 sm:grid-cols-3">
@@ -74,13 +60,58 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-2">
           <div className="flex flex-col gap-3">
             <h2 className="type-mono text-fg-soft">L&apos;atelier</h2>
-            <FillMe>adresse de l&apos;atelier</FillMe>
-            <FillMe>téléphone et horaires d&apos;ouverture</FillMe>
-            <FillMe>adresse e-mail de contact</FillMe>
+            {identite.adresse ? (
+              <p className="type-caption whitespace-pre-line text-fg">{identite.adresse}</p>
+            ) : (
+              <FillMe>adresse de l&apos;atelier</FillMe>
+            )}
+            {identite.telephone ? (
+              <p className="type-caption text-fg" data-numeric>
+                {identite.telephone}
+              </p>
+            ) : (
+              <FillMe>téléphone</FillMe>
+            )}
+            {identite.email ? (
+              <a
+                href={`mailto:${identite.email}`}
+                className="type-caption link-underline self-start text-fg hover:text-accent"
+              >
+                {identite.email}
+              </a>
+            ) : (
+              <FillMe>adresse e-mail de contact</FillMe>
+            )}
           </div>
           <div className="flex flex-col gap-3 md:items-end md:text-right">
             <h2 className="type-mono text-fg-soft">Mentions</h2>
-            <FillMe>raison sociale, SIRET, TVA intracommunautaire</FillMe>
+            {identite.raisonSociale && identite.siret ? (
+              <p className="type-caption text-fg">
+                {identite.raisonSociale}, EI — SIRET <span data-numeric>{identite.siret}</span>
+                {identite.tva ? (
+                  <>
+                    {" "}
+                    — TVA <span data-numeric>{identite.tva}</span>
+                  </>
+                ) : null}
+              </p>
+            ) : (
+              <FillMe>nom de l&apos;entrepreneur, SIRET, TVA</FillMe>
+            )}
+            {mediateurChoisi(identite) ? (
+              <p className="type-caption text-fg-soft">
+                Médiateur de la consommation :{" "}
+                <a
+                  href={identite.mediateurSite}
+                  rel="noopener noreferrer"
+                  className="link-underline text-fg hover:text-accent"
+                >
+                  {identite.mediateurNom}
+                </a>
+              </p>
+            ) : (
+              <FillMe>[MÉDIATEUR À CHOISIR] médiateur de la consommation</FillMe>
+            )}
             <p className="type-caption text-fg-soft">
               © {new Date().getFullYear()} Chronova. Montres assemblées à la main en France.
             </p>

@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 
 const LIBELLE_CONSENTEMENT = {
   NEWSLETTER: "Lettre d'information",
+  CGU: "Conditions d'utilisation",
   COOKIES_MESURE: "Cookies de mesure",
   COOKIES_MARKETING: "Cookies publicitaires",
 } as const;

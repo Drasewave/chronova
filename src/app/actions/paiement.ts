@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { paiementSimule, stripeOuNull } from "@/lib/stripe";
-import { confirmerPaiement, creerCommandeEnAttente, type LignePanier } from "@/lib/commandes/creation";
+import {
+  confirmerPaiement,
+  creerCommandeEnAttente,
+  fraisDePort,
+  type LignePanier,
+} from "@/lib/commandes/creation";
+import { VERSION_CGV } from "@/lib/content/versions";
 import { envoyerCourriel } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
 
@@ -18,12 +24,21 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
  * le webhook qui la confirmera, jamais le retour du navigateur — qu'un client
  * peut fermer, rejouer ou fabriquer.
  */
-export async function partirAuPaiement(lignes: LignePanier[]): Promise<{ erreur: string } | never> {
+export async function partirAuPaiement(
+  lignes: LignePanier[],
+  cgvAcceptees: boolean,
+): Promise<{ erreur: string } | never> {
   const session = await auth();
   if (!session?.user) redirect("/connexion?suite=/panier");
 
   if (!Array.isArray(lignes) || lignes.length === 0) {
     return { erreur: "Votre panier est vide." };
+  }
+
+  // La case du panier est un confort ; la règle, elle, se vérifie ici. Aucune
+  // commande ne part au paiement sans acceptation des conditions de vente.
+  if (cgvAcceptees !== true) {
+    return { erreur: "Cochez la case d'acceptation des conditions générales de vente." };
   }
 
   const adresse = await prisma.address.findFirst({
@@ -49,6 +64,19 @@ export async function partirAuPaiement(lignes: LignePanier[]): Promise<{ erreur:
       postalCode: adresse.postalCode,
       city: adresse.city,
       country: adresse.country,
+    },
+  });
+
+  // Preuve de l'acceptation : date, version du texte, présence d'une gravure
+  // (qui retire le droit de rétractation). Interne, jamais montrée au client.
+  const gravee = await commandeGravee(commande.id);
+  await prisma.orderEvent.create({
+    data: {
+      orderId: commande.id,
+      toStatus: "EN_ATTENTE_PAIEMENT",
+      isPublic: false,
+      actorId: session.user.id,
+      note: `CGV acceptées (${VERSION_CGV})${gravee ? " — informé de l'absence de droit de rétractation pour la gravure personnalisée" : ""}.`,
     },
   });
 
@@ -115,6 +143,26 @@ export async function partirAuPaiement(lignes: LignePanier[]): Promise<{ erreur:
 
   if (!sessionStripe.url) return { erreur: "Stripe n'a pas renvoyé d'adresse de paiement." };
   redirect(sessionStripe.url);
+}
+
+/**
+ * Frais de port pour un sous-total donné, affichés dans le panier AVANT le
+ * départ au paiement : le client doit connaître le prix total, livraison
+ * comprise, avant de s'engager. Indicatif — le serveur rechiffre à la commande.
+ */
+export async function estimerFraisDePort(sousTotalCents: number): Promise<number> {
+  if (!Number.isFinite(sousTotalCents) || sousTotalCents < 0) return 0;
+  return fraisDePort(sousTotalCents);
+}
+
+async function commandeGravee(orderId: string): Promise<boolean> {
+  const nombre = await prisma.orderItem.count({
+    where: {
+      orderId,
+      configuration: { AND: [{ engravingText: { not: null } }, { engravingText: { not: "" } }] },
+    },
+  });
+  return nombre > 0;
 }
 
 /** Confirme la commande puis envoie l'e-mail, sans jamais bloquer sur l'e-mail. */

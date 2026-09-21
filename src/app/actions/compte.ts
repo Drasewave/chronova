@@ -143,16 +143,34 @@ export async function definirAdresseParDefaut(donnees: FormData): Promise<void> 
  * Effacement des données personnelles, à la demande du client.
  *
  * Les commandes ne sont pas supprimées : la loi impose de conserver dix ans les
- * pièces comptables. Ce qui est effacé, c'est tout ce qui permet d'identifier
- * une personne — nom, adresses, téléphone, préférences, notes. L'adresse e-mail
- * est remplacée par une valeur neutre pour que le compte ne puisse plus servir
- * à se reconnecter.
+ * pièces comptables, et une facture porte le nom et l'adresse de l'acheteur.
+ * Ces deux informations restent donc sur la commande, et nulle part ailleurs.
+ * Tout le reste est effacé — profil, carnet d'adresses, téléphone, préférences,
+ * notes de l'atelier, et le contenu des messages envoyés par les formulaires.
+ * L'adresse e-mail est remplacée par une valeur neutre pour que le compte ne
+ * puisse plus servir à se reconnecter.
  */
 export async function anonymiserCompte(): Promise<void> {
   const utilisateur = await utilisateurConnecte();
   const anonyme = `supprime+${utilisateur.id}@chronova.invalid`;
+  const { email } = await prisma.user.findUniqueOrThrow({
+    where: { id: utilisateur.id },
+    select: { email: true },
+  });
 
   await prisma.$transaction([
+    // Les demandes sont vidées plutôt que supprimées : un devis accepté y est
+    // rattaché, et lui relève de la comptabilité. Le formulaire de contact ne
+    // connaît pas le compte, d'où la recherche par adresse e-mail.
+    prisma.inquiry.updateMany({
+      where: { OR: [{ userId: utilisateur.id }, { email }] },
+      data: {
+        name: "Client effacé",
+        email: anonyme,
+        phone: null,
+        message: "[Message effacé à la demande du client]",
+      },
+    }),
     prisma.address.deleteMany({ where: { userId: utilisateur.id } }),
     prisma.session.deleteMany({ where: { userId: utilisateur.id } }),
     prisma.internalNote.deleteMany({ where: { userId: utilisateur.id } }),

@@ -64,9 +64,9 @@ export const FAQ = [
       "Un mouvement mécanique se révise généralement tous les cinq à sept ans : démontage, nettoyage, huilage, remplacement des joints. Entre deux révisions, rincez la montre à l'eau douce après la mer ou la piscine, ne laissez pas un bracelet cuir tremper, et faites contrôler l'étanchéité après tout changement de joint ou de verre.",
   },
   {
-    question: "Puis-je retourner une montre composée sur mesure ?",
+    question: "Puis-je retourner ma montre si je change d'avis ?",
     reponse:
-      "Une montre assemblée selon votre configuration est un bien confectionné à votre demande : elle relève a priori de l'exception au droit de rétractation prévue à l'article L221-28 3° du Code de la consommation. Un défaut de fabrication, lui, reste bien sûr pris en charge. [À FAIRE VALIDER PAR UN JURISTE].",
+      "Oui : vous avez quatorze jours après réception pour vous rétracter, sans donner de raison. La montre revient dans son écrin, les frais de retour sont à votre charge, et vous êtes remboursé, livraison initiale comprise. Deux exceptions prévues par la loi (article L221-28 3° du Code de la consommation) : une montre portant une gravure personnalisée, et une pièce unique réalisée sur devis, ne peuvent pas être reprises. Un défaut de fabrication, lui, reste pris en charge dans tous les cas au titre des garanties légales.",
   },
 ] as const;
 

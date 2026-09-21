@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FormulaireDemande } from "@/components/formulaires/formulaire-demande";
 import { FillMe } from "@/components/ui/placeholder";
 import { Section } from "@/components/ui/section";
+import { lireIdentiteLegale } from "@/lib/content/legal";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -19,7 +20,11 @@ const SUJETS = [
   "Autre",
 ];
 
-export default function Contact() {
+export const revalidate = 86400;
+
+export default async function Contact() {
+  const identite = await lireIdentiteLegale();
+
   return (
     <Section fond="papier">
       <div className="grid gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
@@ -42,9 +47,28 @@ export default function Contact() {
             <div>
               <dt className="type-mono text-fg-soft">L&apos;atelier</dt>
               <dd className="mt-2 flex flex-col gap-3">
-                <FillMe>adresse de l&apos;atelier</FillMe>
-                <FillMe>téléphone et horaires</FillMe>
-                <FillMe>adresse e-mail de contact</FillMe>
+                {identite.adresse ? (
+                  <span className="type-body whitespace-pre-line text-fg">{identite.adresse}</span>
+                ) : (
+                  <FillMe>adresse de l&apos;atelier</FillMe>
+                )}
+                {identite.telephone ? (
+                  <span className="type-body text-fg" data-numeric>
+                    {identite.telephone}
+                  </span>
+                ) : (
+                  <FillMe>téléphone</FillMe>
+                )}
+                {identite.email ? (
+                  <a
+                    href={`mailto:${identite.email}`}
+                    className="type-body link-underline self-start text-accent"
+                  >
+                    {identite.email}
+                  </a>
+                ) : (
+                  <FillMe>adresse e-mail de contact</FillMe>
+                )}
               </dd>
             </div>
             <div>

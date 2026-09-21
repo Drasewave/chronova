@@ -15,6 +15,7 @@ const STATIQUES: { chemin: string; priorite: number; frequence: MetadataRoute.Si
   { chemin: "/contact", priorite: 0.5, frequence: "yearly" },
   { chemin: "/mentions-legales", priorite: 0.2, frequence: "yearly" },
   { chemin: "/cgv", priorite: 0.2, frequence: "yearly" },
+  { chemin: "/cgu", priorite: 0.2, frequence: "yearly" },
   { chemin: "/confidentialite", priorite: 0.2, frequence: "yearly" },
   { chemin: "/cookies", priorite: 0.2, frequence: "yearly" },
 ];

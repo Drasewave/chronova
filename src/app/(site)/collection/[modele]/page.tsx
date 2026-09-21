@@ -15,6 +15,8 @@ import { formatPrice } from "@/lib/utils";
 
 export const revalidate = 300;
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
+
 export async function generateStaticParams() {
   const modeles = await getModels();
   return modeles.map((modele) => ({ modele: modele.slug }));
@@ -56,7 +58,8 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
       priceCurrency: "EUR",
       price: (base.price.totalCents / 100).toFixed(2),
       availability: "https://schema.org/MadeToOrder",
-      url: `/collection/${model.slug}`,
+      url: `${SITE}/collection/${model.slug}`,
+      seller: { "@id": `${SITE}/#atelier` },
     },
   };
 

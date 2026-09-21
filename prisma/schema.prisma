@@ -122,6 +122,9 @@ model CustomerTag {
 }
 
 enum ConsentType {
+  // Acceptation des conditions d'utilisation à la création du compte ; la
+  // version acceptée est consignée dans `source`.
+  CGU
   NEWSLETTER
   COOKIES_MESURE
   COOKIES_MARKETING

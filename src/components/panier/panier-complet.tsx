@@ -77,7 +77,7 @@ export function PanierComplet() {
                     max={9}
                     value={ligne.quantity}
                     onChange={(event) => setQuantity(ligne.id, Number(event.target.value))}
-                    className="type-ui h-10 w-16 rounded-field border border-rule bg-panel px-2 text-center text-fg"
+                    className="type-ui h-10 w-16 rounded-field border border-field bg-panel px-2 text-center text-fg"
                   />
                 </label>
                 <Link
@@ -105,7 +105,7 @@ export function PanierComplet() {
 
       <div className="mt-10 flex flex-col items-end gap-3">
         <p className="flex items-baseline gap-6">
-          <span className="type-ui text-fg-soft">Total</span>
+          <span className="type-ui text-fg-soft">Sous-total TTC</span>
           <span className="type-display-2 text-fg" data-numeric>
             {formatPrice(totalCents)}
           </span>
@@ -116,10 +116,10 @@ export function PanierComplet() {
             Tarifs de démonstration, modifiables depuis l&apos;atelier.
           </span>
         </p>
-        <BoutonPaiement className="mt-6 w-full sm:w-72" />
+        <BoutonPaiement className="mt-6 w-full sm:w-[26rem]" />
         <p className="type-caption mt-3 max-w-[46ch] text-right text-fg-soft">
-          Les frais de port sont ajoutés au paiement. La configuration est refigée côté serveur à
-          ce moment-là : c&apos;est ce prix-là qui fait foi.
+          Le prix est recalculé par l&apos;atelier au moment du paiement, à partir de votre
+          configuration : c&apos;est ce montant, affiché sur la page de paiement, qui fait foi.
         </p>
       </div>
     </Section>

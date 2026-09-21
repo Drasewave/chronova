@@ -1,6 +1,8 @@
 "use server";
 
 import { signIn, signOut } from "@/auth";
+import { VERSION_CGU } from "@/lib/content/versions";
+import { prisma } from "@/lib/db";
 import type { EtatFormulaire } from "@/lib/formulaires/etat";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -26,6 +28,22 @@ export async function demanderLien(
       erreurs: { email: "Cette adresse ne semble pas valide." },
     };
   }
+
+  // Le même formulaire connecte et crée le compte : l'acceptation des
+  // conditions d'utilisation est donc demandée à chaque fois, case décochée par
+  // défaut, et revérifiée ici.
+  if (donnees.get("cgu") !== "on") {
+    return {
+      statut: "erreur",
+      message: "Le formulaire n'a pas pu être envoyé.",
+      erreurs: { cgu: "Cochez la case pour accepter les conditions d'utilisation." },
+    };
+  }
+
+  // Preuve de l'acceptation : qui, quand, quelle version du texte.
+  await prisma.consentLog.create({
+    data: { email, type: "CGU", granted: true, source: `connexion:${VERSION_CGU}` },
+  });
 
   await signIn("resend", { email, redirectTo: suite, redirect: false });
 

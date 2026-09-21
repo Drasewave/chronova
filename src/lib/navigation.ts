@@ -22,6 +22,7 @@ export const NAV_PIED = {
   legal: [
     { href: "/mentions-legales", label: "Mentions légales" },
     { href: "/cgv", label: "Conditions de vente" },
+    { href: "/cgu", label: "Conditions d'utilisation" },
     { href: "/confidentialite", label: "Confidentialité" },
     { href: "/cookies", label: "Cookies" },
   ],

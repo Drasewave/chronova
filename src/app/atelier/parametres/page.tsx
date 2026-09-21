@@ -2,6 +2,7 @@ import { enregistrerGabarit, enregistrerParametres } from "@/app/actions/atelier
 import { Bouton, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
+import { CLE_IDENTITE, IDENTITE_VIDE } from "@/lib/content/legal";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/commandes/etapes";
 
@@ -12,10 +13,18 @@ export const dynamic = "force-dynamic";
 const LIBELLE_CLE: Record<string, string> = {
   cents: "Montant (€)",
   mois: "Durée (mois)",
-  raisonSociale: "Raison sociale",
+  raisonSociale: "Nom et prénom de l'entrepreneur (ou dénomination)",
   siret: "SIRET",
-  tva: "Numéro de TVA intracommunautaire",
-  adresse: "Adresse du siège",
+  immatriculation: "Immatriculation (RNE ou RCS, et ville)",
+  tva: "Numéro de TVA intracommunautaire (vide si franchise en base)",
+  adresse: "Adresse de l'établissement",
+  email: "E-mail de contact publié",
+  telephone: "Téléphone publié",
+  directeurPublication: "Directeur de la publication",
+  mediateurNom: "Médiateur de la consommation (après adhésion)",
+  mediateurAdresse: "Adresse postale du médiateur",
+  mediateurSite: "Site du médiateur",
+  identifiantRep: "Identifiant unique REP (ADEME)",
 };
 
 /** Une clé monétaire est stockée en centimes ; les autres nombres, tels quels. */
@@ -66,7 +75,12 @@ export default async function Parametres() {
                 );
               }
 
-              const objet = (valeur ?? {}) as Record<string, unknown>;
+              // L'identité légale part de sa forme complète : une base créée avant
+              // l'ajout d'un champ doit quand même le proposer à la saisie.
+              const objet: Record<string, unknown> = {
+                ...(reglage.key === CLE_IDENTITE ? IDENTITE_VIDE : {}),
+                ...((valeur ?? {}) as Record<string, unknown>),
+              };
               const cles = Object.keys(objet).filter(
                 (cle) => cle !== "aRemplir" && cle !== "exemple",
               );

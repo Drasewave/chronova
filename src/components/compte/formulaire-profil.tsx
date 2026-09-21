@@ -44,7 +44,7 @@ export function FormulaireProfil({
           name="nom"
           defaultValue={nom}
           autoComplete="name"
-          className="type-ui mt-2 h-11 w-full rounded-field border border-rule bg-bg px-4 text-fg"
+          className="type-ui mt-2 h-11 w-full rounded-field border border-field bg-bg px-4 text-fg"
         />
       </div>
 
@@ -60,7 +60,7 @@ export function FormulaireProfil({
             type="tel"
             defaultValue={telephone}
             autoComplete="tel"
-            className="type-ui mt-2 h-11 w-full rounded-field border border-rule bg-bg px-4 text-fg"
+            className="type-ui mt-2 h-11 w-full rounded-field border border-field bg-bg px-4 text-fg"
           />
         </div>
 
@@ -79,7 +79,7 @@ export function FormulaireProfil({
             aria-describedby={etat.erreurs?.["poignet"] ? `${id}-poignet-erreur` : undefined}
             className={cn(
               "type-ui mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
-              etat.erreurs?.["poignet"] ? "border-alert" : "border-rule",
+              etat.erreurs?.["poignet"] ? "border-alert" : "border-field",
             )}
           />
           {etat.erreurs?.["poignet"] && (
@@ -102,7 +102,7 @@ export function FormulaireProfil({
           name="preferences"
           rows={3}
           defaultValue={preferences}
-          className="type-body mt-2 w-full rounded-field border border-rule bg-bg p-4 text-fg"
+          className="type-body mt-2 w-full rounded-field border border-field bg-bg p-4 text-fg"
         />
       </div>
 

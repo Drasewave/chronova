@@ -62,6 +62,9 @@
   --fg: var(--color-graphite);
   --fg-soft: var(--color-graphite-soft);
   --rule: var(--color-line);
+  /* Contour des champs de saisie : 3:1 au moins sur tous les fonds (WCAG
+     1.4.11). Le filet `--rule` (1,2:1) reste réservé aux séparateurs décoratifs. */
+  --field: #7a828b;
   --accent: var(--color-chrome);
   --accent-hover: var(--color-chrome-deep);
   --accent-decor: var(--color-chrome-light);
@@ -93,6 +96,7 @@
   --fg: var(--color-onyx-ink);
   --fg-soft: var(--color-onyx-soft);
   --rule: var(--color-onyx-line);
+  --field: #767e87;
   --accent: var(--color-chrome-light);
   --accent-hover: #a9c4d6;
   --accent-decor: var(--color-chrome);
@@ -111,6 +115,7 @@
   --color-fg: var(--fg);
   --color-fg-soft: var(--fg-soft);
   --color-rule: var(--rule);
+  --color-field: var(--field);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-decor: var(--accent-decor);

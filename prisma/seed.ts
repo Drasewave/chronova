@@ -169,7 +169,21 @@ async function parametres() {
     {
       key: "legal.identite",
       label: "Identité légale de l'atelier",
-      value: { raisonSociale: "", siret: "", tva: "", adresse: "", aRemplir: true },
+      value: {
+        raisonSociale: "",
+        siret: "",
+        immatriculation: "",
+        tva: "",
+        adresse: "",
+        email: "",
+        telephone: "",
+        directeurPublication: "",
+        mediateurNom: "",
+        mediateurAdresse: "",
+        mediateurSite: "",
+        identifiantRep: "",
+        aRemplir: true,
+      },
     },
     { key: "stock.seuil_alerte_defaut", label: "Seuil d'alerte par défaut", value: 3 },
   ];

@@ -18,9 +18,10 @@ export function SuppressionCompte() {
     <div>
       <h3 className="type-title-2">Effacer mes données</h3>
       <p className="type-body measure mt-2 text-fg-soft">
-        Votre nom, vos adresses, votre téléphone et vos préférences sont effacés, et le compte ne
-        permet plus de se connecter. Vos factures sont conservées sans nom, parce que la loi impose
-        de garder dix ans les pièces comptables.
+        Votre profil, votre carnet d&apos;adresses, votre téléphone, vos préférences et vos
+        messages sont effacés, et le compte ne permet plus de se connecter. Vos commandes et leurs
+        factures sont conservées avec le nom et l&apos;adresse qui y figurent, parce que la loi
+        impose de garder dix ans les pièces comptables ; elles ne servent plus à rien d&apos;autre.
       </p>
 
       {confirme ? (

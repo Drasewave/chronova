@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import type { EtatFormulaire } from "@/lib/formulaires/etat";
 
@@ -28,6 +29,7 @@ export async function envoyerDemande(
   const email = String(donnees.get("email") ?? "").trim();
   const telephone = String(donnees.get("telephone") ?? "").trim();
   const message = String(donnees.get("message") ?? "").trim();
+  const sujet = String(donnees.get("sujet") ?? "").trim().slice(0, 80);
   const budget = String(donnees.get("budget") ?? "").trim();
   const configuration = String(donnees.get("configuration") ?? "").trim();
 
@@ -45,13 +47,26 @@ export async function envoyerDemande(
 
   const budgetCents = budget ? Math.round(Number(budget.replace(/[^\d]/g, "")) * 100) : null;
 
+  // Rattachée au compte quand la personne est connectée : la demande figure
+  // alors dans son export de données et suit l'effacement du compte.
+  const session = await auth();
+
   await prisma.inquiry.create({
     data: {
       type,
+      userId: session?.user?.id ?? null,
       name: nom,
       email,
       phone: telephone || null,
-      message: configuration ? `${message}\n\nConfiguration de référence : ${configuration}` : message,
+      // Le sujet et la configuration n'ont pas de colonne : ils voyagent dans
+      // le message, pour que ce que le client a saisi arrive bien à l'atelier.
+      message: [
+        sujet ? `Sujet : ${sujet}` : "",
+        message,
+        configuration ? `Configuration de référence : ${configuration}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
       budgetCents: Number.isFinite(budgetCents) ? budgetCents : null,
     },
   });
