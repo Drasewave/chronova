@@ -1,5 +1,5 @@
 import { Bezel } from "./parts/bezel";
-import { Case } from "./parts/case";
+import { Case, Lugs } from "./parts/case";
 import { Crown, CrownGuards } from "./parts/crown";
 import { Crystal } from "./parts/crystal";
 import { Defs } from "./parts/defs";
@@ -10,7 +10,7 @@ import { Strap } from "./parts/strap";
 import { Pushers } from "./parts/pushers";
 import { ProfileView } from "./parts/profile";
 import { BackView } from "./parts/back";
-import { DEFAULT_TIME, SIZE_SCALE } from "./geometry";
+import { DEFAULT_TIME, FRAME_SCALE, SIZE_SCALE } from "./geometry";
 import type { WatchRender, WatchView } from "./types";
 
 export interface WatchSvgProps {
@@ -35,7 +35,7 @@ export interface WatchSvgProps {
  * des attributs `fill` et `transform` changent.
  */
 export function WatchSvg({ id, render, view = "face", detail = "full", sheen, className, label }: WatchSvgProps) {
-  const scale = SIZE_SCALE[render.caseSize] ?? 1;
+  const scale = (SIZE_SCALE[render.caseSize] ?? 1) * (view === "profil" ? 1 : FRAME_SCALE);
   const time = render.time ?? DEFAULT_TIME;
   const guards = render.bezelStyle === "plongee";
   const isGmt = render.movement === "NH34";
@@ -61,7 +61,7 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cl
       {view === "profil" ? (
         <ellipse cx="500" cy="640" rx="330" ry="120" fill={`url(#${id}-shadow)`} />
       ) : (
-        <ellipse cx="500" cy="516" rx="430" ry="418" fill={`url(#${id}-shadow)`} />
+        <ellipse cx="500" cy="514" rx={430 * scale} ry={418 * scale} fill={`url(#${id}-shadow)`} />
       )}
 
       <g transform={`translate(500 500) scale(${scale}) translate(-500 -500)`}>
@@ -75,7 +75,9 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cl
               color={render.strapColor}
               metal={render.caseMetal}
               detail={detail}
+              frame={500 / scale}
             />
+            <Lugs uid={id} metal={render.caseMetal} finish={render.caseFinish} />
             <BackView uid={id} render={render} />
           </>
         ) : (
@@ -83,6 +85,7 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cl
             uid={id}
             render={render}
             detail={detail}
+            frame={500 / scale}
             sheen={sheen}
             time={time}
             guards={guards}
@@ -101,6 +104,7 @@ function FaceView({
   uid,
   render,
   detail,
+  frame,
   sheen,
   time,
   guards,
@@ -111,6 +115,7 @@ function FaceView({
   uid: string;
   render: WatchRender;
   detail: "full" | "compact";
+  frame: number;
   sheen?: { x: number; y: number };
   time: { hours: number; minutes: number; seconds: number };
   guards: boolean;
@@ -127,6 +132,7 @@ function FaceView({
           color={render.strapColor}
           metal={render.caseMetal}
           detail={detail}
+          frame={frame}
         />
 
         <Crown uid={id} style={render.crownStyle} metal={render.crownMetal} />
@@ -154,24 +160,28 @@ function FaceView({
           subdialColor={render.subdialColor}
         />
 
-        <Indices
-          style={render.indexStyle}
-          metal={render.caseMetal}
-          dialColor={render.dialColor}
-          lume={render.lume}
-          outerRadius={isGmt ? 230 : undefined}
-          innerRadius={isGmt ? 196 : undefined}
-          skipHour={showDate ? 3 : undefined}
-        />
+        <g filter={`url(#${id}-contact-shadow)`}>
+          <Indices
+            style={render.indexStyle}
+            metal={render.caseMetal}
+            dialColor={render.dialColor}
+            lume={render.lume}
+            outerRadius={isGmt ? 230 : undefined}
+            innerRadius={isGmt ? 196 : undefined}
+            skipHour={showDate ? 3 : undefined}
+          />
+        </g>
 
-        <Hands
-          uid={id}
-          shape={render.handShape}
-          metal={render.handMetal}
-          lume={render.lume}
-          movement={render.movement}
-          time={time}
-        />
+        <g filter={`url(#${id}-hand-shadow)`}>
+          <Hands
+            uid={id}
+            shape={render.handShape}
+            metal={render.handMetal}
+            lume={render.lume}
+            movement={render.movement}
+            time={time}
+          />
+        </g>
 
         <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} />
     </>

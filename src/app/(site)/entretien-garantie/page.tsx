@@ -114,7 +114,7 @@ export default function EntretienGarantie() {
 
       <Section fond="nuit" compact>
         <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <p className="type-lead measure text-night-soft">
+          <p className="type-lead measure text-onyx-soft">
             Une montre qui prend ou perd quelques secondes par jour est normale. Une montre qui
             s&apos;arrête, non.
           </p>

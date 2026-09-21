@@ -8,9 +8,15 @@ export const R_DIAL = 289;
 export const R_MINUTE_TRACK = 266;
 export const R_INDEX_OUT = 257;
 export const R_INDEX_IN = 221;
-export const R_LUG_TIP = 470;
+/** Pointe des cornes : 49,8 mm de corne à corne pour un boîtier de 40. */
+export const R_LUG_TIP = 438;
 
-export const LUG_ANGLES = [27, -27, 153, -153] as const;
+/**
+ * Cadrage des vues de face et de dos. La tête de montre n'occupe pas tout le
+ * cadre : il faut voir la pièce de bout et les premiers maillons, comme sur une
+ * photographie produit.
+ */
+export const FRAME_SCALE = 0.9;
 
 /** Échelle appliquée au groupe entier : un boîtier de 38 mm est un 40 réduit. */
 export const SIZE_SCALE: Record<number, number> = {

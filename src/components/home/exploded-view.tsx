@@ -12,7 +12,8 @@ const ECART_REPOS = 8;
 const ECART_ECLATE = 132;
 
 /** Le dessin est contraint par la hauteur : il doit tenir dans l'écran collant. */
-const HAUTEUR_DESSIN = "min(76vh, 44rem)";
+/** Hauteur du dessin en grand écran ; la légende de droite s'y aligne. */
+const HAUTEUR_DESSIN = "min(72dvh, 44rem)";
 
 const ACIER = { clair: "#DCD5C6", moyen: "#B0A899", sombre: "#7A7367", arete: "#615A4F" };
 const CADRAN = "#1E3448";
@@ -69,22 +70,24 @@ export function ExplodedView() {
   };
 
   return (
-    <div id="vue-eclatee" ref={piste} className="relative bg-bg-alt" style={{ height: "300vh" }}>
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
+    <div id="vue-eclatee" ref={piste} className="relative h-[220vh] bg-bg-alt lg:h-[300vh]">
+      {/* La scène se cale SOUS l'en-tête collant, en `dvh` : sur téléphone, `100vh`
+          compte la barre d'adresse et le titre partait sous l'en-tête. */}
+      <div className="sticky top-16 flex h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden md:top-20 md:h-[calc(100dvh-5rem)]">
         <div className="mx-auto w-full max-w-content" style={{ paddingInline: "var(--gutter)" }}>
           {/* Trois colonnes en grand écran : l'intitulé à gauche, la pile au
               centre, la nomenclature à droite. Le dessin récupère ainsi toute
               la hauteur d'écran disponible. */}
-          <div className="grid items-center gap-8 lg:grid-cols-[16rem_minmax(0,1fr)_19rem] lg:gap-10">
+          <div className="grid items-center gap-4 sm:gap-6 lg:grid-cols-[16rem_minmax(0,1fr)_19rem] lg:gap-10">
             <header>
               <p className="type-mono text-fg-soft">Vue éclatée · Abysse 40</p>
-              <h2 className="type-display-2 mt-3 max-w-[12ch]">Sept plans, montés un par un.</h2>
+              <h2 className="type-display-2 mt-2 lg:mt-3 lg:max-w-[12ch]">Sept plans, montés un par un.</h2>
               <p className="type-caption mt-5 hidden text-fg-soft lg:block">
                 Continuez à faire défiler : la montre se sépare.
               </p>
             </header>
 
-            <div className="mx-auto" style={{ height: HAUTEUR_DESSIN }}>
+            <div className="mx-auto h-[min(46dvh,30rem)] lg:h-[min(72dvh,44rem)]">
               <svg
                 viewBox="0 0 620 1020"
                 className="h-full w-auto"
@@ -148,7 +151,7 @@ export function ExplodedView() {
             </ul>
 
             {/* Petit écran : une seule légende, celle du plan en cours. */}
-            <div className="lg:hidden" aria-live="polite" style={{ minHeight: "5rem" }}>
+            <div className="min-h-[4.5rem] lg:hidden" aria-live="polite">
               {COUCHES_ECLATEES.map((couche, index) => (
                 <div key={couche.cle} className={cn(index === actif ? "block" : "hidden")}>
                   <p className="type-mono text-fg">

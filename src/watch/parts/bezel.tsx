@@ -151,6 +151,25 @@ function DiveInsert({
         );
       })}
 
+      {/* Crantage du pourtour : la prise en main d'une lunette tournante. */}
+      {detail === "full" &&
+        Array.from({ length: 120 }, (_, i) => {
+          const a = polar(R_BEZEL_OUT - 5, i * 3);
+          const b = polar(R_BEZEL_OUT - 0.5, i * 3);
+          return (
+            <line
+              key={`cran-${i}`}
+              x1={n(a.x)}
+              y1={n(a.y)}
+              x2={n(b.x)}
+              y2={n(b.y)}
+              stroke="#211E1B"
+              strokeOpacity="0.38"
+              strokeWidth="2.2"
+            />
+          );
+        })}
+
       {/* Perle de midi, encerclée de métal. */}
       <circle cx="500" cy={500 - rMid} r="15" fill={shade(color, 0.4)} />
       <circle

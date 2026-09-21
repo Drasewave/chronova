@@ -1,5 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
+import { replisAutorises } from "@/lib/replis";
 
 const EXPEDITEUR = process.env.RESEND_FROM ?? "Chronova <atelier@exemple.fr>";
 
@@ -23,13 +24,13 @@ export async function envoyerCourriel(courriel: Courriel): Promise<void> {
   const cle = process.env.RESEND_API_KEY;
 
   if (!cle) {
-    if (process.env.NODE_ENV === "production") {
+    if (!replisAutorises()) {
       throw new Error("RESEND_API_KEY manquante : impossible d'envoyer les e-mails transactionnels.");
     }
     console.info(
       [
         "",
-        "┌─ COURRIEL (mode développement, non envoyé) ───────────────────",
+        "┌─ COURRIEL (non envoyé : aucune clé Resend) ───────────────────",
         `│ À       : ${courriel.to}`,
         `│ Objet   : ${courriel.subject}`,
         "│",

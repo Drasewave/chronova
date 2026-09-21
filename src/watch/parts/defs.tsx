@@ -22,6 +22,24 @@ export function Defs({ uid, render }: { uid: string; render: WatchRender }) {
         <stop offset="1" stopColor={METALS[render.caseMetal].mid} />
       </linearGradient>
 
+      {/* Cornes : un seul dégradé dans le repère de la montre, pour que les
+          quatre partagent la même lumière — la corne haut-gauche est la plus
+          claire, la corne bas-droite la plus sombre. */}
+      <linearGradient id={`${uid}-lugs`} gradientUnits="userSpaceOnUse" x1="180" y1="40" x2="820" y2="960">
+        <stop offset="0" stopColor={METALS[render.caseMetal].light} />
+        <stop offset="0.3" stopColor={METALS[render.caseMetal].mid} />
+        <stop offset="0.72" stopColor={mix(METALS[render.caseMetal].mid, METALS[render.caseMetal].dark, 0.75)} />
+        <stop offset="1" stopColor={METALS[render.caseMetal].mid} />
+      </linearGradient>
+      <linearGradient id={`${uid}-lug-fall-haut`} gradientUnits="userSpaceOnUse" x1="0" y1="230" x2="0" y2="62">
+        <stop offset="0.35" stopColor="#211E1B" stopOpacity="0" />
+        <stop offset="1" stopColor="#211E1B" stopOpacity="0.3" />
+      </linearGradient>
+      <linearGradient id={`${uid}-lug-fall-bas`} gradientUnits="userSpaceOnUse" x1="0" y1="770" x2="0" y2="938">
+        <stop offset="0.35" stopColor="#211E1B" stopOpacity="0" />
+        <stop offset="1" stopColor="#211E1B" stopOpacity="0.38" />
+      </linearGradient>
+
       {/* Le cadran n'est jamais plat : léger creux vers l'extérieur. */}
       <radialGradient id={`${uid}-dial`} cx="0.42" cy="0.34" r="0.82">
         <stop offset="0" stopColor={tint(dial, render.dialTexture === "mat" ? 0.05 : 0.16)} />
@@ -51,6 +69,14 @@ export function Defs({ uid, render }: { uid: string; render: WatchRender }) {
         <stop offset="1" stopColor="#7FA096" stopOpacity="0" />
       </radialGradient>
 
+      {/* Point chaud du saphir : le spot studio, concentré, distinct du reflet
+          qui balaie au survol. */}
+      <radialGradient id={`${uid}-hotspot`} cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.85" />
+        <stop offset="0.55" stopColor="#FFFFFF" stopOpacity="0.2" />
+        <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
+      </radialGradient>
+
       <radialGradient id={`${uid}-shadow`} cx="0.5" cy="0.5" r="0.5">
         <stop offset="0.45" stopColor="#34302A" stopOpacity="0.26" />
         <stop offset="0.8" stopColor="#34302A" stopOpacity="0.08" />
@@ -78,6 +104,18 @@ export function Defs({ uid, render }: { uid: string; render: WatchRender }) {
 
       <filter id={`${uid}-soft`} x="-30%" y="-30%" width="160%" height="160%">
         <feGaussianBlur stdDeviation="7" />
+      </filter>
+
+      {/* Ombre de contact : index et guichet posés sur le cadran, un décalage
+          très court. */}
+      <filter id={`${uid}-contact-shadow`} x="-60%" y="-60%" width="220%" height="220%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#211E1B" floodOpacity="0.35" />
+      </filter>
+
+      {/* Ombre portée des aiguilles : le creux entre le cadran et le verre leur
+          donne du champ, dans l'axe de la lumière rasante du boîtier. */}
+      <filter id={`${uid}-hand-shadow`} x="-60%" y="-60%" width="220%" height="220%">
+        <feDropShadow dx="4" dy="7" stdDeviation="5" floodColor="#211E1B" floodOpacity="0.4" />
       </filter>
 
       <clipPath id={`${uid}-dial-clip`}>

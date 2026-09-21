@@ -47,6 +47,33 @@ export function Crystal({
         </>
       )}
 
+      {/* Le saphir plat garde un chant net : un seul filet clair, sans le galbe. */}
+      {kind === "plat" && (
+        <circle
+          cx={C}
+          cy={C}
+          r={R_DIAL - 3}
+          fill="none"
+          stroke="#FBF8F3"
+          strokeOpacity="0.22"
+          strokeWidth="3"
+          strokeDasharray="260 620"
+          strokeDashoffset="480"
+        />
+      )}
+
+      {/* Point chaud fixe : le spot studio, discret, qui ne dépend pas du
+          survol — c'est le reflet qui bouge par-dessus. */}
+      <ellipse
+        cx={C - 120}
+        cy={C - 150}
+        rx="96"
+        ry="58"
+        fill={`url(#${uid}-hotspot)`}
+        opacity="0.26"
+        transform={`rotate(-24 ${C - 120} ${C - 150})`}
+      />
+
       <g
         data-sheen
         style={{

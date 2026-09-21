@@ -77,6 +77,17 @@ function Batons({
         stroke={lume ? LUME_EDGE : "none"}
         strokeWidth="1"
       />
+      {/* Facette polie : le cadre appliqué accroche la lumière sur son flanc gauche. */}
+      <line
+        x1={offsetX - width / 2 + 2}
+        y1={-outer + 3}
+        x2={offsetX - width / 2 + 2}
+        y2={-outer + height - 3}
+        stroke={ramp.light}
+        strokeOpacity="0.9"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </g>
   );
 

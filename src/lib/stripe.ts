@@ -1,5 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
+import { replisAutorises } from "@/lib/replis";
 
 /**
  * Client Stripe, créé à la demande.
@@ -17,11 +18,12 @@ export function stripeOuNull(): Stripe | null {
 /**
  * Le paiement peut-il être simulé ?
  *
- * Uniquement hors production, et uniquement si aucune clé n'est configurée :
+ * Uniquement hors production (ou sur le serveur de démonstration, voir
+ * `replisAutorises`), et uniquement si aucune clé n'est configurée :
  * cela permet de dérouler tout le parcours après paiement (création de la
  * commande, réservation du stock, suivi client) sans compte Stripe, sans jamais
  * pouvoir se déclencher sur un site en ligne.
  */
 export function paiementSimule(): boolean {
-  return !process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== "production";
+  return !process.env.STRIPE_SECRET_KEY && replisAutorises();
 }

@@ -119,7 +119,7 @@ export function IntroCurtain() {
             <circle ref={trou} cx="50%" cy="50%" r="0" fill="#000" />
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="var(--color-paper)" mask="url(#intro-masque)" />
+        <rect width="100%" height="100%" fill="var(--color-marble)" mask="url(#intro-masque)" />
       </svg>
 
       <div className="relative flex flex-col items-center gap-10">
@@ -136,7 +136,7 @@ export function IntroCurtain() {
             cy="200"
             r="140"
             fill="none"
-            stroke="var(--color-ink)"
+            stroke="var(--color-graphite)"
             strokeWidth="1.5"
             strokeDasharray="880"
             strokeDashoffset="880"
@@ -153,31 +153,31 @@ export function IntroCurtain() {
                 y="68"
                 width="3"
                 height={i % 3 === 0 ? 18 : 11}
-                fill="var(--color-ink)"
+                fill="var(--color-graphite)"
                 opacity="0"
                 style={{ transformBox: "fill-box", transformOrigin: "center" }}
               />
             </g>
           ))}
           <g style={{ transformBox: "view-box", transformOrigin: "200px 200px" }} id="intro-heure">
-            <rect x="197" y="120" width="6" height="84" rx="3" fill="var(--color-ink)" />
+            <rect x="197" y="120" width="6" height="84" rx="3" fill="var(--color-graphite)" />
           </g>
           <g style={{ transformBox: "view-box", transformOrigin: "200px 200px" }} id="intro-minute">
-            <rect x="198" y="82" width="4" height="122" rx="2" fill="var(--color-ink)" />
+            <rect x="198" y="82" width="4" height="122" rx="2" fill="var(--color-graphite)" />
           </g>
           <g
             style={{ transformBox: "view-box", transformOrigin: "200px 200px" }}
             id="intro-seconde"
             opacity="0"
           >
-            <rect x="199.25" y="74" width="1.5" height="146" fill="var(--color-brass)" />
+            <rect x="199.25" y="74" width="1.5" height="146" fill="var(--color-chrome)" />
           </g>
-          <circle cx="200" cy="200" r="5" fill="var(--color-ink)" />
+          <circle cx="200" cy="200" r="5" fill="var(--color-graphite)" />
         </svg>
 
         <p
           id="intro-mot"
-          className="type-mono text-[clamp(1rem,3vw,1.5rem)] text-ink opacity-0"
+          className="type-mono text-[clamp(1rem,3vw,1.5rem)] text-graphite opacity-0"
           style={{ fontFamily: "var(--font-title)", letterSpacing: "0.4em", textIndent: "0.4em" }}
         >
           CHRONOVA
@@ -192,7 +192,7 @@ export function IntroCurtain() {
         }}
         // Il ne reste visible que deux secondes et demie : sa cible doit être
         // franche, d'où les 44 px de hauteur malgré un libellé d'un mot.
-        className="type-mono link-underline absolute bottom-6 right-[calc(var(--gutter)-0.75rem)] inline-flex min-h-11 items-center px-3 text-ink-soft hover:text-brass"
+        className="type-mono link-underline absolute bottom-6 right-[calc(var(--gutter)-0.75rem)] inline-flex min-h-11 items-center px-3 text-graphite-soft hover:text-chrome"
       >
         Passer
       </button>

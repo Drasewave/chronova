@@ -6,7 +6,7 @@ type Fond = "papier" | "alterne" | "nuit";
 const FONDS: Record<Fond, string> = {
   papier: "bg-bg text-fg",
   alterne: "bg-bg-alt text-fg",
-  nuit: "bg-night text-night-ink",
+  nuit: "bg-onyx text-onyx-ink",
 };
 
 /**
@@ -63,7 +63,7 @@ export function SectionHeader({
   return (
     <header className={cn("flex flex-col gap-6 md:flex-row md:items-end md:justify-between", className)}>
       <div className="max-w-[46ch]">
-        {surtitre && <p className="type-mono mb-4 text-fg-soft">{surtitre}</p>}
+        {surtitre && <p className="type-mono surtitre mb-5 text-fg-soft">{surtitre}</p>}
         {niveau === 1 ? (
           <h1 className="type-display-2">{titre}</h1>
         ) : (

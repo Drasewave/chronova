@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
+import { IconFleche } from "@/components/ui/icons";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
 import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
@@ -37,7 +38,10 @@ export function ModelCard({
         href={`/collection/${modele.slug}`}
         className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--focus)]"
       >
-        <div className="relative overflow-hidden rounded-card border border-rule bg-bg-alt p-5 transition-colors duration-300 ease-atelier group-hover:border-accent-decor">
+        <div className="cadre-montre relative overflow-hidden rounded-card border border-rule bg-bg-alt p-5 transition-colors duration-300 ease-atelier group-hover:border-accent-decor">
+          {/* Le style vit sur l'image : le nom du modèle garde sa ligne pour lui,
+              même quand l'étiquette est longue (« Chronographe sport »). */}
+          <Pill className="absolute left-3 top-3 z-10 bg-panel">{modele.styleLabel}</Pill>
           {/* Élément partagé : au clic, cette montre est la même que celle de
               la fiche — elle s'y déplace et grandit au lieu de disparaître. */}
           <ViewTransition name={`montre-${modele.slug}`} share="morph" default="none">
@@ -65,13 +69,13 @@ export function ModelCard({
           </ViewTransition>
         </div>
 
-        <div className="mt-5 flex items-baseline justify-between gap-4">
+        <div className="mt-5 flex items-center justify-between gap-4">
           {niveau === 2 ? (
-            <h2 className="type-title-2 text-fg">{modele.name}</h2>
+            <h2 className="type-title-2 text-fg transition-colors duration-200 group-hover:text-accent">{modele.name}</h2>
           ) : (
-            <h3 className="type-title-2 text-fg">{modele.name}</h3>
+            <h3 className="type-title-2 text-fg transition-colors duration-200 group-hover:text-accent">{modele.name}</h3>
           )}
-          <Pill>{modele.styleLabel}</Pill>
+          <IconFleche className="fleche-glisse shrink-0 text-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
         </div>
 
         <p className="type-body mt-2 text-fg-soft">{modele.tagline}</p>

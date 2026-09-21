@@ -390,6 +390,62 @@
   }
 }
 
+/* ──────────────────────────── Mise en scène ───────────────────────────── */
+@layer components {
+  /* Surtitre : un court filet d'accent l'ancre à gauche, comme un repère de
+     minuterie. */
+  .surtitre {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .surtitre::before {
+    content: "";
+    flex: none;
+    width: 28px;
+    height: 1px;
+    background-color: var(--accent);
+  }
+
+  /* Fond des vignettes de montre : une lumière de studio posée derrière la
+     pièce. Ni grain ni ombre — un simple dégradé entre deux tokens. */
+  .cadre-montre {
+    background-image: radial-gradient(circle at 50% 44%, var(--panel) 0%, var(--bg-alt) 72%);
+  }
+
+  /* Halo du héros : même lumière, sans bord, qui s'éteint dans le fond. */
+  .scene-montre {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .scene-montre::before {
+    content: "";
+    position: absolute;
+    inset: -6% -10%;
+    z-index: -1;
+    background-image: radial-gradient(closest-side, var(--panel) 0%, var(--panel) 38%, transparent 100%);
+  }
+
+  /* L'en-tête collant laisse deviner la page qui défile dessous. */
+  .entete-voile {
+    background-color: color-mix(in srgb, var(--bg) 84%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+  }
+
+  /* Flèche des boutons et des cartes : elle avance de quelques pixels. */
+  .fleche-glisse {
+    transition: transform var(--d-base) var(--ease);
+  }
+
+  :is(a, button):hover > .fleche-glisse,
+  .group:hover .fleche-glisse {
+    transform: translateX(4px);
+  }
+}
+
 /* Reflet qui traverse le verre au survol d'une carte. Une animation CSS prend le
    pas sur le `transform` en ligne du reflet : rien à piloter en JavaScript. */
 @keyframes reflet-balayage {

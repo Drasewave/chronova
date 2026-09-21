@@ -92,6 +92,26 @@ toutes les cinq minutes.
   `NODE_ENV !== "production"` : il ne peut pas se déclencher sur un site en
   ligne, où l'absence de clé affiche un message clair.
 
+### Serveur de démonstration (`CHRONOVA_DEMO`)
+
+`next start` impose `NODE_ENV=production`, donc coupe les deux replis. Le serveur
+de démonstration tourne pourtant en build de production — `next dev` recompile à
+chaque requête et met plusieurs secondes à servir une page que le build sert en
+25 ms. `CHRONOVA_DEMO="1"` dans `.env.local` rétablit les replis sur cette
+machine seulement. La variable ne doit jamais exister sur le site en ligne ; une
+clé Resend ou Stripe renseignée désactive de toute façon le repli concerné.
+
+Le service est une unité systemd utilisateur :
+
+```bash
+npm run deploy                          # build + redémarrage du service
+systemctl --user status chronova        # état
+journalctl --user -u chronova -f        # journaux (liens de connexion compris)
+```
+
+Pour retravailler le code avec rechargement à chaud : `PORT=3001 npm run dev`,
+le port 3000 restant au service.
+
 ### Webhook Stripe
 
 C'est le webhook qui fait foi, jamais le retour du navigateur. En local :
@@ -110,6 +130,7 @@ soit réservé en double.
 npm run dev          # développement
 npm run build        # build de production
 npm run start        # serveur de production
+npm run deploy       # build, puis redémarrage du service systemd `chronova`
 npm run typecheck    # TypeScript, sans émission
 npm run test         # Vitest : contrastes, géométrie, prix, délais,
                      # compatibilités, stock, nomenclature, URL, étapes

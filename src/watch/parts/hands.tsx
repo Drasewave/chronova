@@ -40,8 +40,10 @@ export function Hands({ uid, shape, metal, lume, movement, time }: HandsProps) {
 
       {/* Axe central : il couvre la base des trois aiguilles. */}
       <g data-layer="axe">
-        <circle r="15" fill={ramp.mid} stroke={ramp.edge} strokeWidth="2" />
+        <circle r="15" fill={`url(#${uid}-metal-${metal})`} stroke={ramp.edge} strokeWidth="2" />
+        <circle r="10" fill="none" stroke={ramp.dark} strokeOpacity="0.55" strokeWidth="1.5" />
         <circle r="6" fill={ramp.light} />
+        <circle cx="-2" cy="-2" r="2" fill="#FFFFFF" fillOpacity="0.7" />
       </g>
     </g>
   );
@@ -179,6 +181,7 @@ function SecondHand({ metal, lume }: { metal: MetalTone; lume: boolean }) {
   return (
     <g>
       <rect x="-2.5" y={-SEC_LEN} width="5" height={SEC_LEN + 70} rx="2.5" fill={ramp.dark} />
+      <line x1="-1" y1={-SEC_LEN + 4} x2="-1" y2="40" stroke={ramp.light} strokeOpacity="0.6" strokeWidth="1" />
       <circle cy={-SEC_LEN + 54} r="12" fill={lume ? LUME_FILL : ramp.mid} stroke={ramp.dark} strokeWidth="2.5" />
       <circle cy="52" r="15" fill={ramp.mid} stroke={ramp.edge} strokeWidth="2" />
     </g>

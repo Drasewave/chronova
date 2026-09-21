@@ -35,7 +35,7 @@ export function BarresHorizontales({
   return (
     <ul className="flex flex-col gap-3">
       {donnees.map((donnee) => (
-        <li key={donnee.label} className="grid grid-cols-[minmax(7rem,11rem)_minmax(0,1fr)_3.5rem] items-center gap-3">
+        <li key={donnee.label} className="grid grid-cols-[minmax(5rem,7rem)_minmax(0,1fr)_3rem] items-center gap-2 sm:grid-cols-[minmax(7rem,11rem)_minmax(0,1fr)_3.5rem] sm:gap-3">
           <span className="type-caption truncate text-fg-soft" title={donnee.label}>
             {donnee.label}
           </span>

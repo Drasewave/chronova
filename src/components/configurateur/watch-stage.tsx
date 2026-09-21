@@ -3,19 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
 import { WatchSvg } from "@/watch/watch-svg";
-import { Watch3D } from "@/watch/watch-3d";
-import { IconCroix, IconZoom } from "@/components/ui/icons";
+import { IconCroix } from "@/components/ui/icons";
 import type { WatchRender, WatchView } from "@/watch/types";
 import { cn } from "@/lib/utils";
 
-/** Vue de la scène : les trois vues SVG, plus la vue 3D. */
-type StageView = WatchView | "3d";
-
-const VUES: { key: StageView; label: string }[] = [
+const VUES: { key: WatchView; label: string }[] = [
   { key: "face", label: "Face" },
   { key: "profil", label: "Profil" },
   { key: "dos", label: "Dos" },
-  { key: "3d", label: "3D" },
 ];
 
 /**
@@ -34,7 +29,7 @@ export function WatchStage({
   label: string;
   className?: string;
 }) {
-  const [vue, setVue] = useState<StageView>("face");
+  const [vue, setVue] = useState<WatchView>("face");
   const [zoom, setZoom] = useState(false);
   const dialogue = useRef<HTMLDialogElement>(null);
 
@@ -50,39 +45,23 @@ export function WatchStage({
       {/* Sur téléphone, la montre est bornée en HAUTEUR : collée en haut d'un
           écran de 780 px, une montre pleine largeur ne laisserait presque rien
           aux options qui défilent dessous. */}
-      {vue === "3d" ? (
-        // La 3D se pilote au glisser : pas de bouton englobant, sous peine de
-        // déclencher le zoom au relâchement d'une rotation.
-        <div className="relative flex h-[27vh] w-full items-center justify-center rounded-card lg:h-auto">
-          <Watch3D render={render} label={label} className="h-full w-full" />
-          <button
-            type="button"
-            onClick={() => setZoom(true)}
-            className="absolute bottom-2 right-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-field bg-surface/90 text-fg-soft hover:text-accent"
-            aria-label="Agrandir la montre"
-          >
-            <IconZoom />
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setZoom(true)}
-          className="flex h-[27vh] w-full cursor-zoom-in items-center justify-center rounded-card lg:h-auto"
-          aria-label="Agrandir la montre"
-        >
-          {/* La hauteur doit traverser tous les conteneurs intermédiaires : un div
-              en hauteur automatique annulerait le `h-full` du SVG. */}
-          <InteractiveWatch
-            id="configurateur"
-            render={render}
-            view={vue}
-            label={label}
-            className="flex h-full w-full items-center justify-center"
-            svgClassName="h-full w-auto lg:h-auto lg:w-full"
-          />
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => setZoom(true)}
+        className="flex h-[27vh] w-full cursor-zoom-in items-center justify-center rounded-card lg:h-auto"
+        aria-label="Agrandir la montre"
+      >
+        {/* La hauteur doit traverser tous les conteneurs intermédiaires : un div
+            en hauteur automatique annulerait le `h-full` du SVG. */}
+        <InteractiveWatch
+          id="configurateur"
+          render={render}
+          view={vue}
+          label={label}
+          className="flex h-full w-full items-center justify-center"
+          svgClassName="h-full w-auto lg:h-auto lg:w-full"
+        />
+      </button>
 
       <div className="mt-3 flex items-center justify-center gap-1" role="group" aria-label="Vue de la montre">
         {VUES.map((item) => (
@@ -107,7 +86,7 @@ export function WatchStage({
         onClick={(event) => {
           if (event.target === dialogue.current) setZoom(false);
         }}
-        className="m-auto max-h-[92dvh] w-[min(92vw,52rem)] rounded-card border border-rule bg-bg p-0 text-fg backdrop:bg-[color-mix(in_srgb,var(--color-ink)_58%,transparent)]"
+        className="m-auto max-h-[92dvh] w-[min(92vw,52rem)] rounded-card border border-rule bg-bg p-0 text-fg backdrop:bg-[color-mix(in_srgb,var(--color-graphite)_58%,transparent)]"
       >
         <div className="relative p-4 sm:p-8">
           <button
@@ -118,8 +97,7 @@ export function WatchStage({
           >
             <IconCroix />
           </button>
-          {zoom && vue === "3d" && <Watch3D render={render} label={label} className="aspect-square w-full" />}
-          {zoom && vue !== "3d" && <WatchSvg id="zoom" render={render} view={vue} label={label} className="h-auto w-full" />}
+          {zoom && <WatchSvg id="zoom" render={render} view={vue} label={label} className="h-auto w-full" />}
           <p className="type-mono mt-4 text-center text-fg-soft">{VUES.find((v) => v.key === vue)?.label}</p>
         </div>
       </dialog>

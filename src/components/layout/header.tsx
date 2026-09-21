@@ -38,8 +38,10 @@ export function Header() {
       // point fixe qui dit au lecteur que le contenu a changé, pas l'écran.
       style={{ viewTransitionName: "entete-site" }}
       className={cn(
-        "sticky top-0 z-40 bg-bg transition-[border-color] duration-300",
-        defile ? "border-b border-rule" : "border-b border-transparent",
+        "sticky top-0 z-40 transition-[border-color,background-color] duration-300",
+        // Le voile ne vaut que menu fermé : ouvert, le panneau mobile doit
+        // reposer sur un fond plein.
+        defile && !ouvert ? "entete-voile border-b border-rule" : "border-b border-transparent bg-bg",
       )}
     >
       <div

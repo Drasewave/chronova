@@ -28,11 +28,18 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
 
       <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial-vignette)`} />
 
+      {/* Rehaut : l'arête où le cadran plonge sous l'ouverture de la lunette. */}
+      <circle cx={C} cy={C} r={R_DIAL - 3} fill="none" stroke={shade(color, 0.5)} strokeOpacity="0.35" strokeWidth="2" />
+
       <MinuteTrack color={printed} detail={detail} />
       {movement === "NH34" && <GmtRing color={printed} detail={detail} />}
       {movement === "NH38" && <OpenHeart uid={uid} color={color} printed={printed} />}
       {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} printed={printed} />}
-      {hasDate && <DateWindow color={color} printed={printed} />}
+      {hasDate && (
+        <g filter={`url(#${uid}-contact-shadow)`}>
+          <DateWindow color={color} printed={printed} />
+        </g>
+      )}
 
       {/* Signature. Le nom en serif, la ligne technique en monospace : la même
           hiérarchie que sur le site. */}

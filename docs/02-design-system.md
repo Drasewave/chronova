@@ -1,64 +1,58 @@
-# Chronova — Design system « Atelier chaleureux »
+# Chronova — Design system « Atelier nocturne »
 
 ## 1. Couleurs
 
-### Palette de marque (telle que définie)
+### Palette de marque
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--paper` | `#F5F0E8` | Fond principal |
-| `--paper-alt` | `#EDE6DA` | Sections alternées, blocs `[PHOTO]` |
-| `--surface` | `#FBF8F3` | Cartes, panneaux, champs |
-| `--ink` | `#34302A` | Texte principal |
-| `--ink-soft` | `#66605A` | Texte secondaire |
-| `--brass` | `#7E5F37` | Accent : boutons, liens, sélection |
-| `--brass-light` | `#B08D5B` | Décor seul sur fond clair |
-| `--sage` | `#56614F` | Statuts positifs |
-| `--line` | `#D9D0C2` | Filets 1 px |
-| `--night` | `#211E1B` | Sections sombres, mode sombre CRM |
-| `--night-ink` | `#E9E2D6` | Texte sur `--night` |
-| `--night-soft` | `#B9B0A2` | Texte secondaire sur `--night` |
-
-### Tokens dérivés à ajouter (à valider)
-
-Trois besoins ne sont pas couverts par la liste d'origine : un état de survol pour le laiton, une couleur d'alerte (rupture de stock, seuil franchi, erreur de formulaire), et des équivalents lisibles sur fond sombre.
-
-| Token | Hex | Contraste sur `--paper` | Usage |
-|---|---|---|---|
-| `--brass-deep` | `#6A4F2E` | 6,75:1 | Survol / actif du bouton plein et des liens |
-| `--rust` | `#8A4B2F` | 5,94:1 | Alerte, rupture, erreur — terre cuite, jamais un rouge vif |
-| `--sage-light` | `#9FAC94` | — (mode sombre) | Statut positif sur `--night` : 6,95:1 |
-| `--rust-light` | `#C98A6A` | — (mode sombre) | Alerte sur `--night` : 5,86:1 |
+| `--marble` | `#EDEFF1` | Fond principal |
+| `--marble-alt` | `#E3E6EA` | Sections alternées, blocs `[PHOTO]` |
+| `--cloud` | `#F6F7F9` | Cartes, panneaux, champs |
+| `--graphite` | `#1E2226` | Texte principal |
+| `--graphite-soft` | `#565D65` | Texte secondaire |
+| `--chrome` | `#2E5570` | Accent : boutons, liens, sélection |
+| `--chrome-deep` | `#1F3D52` | Survol / actif du bouton plein et des liens |
+| `--chrome-light` | `#8FADC2` | Décor seul sur fond clair |
+| `--jade` | `#2C6B54` | Statuts positifs |
+| `--ember` | `#8C3346` | Alerte, rupture, erreur |
+| `--line` | `#D5D9DE` | Filets 1 px |
+| `--onyx` | `#15181B` | Sections sombres, mode sombre CRM |
+| `--onyx-ink` | `#E7EAED` | Texte sur `--onyx` |
+| `--onyx-soft` | `#A9AFB6` | Texte secondaire sur `--onyx` |
+| `--jade-light` | `#7FCBAA` | Statut positif sur `--onyx` |
+| `--ember-light` | `#E195A8` | Alerte sur `--onyx` |
 
 ### Règles de contraste vérifiées
 
-Ratios calculés (WCAG 2.1, texte normal ≥ 4,5:1) :
+Ratios calculés (WCAG 2.1, texte normal ≥ 4,5:1), garantis par `src/design/tokens.test.ts` — un changement de teinte qui descend sous le seuil fait échouer `npm run test` :
 
 | Couple | Ratio | Verdict |
 |---|---|---|
-| `--ink` sur `--paper` | 11,56:1 | ✅ |
-| `--ink-soft` sur `--paper` | 5,47:1 | ✅ |
-| `--brass` sur `--paper` | 5,17:1 | ✅ |
-| `--paper` sur `--brass` (bouton plein) | 5,17:1 | ✅ |
-| `--sage` sur `--paper` | 5,84:1 | ✅ |
-| `--brass-light` sur `--paper` | **2,72:1** | ❌ décor uniquement, jamais de texte |
-| `--night-ink` sur `--night` | 12,88:1 | ✅ |
-| `--night-soft` sur `--night` | 7,72:1 | ✅ |
-| `--brass` sur `--night` | **2,83:1** | ❌ → en mode sombre l'accent devient `--brass-light` (5,38:1 ✅) |
-| `--sage` sur `--night` | **2,50:1** | ❌ → `--sage-light` |
+| `--graphite` sur `--marble` | 13,89:1 | ✅ |
+| `--graphite-soft` sur `--marble` | 5,78:1 | ✅ |
+| `--chrome` sur `--marble` | 6,88:1 | ✅ |
+| `--chrome-deep` sur `--marble` | 9,86:1 | ✅ |
+| `--jade` sur `--marble` | 5,46:1 | ✅ |
+| `--ember` sur `--marble` | 6,81:1 | ✅ |
+| `--chrome-light` sur `--marble` | **2,04:1** | ❌ décor uniquement, jamais de texte |
+| `--onyx-ink` sur `--onyx` | 14,76:1 | ✅ |
+| `--onyx-soft` sur `--onyx` | 8,06:1 | ✅ |
+| `--chrome` sur `--onyx` | **2,25:1** | ❌ → en mode sombre l'accent devient `--chrome-light` (7,57:1 ✅) |
+| `--jade` sur `--onyx` | **2,83:1** | ❌ → `--jade-light` |
 
-**Conséquence** : `--brass-light` est interdit en texte sur le crème mais **devient l'accent de texte du mode sombre**. Les tokens sémantiques (`--accent`, `--accent-hover`, `--positive`, `--alert`, `--focus`) basculent donc avec le thème ; les composants n'utilisent jamais une couleur brute.
+**Conséquence** : `--chrome-light` est interdit en texte sur le fond clair mais **devient l'accent de texte du mode sombre**. Les tokens sémantiques (`--accent`, `--accent-hover`, `--positive`, `--alert`, `--focus`) basculent donc avec le thème ; les composants n'utilisent jamais une couleur brute.
 
 ```css
 :root {
-  --accent: var(--brass);  --accent-hover: var(--brass-deep);
-  --positive: var(--sage); --alert: var(--rust);
-  --focus: var(--brass);
+  --accent: var(--chrome);  --accent-hover: var(--chrome-deep);
+  --positive: var(--jade); --alert: var(--ember);
+  --focus: var(--chrome);
 }
 [data-theme="night"] {
-  --accent: var(--brass-light); --accent-hover: #C5A373;
-  --positive: var(--sage-light); --alert: var(--rust-light);
-  --focus: var(--night-ink);
+  --accent: var(--chrome-light); --accent-hover: #A9C4D6;
+  --positive: var(--jade-light); --alert: var(--ember-light);
+  --focus: var(--onyx-ink);
 }
 ```
 
@@ -70,15 +64,15 @@ Chargées via `next/font/google`, `display: swap`, sous-ensemble latin, en varia
 
 | Rôle | Police | Taille | Interligne | Interlettrage |
 |---|---|---|---|---|
-| `display-1` (héros) | Newsreader 400 | `clamp(2.75rem, 6vw, 4.5rem)` | 1,04 | −0,025em |
-| `display-2` (titres de section) | Newsreader 400 | `clamp(2rem, 4vw, 3rem)` | 1,10 | −0,02em |
-| `title-1` | Newsreader 500 | 1,75rem (28px) | 1,20 | −0,015em |
-| `title-2` | Newsreader 500 | 1,375rem (22px) | 1,30 | −0,01em |
-| `lead` (chapô) | Hanken Grotesk 400 | 1,25rem (20px) | 1,55 | 0 |
-| `body` | Hanken Grotesk 400 | 1,0625rem (17px) | 1,60 | 0 |
-| `body-lg` (pages éditoriales) | Hanken Grotesk 400 | 1,125rem (18px) | 1,65 | 0 |
-| `ui` (boutons, champs, CRM) | Hanken Grotesk 500 | 0,9375rem (15px) | 1,40 | 0 |
-| `caption` | Hanken Grotesk 400 | 0,8125rem (13px) | 1,45 | 0 |
+| `display-1` (héros) | Space Grotesk 500 | `clamp(2.75rem, 6vw, 4.5rem)` | 1,04 | −0,025em |
+| `display-2` (titres de section) | Space Grotesk 500 | `clamp(2rem, 4vw, 3rem)` | 1,10 | −0,02em |
+| `title-1` | Space Grotesk 700 | 1,75rem (28px) | 1,20 | −0,015em |
+| `title-2` | Space Grotesk 700 | 1,375rem (22px) | 1,30 | −0,01em |
+| `lead` (chapô) | Inter 400 | 1,25rem (20px) | 1,55 | 0 |
+| `body` | Inter 400 | 1,0625rem (17px) | 1,60 | 0 |
+| `body-lg` (pages éditoriales) | Inter 400 | 1,125rem (18px) | 1,65 | 0 |
+| `ui` (boutons, champs, CRM) | Inter 500 | 0,9375rem (15px) | 1,40 | 0 |
+| `caption` | Inter 400 | 0,8125rem (13px) | 1,45 | 0 |
 | `mono` (réf. technique) | IBM Plex Mono 400/500 | 0,8125rem (13px) | 1,40 | +0,14em, capitales |
 
 Règles : 13 px plancher absolu, aucune graisse < 400, mesure de lecture 68 caractères (`--measure: 68ch`), chiffres tabulaires (`font-variant-numeric: tabular-nums`) dans tous les tableaux et prix.
@@ -98,10 +92,13 @@ Le monospace est **réservé** aux références techniques : calibre, diamètre,
 - Rythme vertical des sections : `clamp(64px, 9vw, 128px)`.
 - Conteneurs : `--w-prose: 68ch`, `--w-content: 1280px`, `--w-wide: 1440px`.
 - Grille : 12 colonnes en ≥ 1024 px, 6 en 768 px, 4 en 375 px.
-- Rayons : `--r-field: 2px`, `--r-card: 4px`, `--r-pill: 999px` (pastilles de couleur uniquement).
+- Rayons : `--r-field: 2px`, `--r-card: 3px`, `--r-pill: 999px` (pastilles de couleur uniquement).
 - Séparation : filet 1 px `--line`. **Aucune ombre** par défaut.
-- Ombre unique, réservée aux éléments flottants (panneau panier, boîte de dialogue, bottom sheet, palette `Cmd+K`) : `--shadow-lift: 0 2px 32px -12px rgba(52, 48, 42, .28)` — teintée brun, jamais grise.
-- Grain : `feTurbulence baseFrequency=.85` en overlay fixe, opacité 3,5 %, `pointer-events: none`, une seule instance pour tout le document.
+- Ombre unique, réservée aux éléments flottants (panneau panier, boîte de dialogue, bottom sheet, palette `Cmd+K`) : `--shadow-lift: 0 2px 32px -12px rgba(21, 24, 27, .32)` — teintée graphite, jamais grise.
+- Pas de grain ni d'autre texture de surface : l'« atelier nocturne » est net, sans filtre décoratif posé sur les fonds.
+- Mise en scène des montres : un dégradé radial `--panel` → `--bg-alt` derrière la pièce (`.cadre-montre` pour les vignettes, `.scene-montre` + couronne graduée pour le héros). C'est une lumière, pas une texture.
+- Surtitres (`.surtitre`) : filet d'accent de 28 px avant le texte monospace.
+- En-tête collant : voile translucide flouté (`.entete-voile`) une fois la page défilée.
 - Focus : `outline: 2px solid var(--focus); outline-offset: 2px` — visible sur tous les fonds, jamais supprimé.
 
 ## 4. Points de rupture
@@ -119,13 +116,13 @@ Aucun picto dans un cercle coloré, aucun emoji, aucune icône multicolore.
 
 **Primitives** — `Button` (plein / contour / discret), `IconButton`, `TextLink`, `Field` (label + aide + erreur), `Input`, `Textarea`, `Select`, `RadioGroup`, `OptionCard`, `ColorSwatch`, `Checkbox`, `Switch`, `Pill`, `Badge` (statuts), `Tooltip`, `Rule`, `Accordion`, `Tabs`, `Dialog`, `Drawer`, `BottomSheet`, `Toast`, `Table`, `Pagination`, `Breadcrumb`, `EmptyState`, `Skeleton`, `CommandPalette`.
 
-**Mise en page** — `Header`, `NavDrawer`, `Footer`, `Section`, `SectionHeader`, `Container`, `Prose`, `Grain`, `CookieBanner`.
+**Mise en page** — `Header`, `NavDrawer`, `Footer`, `Section`, `SectionHeader`, `Container`, `Prose`, `CookieBanner`.
 
 **Montre** — `WatchCanvas` (moteur SVG en calques), `WatchViewSwitch` (face / profil / dos), `WatchZoom`, `WatchExploded` (vue éclatée au défilement), `WatchThumb` (miniature de configuration, panier et CRM).
 
 **Commerce** — `ModelCard`, `PriceLine` (total + détail des suppléments), `LeadTime`, `ConfiguratorStep`, `OptionGrid`, `EngravingPreview`, `ConfigSummary`, `CartPanel`, `CartLine`, `OrderTimeline` (frise d'assemblage), `AssemblyPhotos`.
 
-**Éditorial** — `Hero`, `ProcessStep`, `SpecList`, `FaqItem`, `HorlogerBlock`, `PhotoPlaceholder` (bloc `--paper-alt` avec la description attendue en monospace), `FillMe` (rendu visible des `[À REMPLIR : …]`).
+**Éditorial** — `Hero`, `ProcessStep`, `SpecList`, `FaqItem`, `HorlogerBlock`, `PhotoPlaceholder` (bloc `--marble-alt` avec la description attendue en monospace), `FillMe` (rendu visible des `[À REMPLIR : …]`).
 
 **CRM** — `CrmShell` (barre latérale + fil d'Ariane), `KanbanBoard`, `KanbanCard`, `DataTable` (tri, filtres, sélection), `StatBlock`, `BarChart`, `SparkLine`, `StockBar` (disponible / réservé / seuil), `BomTable` (nomenclature), `ChecklistPanel`, `QcForm`, `NoteThread`, `PhotoUploader`, `StatusSelect`, `EmailTemplateEditor`, `AuditTrail`.
 
@@ -142,6 +139,16 @@ index · guichet-date · signature · aiguille-heure · aiguille-minute ·
 aiguille-gmt · aiguille-seconde · axe · verre (dôme + antireflet) ·
 reflet · couronne · attaches-bracelet
 ```
+
+**Cornes et bracelet.** Les cornes prolongent la carrure (flanc extérieur tangent
+au boîtier, flancs intérieurs parallèles) ; elles ne rayonnent pas du centre. Le
+bracelet se dessine en distance au centre (`d`) et non par rotation, pour que
+les deux brins gardent la lumière du haut-gauche. Acier : pièce de bout pleine
+qui comble l'entrecorne, maillons bombés en quinconce. Cuir et caoutchouc : brin
+roulé autour de la barrette, croissant d'ombre contre la carrure. NATO : ruban
+continu qui franchit la barrette et plonge sous le boîtier. Les brins s'éteignent
+en fondu au bord du cadre ; `FRAME_SCALE` (0,9) laisse voir la pièce de bout et
+les premiers maillons.
 
 Vue **profil** : silhouette du boîtier, hauteur du verre (plat vs bombé change réellement le profil), couronne, bracelet.
 Vue **dos** : fond plein gravé ou fond transparent laissant voir le mouvement (dessin propre à NH35 / NH34 / NH38), gravure en aperçu direct.
@@ -170,7 +177,7 @@ Reflet du verre : `gradientTransform` piloté par `pointermove` (ou `deviceorien
 
 | Temps | Étape |
 |---|---|
-| 0 → 600 ms | Tracé du cercle du cadran (`stroke-dashoffset`), trait `--ink` sur fond `--paper` |
+| 0 → 600 ms | Tracé du cercle du cadran (`stroke-dashoffset`), trait `--graphite` sur fond `--marble` |
 | 600 → 1000 ms | Les 12 index apparaissent un par un dans le sens horaire (33 ms d'écart) |
 | 900 → 1700 ms | Les aiguilles tournent et se posent sur **10 h 10**, léger amorti |
 | 1400 → 2000 ms | « CHRONOVA » en Newsreader, interlettrage de 0,4em → 0,08em |

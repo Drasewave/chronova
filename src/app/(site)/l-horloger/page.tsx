@@ -134,10 +134,10 @@ export default function Horloger() {
       <Section fond="nuit">
         <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="type-display-2 max-w-[18ch] text-night-ink">
+            <h2 className="type-display-2 max-w-[18ch] text-onyx-ink">
               Une question avant de vous lancer ?
             </h2>
-            <p className="type-lead measure mt-6 text-night-soft">
+            <p className="type-lead measure mt-6 text-onyx-soft">
               Le plus simple est d&apos;écrire. Je réponds moi-même, et il n&apos;y a pas de
               mauvaise question sur une montre qu&apos;on va porter dix ans.
             </p>
