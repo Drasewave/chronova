@@ -10,8 +10,9 @@ import type { CompatibilityRule, Part, Step } from "@/lib/configurateur/types";
  * option ou écrire une règle de compatibilité s'y fait à la souris.
  *
  * Le champ `render` est la seule passerelle vers le dessin : il applique un
- * correctif à la configuration rendue. Les clés `svgPartKey` du registre y sont
- * référencées par les valeurs (`glaive`, `mercedes`, `cuir`…).
+ * correctif à la configuration rendue. Les formes que le moteur sait dessiner
+ * (`src/watch/types.ts`) y sont référencées par leurs valeurs (`glaive`,
+ * `mercedes`, `cuir`…).
  */
 
 export const STEPS: Step[] = [
@@ -215,7 +216,7 @@ export const STEPS: Step[] = [
           {
             key: "jour-date",
             label: "Jour et date",
-            description: "Guichet élargi à 3 h : le jour de la semaine, en français, puis le quantième.",
+            description: "Guichet élargi à 3 h : le jour de la semaine, en français, puis le quantième. Se monte sur le calibre NH36, le seul de la famille à porter un disque des jours.",
             priceDeltaCents: 3000,
             render: { showDate: true, dateWindow: "jour-date" },
           },
@@ -244,7 +245,7 @@ export const STEPS: Step[] = [
   {
     key: "aiguilles",
     label: "Aiguilles",
-    intro: "Je les chasse une à une au potence, puis je les vérifie à la loupe.",
+    intro: "Je les chasse une à une à la potence, puis je les vérifie à la loupe.",
     groups: [
       {
         key: "aiguilles-forme",
@@ -292,7 +293,7 @@ export const STEPS: Step[] = [
         options: [
           { key: "lisse", label: "Lisse", description: "Fine, sans relief, pour laisser la place au cadran.", priceDeltaCents: 0, partRef: "LUN-LIS", render: { bezelStyle: "lisse" } },
           { key: "cannelee", label: "Cannelée", description: "Soixante-douze crans, reflets en étoile.", priceDeltaCents: 6000, partRef: "LUN-CAN", render: { bezelStyle: "cannelee" } },
-          { key: "plongee", label: "Plongée, 120 clics", description: "Unidirectionnelle, graduée soixante minutes.", priceDeltaCents: 12000, partRef: "LUN-PLO", render: { bezelStyle: "plongee" } },
+          { key: "plongee", label: "Plongée, 120 crans", description: "Unidirectionnelle, graduée soixante minutes.", priceDeltaCents: 12000, partRef: "LUN-PLO", render: { bezelStyle: "plongee" } },
           { key: "gmt", label: "GMT, 24 heures", description: "Bidirectionnelle, graduée vingt-quatre heures : un second fuseau se lit sur la lunette.", priceDeltaCents: 14000, partRef: "LUN-GMT", render: { bezelStyle: "gmt" } },
           { key: "tachymetre", label: "Tachymètre, fixe", description: "Insert aluminium noir gravé d'une échelle de vitesse, de 60 à 500 : la trotteuse du chronographe y pointe une moyenne sur un kilomètre.", priceDeltaCents: 9000, partRef: "LUN-TAC", render: { bezelStyle: "tachymetre", insertColor: "#17191C", insertMaterial: "aluminium" } },
         ],
@@ -481,7 +482,7 @@ export const STEPS: Step[] = [
   {
     key: "mouvement",
     label: "Mouvement",
-    intro: "Trois calibres automatiques japonais, tous réparables par n'importe quel horloger.",
+    intro: "Des calibres japonais éprouvés : quatre automatiques de la même famille, que n'importe quel horloger sait réviser, et un méca-quartz pour les chronographes.",
     groups: [
       {
         key: "mouvement",
@@ -517,11 +518,20 @@ export const STEPS: Step[] = [
           {
             key: "vk64",
             label: "VK64 · chronographe",
-            description: "Meca-quartz : trotteuse et compteurs entraînés mécaniquement par la couronne, minuterie à quartz. Sans date.",
+            description: "Méca-quartz : trotteuse et compteurs entraînés mécaniquement par la couronne, minuterie à quartz. Sans date.",
             priceDeltaCents: 45000,
             leadDaysDelta: 5,
             partRef: "MOU-VK64",
             render: { movement: "VK64" },
+          },
+          // En fin de groupe : la base est additive, aucun rang existant ne bouge.
+          {
+            key: "nh36",
+            label: "NH36 · jour et date",
+            description: "Le NH35 doté d'un disque des jours : même base, 24 rubis, 21 600 A/h, ~41 h de réserve. Le seul calibre de la famille qui affiche le jour de la semaine en plus du quantième.",
+            priceDeltaCents: 2000,
+            partRef: "MOU-NH36",
+            render: { movement: "NH36" },
           },
         ],
       },
@@ -655,7 +665,10 @@ export const RULES: CompatibilityRule[] = [
     targets: ["mouvement:nh38"],
     message: "Le NH38 n'a pas de quantième : ce calibre se porte sans date.",
   },
-  // Jour-date et quantième suivent le calibre : ni le NH38 ni le VK64 n'en ont.
+  // Le guichet suit le calibre. Ni le NH38 ni le VK64 n'ont de quantième ; et
+  // dans la famille NH, seul le NH36 porte un disque des jours : NH35 et NH34
+  // n'affichent que la date. Les deux exclusions passent avant l'exigence, pour
+  // que le client d'un NH38 ou d'un VK64 lise la raison qui le concerne.
   {
     subject: "date:avec",
     kind: "exclut",
@@ -673,6 +686,12 @@ export const RULES: CompatibilityRule[] = [
     kind: "exclut",
     targets: ["mouvement:vk64"],
     message: "Le VK64 n'a ni jour ni quantième : le chronographe se porte sans date.",
+  },
+  {
+    subject: "date:jour-date",
+    kind: "exige-une-de",
+    targets: ["mouvement:nh36"],
+    message: "Le jour de la semaine demande le calibre NH36 : NH35 et NH34 n'affichent que le quantième. Choisissez le NH36 à l'étape Mouvement.",
   },
   {
     subject: "boitier-forme:coussin",
@@ -845,7 +864,7 @@ export const PARTS: Part[] = [
   { ref: "AIG-CAT", name: "Jeu d'aiguilles cathédrale", category: "aiguilles", supplier: "Horotec Supply", purchasePriceCents: 2900, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 18 },
   { ref: "LUN-LIS", name: "Lunette lisse", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 2600, quantityOnHand: 8, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
   { ref: "LUN-CAN", name: "Lunette cannelée", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 3900, quantityOnHand: 5, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
-  { ref: "LUN-PLO", name: "Lunette plongée 120 clics", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5200, quantityOnHand: 7, quantityReserved: 2, reorderThreshold: 3, restockDays: 24 },
+  { ref: "LUN-PLO", name: "Lunette plongée 120 crans", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5200, quantityOnHand: 7, quantityReserved: 2, reorderThreshold: 3, restockDays: 24 },
   { ref: "LUN-GMT", name: "Lunette GMT 24 heures", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5600, quantityOnHand: 4, quantityReserved: 0, reorderThreshold: 2, restockDays: 24 },
   { ref: "LUN-TAC", name: "Lunette tachymètre fixe, insert aluminium noir", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 4300, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 2, restockDays: 24 },
   { ref: "INS-NOI", name: "Insert céramique noir", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3100, quantityOnHand: 9, quantityReserved: 2, reorderThreshold: 3, restockDays: 38 },
@@ -868,7 +887,9 @@ export const PARTS: Part[] = [
   { ref: "MOU-NH35", name: "Mouvement Seiko NH35", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 5200, quantityOnHand: 16, quantityReserved: 5, reorderThreshold: 6, restockDays: 28 },
   { ref: "MOU-NH34", name: "Mouvement Seiko NH34 GMT", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 9800, quantityOnHand: 3, quantityReserved: 2, reorderThreshold: 3, restockDays: 42 },
   { ref: "MOU-NH38", name: "Mouvement Seiko NH38 cœur ouvert", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 7400, quantityOnHand: 5, quantityReserved: 1, reorderThreshold: 3, restockDays: 28 },
-  { ref: "MOU-VK64", name: "Mouvement Seiko VK64 meca-quartz", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 14200, quantityOnHand: 4, quantityReserved: 1, reorderThreshold: 2, restockDays: 45 },
+  // Nom interne sans marque de fabricant : il ne doit jamais pouvoir fuiter côté client.
+  { ref: "MOU-NH36", name: "Mouvement NH36 jour et date", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 5600, quantityOnHand: 9, quantityReserved: 0, reorderThreshold: 4, restockDays: 28 },
+  { ref: "MOU-VK64", name: "Mouvement Seiko VK64 méca-quartz", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 14200, quantityOnHand: 4, quantityReserved: 1, reorderThreshold: 2, restockDays: 45 },
   { ref: "FON-PLE", name: "Fond plein vissé", category: "fond", supplier: "Atelier Suwa", purchasePriceCents: 1800, quantityOnHand: 14, quantityReserved: 3, reorderThreshold: 5, restockDays: 24 },
   { ref: "FON-TRA", name: "Fond saphir transparent", category: "fond", supplier: "Atelier Suwa", purchasePriceCents: 3900, quantityOnHand: 6, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
 ];

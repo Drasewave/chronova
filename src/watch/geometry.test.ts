@@ -32,4 +32,13 @@ describe("angles des aiguilles", () => {
     expect(DEFAULT_TIME.hours).toBe(10);
     expect(DEFAULT_TIME.minutes).toBe(10);
   });
+
+  it("la trotteuse de la pose dégage le texte du bas du cadran, le guichet et la lucarne", () => {
+    const { second } = handAngles(DEFAULT_TIME);
+    // « AUTOMATIQUE » et l'étanchéité occupent 153°–207° ; la lucarne du cœur ouvert commence vers 230°.
+    expect(second).toBeGreaterThan(212);
+    expect(second).toBeLessThan(228);
+    // Entre deux index : jamais à moins de 6° d'un multiple de 30°.
+    expect(Math.abs((second % 30) - 15)).toBeLessThan(9);
+  });
 });

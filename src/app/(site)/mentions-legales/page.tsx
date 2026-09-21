@@ -100,7 +100,7 @@ export default async function MentionsLegales() {
         écrite est interdite.
       </p>
       <p>
-        Les noms de calibres cités (NH34, NH35, NH38, VK64) sont des références de mouvements
+        Les noms de calibres cités (NH34, NH35, NH36, NH38, VK64) sont des références de mouvements
         produits par leur fabricant et sont mentionnés à titre d&apos;information technique.
         Chronova n&apos;est ni affiliée à ce fabricant, ni agréée par lui.
       </p>

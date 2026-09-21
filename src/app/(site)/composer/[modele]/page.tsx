@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Configurator } from "@/components/configurateur/configurator";
+import { avecArticle } from "@/lib/content/articles";
 import { decodeConfig } from "@/lib/configurateur/url";
-import { getCatalogue, getModel } from "@/lib/data/queries";
+import { getCataloguePublic, getModel } from "@/lib/data/queries";
 
 /**
  * La configuration vit dans la chaîne de requête (`?c=`). Lire `searchParams`
@@ -18,7 +19,7 @@ export async function generateMetadata(props: PageProps<"/composer/[modele]">): 
   if (!model) return { title: "Modèle introuvable" };
 
   return {
-    title: `Composer la ${model.name}`,
+    title: `Composer ${avecArticle(model.name)}`,
     description: `${model.tagline} Composez votre ${model.name} : cadran, aiguilles, lunette, couronne, bracelet, verre, mouvement et fond.`,
     alternates: { canonical: `/composer/${model.slug}` },
   };
@@ -26,7 +27,9 @@ export async function generateMetadata(props: PageProps<"/composer/[modele]">): 
 
 export default async function Composer(props: PageProps<"/composer/[modele]">) {
   const { modele } = await props.params;
-  const [model, catalogue] = await Promise.all([getModel(modele), getCatalogue()]);
+  // Projection publique : ce catalogue part dans le navigateur (composant client),
+  // donc dans le HTML. Jamais le catalogue complet ici (audit A-01).
+  const [model, catalogue] = await Promise.all([getModel(modele), getCataloguePublic()]);
   if (!model) notFound();
 
   const { c } = await props.searchParams;

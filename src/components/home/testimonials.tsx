@@ -14,8 +14,7 @@ export function Testimonials() {
           <p className="type-mono text-fg-soft">Avis à venir</p>
           <p className="type-body measure mx-auto mt-4 text-fg-soft">
             Je n&apos;affiche aucun avis tant qu&apos;aucun client n&apos;en a écrit. Ceux que je
-            publierai ici seront rattachés à une commande réelle et modifiables depuis
-            l&apos;atelier.
+            publierai ici seront rattachés à une commande réelle.
           </p>
         </div>
       </Section>

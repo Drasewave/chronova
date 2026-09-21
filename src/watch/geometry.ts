@@ -62,4 +62,20 @@ export function handAngles(time: { hours: number; minutes: number; seconds: numb
   };
 }
 
-export const DEFAULT_TIME = { hours: 10, minutes: 10, seconds: 32 };
+/**
+ * Pose de catalogue : 10 h 10, et la trotteuse à 37 s. À 222°, elle tombe dans
+ * le vide entre les index de 7 h et de 8 h : elle dégage les deux lignes de
+ * texte du bas du cadran (153°–207°), le guichet jour-date, la lucarne du cœur
+ * ouvert à 9 h et les petits chiffres 19/20 de l'échelle 24 h ; son contrepoids
+ * reste entre l'aiguille des minutes et midi, loin du nom.
+ */
+export const DEFAULT_TIME = { hours: 10, minutes: 10, seconds: 37 };
+
+/**
+ * Dans la pose de catalogue, l'aiguille 24 h d'un GMT montre un second fuseau,
+ * sept heures plus à l'est (17 h 10) : c'est l'usage des photographies de GMT,
+ * et à l'heure locale elle barrerait la fin d'« AUTOMATIQUE ». À 257,5°, sa
+ * flèche tombe entre les index de 8 h et de 9 h, sans en couvrir aucun.
+ * Dans le navigateur, l'horloge vivante la ramène à l'heure locale du visiteur.
+ */
+export const POSE_GMT_OFFSET_DEG = 105;

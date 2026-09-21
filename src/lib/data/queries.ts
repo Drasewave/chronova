@@ -1,7 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
-import { createCatalogue, type Catalogue } from "@/lib/configurateur/catalogue";
+import { createCatalogue, type Catalogue, type CataloguePublic } from "@/lib/configurateur/catalogue";
+import { versCataloguePublic } from "@/lib/configurateur/public";
 import type {
   CatalogueOption,
   CompatibilityRule,
@@ -105,6 +106,17 @@ export const getCatalogue = cache(async (): Promise<Catalogue> => {
   }));
 
   return createCatalogue({ steps, rules, parts });
+});
+
+/**
+ * Le catalogue à passer aux composants clients (configurateur).
+ *
+ * Tout ce qui est donné en prop à un composant `"use client"` finit dans le HTML
+ * de la page : on n'y envoie que la projection publique — ni prix d'achat, ni
+ * fournisseur, ni quantité, ni référence ou nom interne de pièce.
+ */
+export const getCataloguePublic = cache(async (): Promise<CataloguePublic> => {
+  return versCataloguePublic(await getCatalogue());
 });
 
 export const getModels = cache(async (): Promise<WatchModelView[]> => {

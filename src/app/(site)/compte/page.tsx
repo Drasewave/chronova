@@ -84,8 +84,8 @@ export default async function Compte() {
 
               {enCours.promisedAt && (
                 <p className="type-caption mt-8 text-fg-soft">
-                  Expédition annoncée autour du {formatDate(enCours.promisedAt)}. Vous êtes prévenu·e
-                  à chaque changement d&apos;étape.
+                  Expédition annoncée autour du {formatDate(enCours.promisedAt)}. Vous recevez un
+                  message à chaque changement d&apos;étape.
                 </p>
               )}
 

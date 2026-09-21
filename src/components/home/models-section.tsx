@@ -24,13 +24,22 @@ export function ModelsSection({
         }
       />
 
-      <div className="mt-12 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3 xl:grid-cols-4">
+      {/* Trois colonnes : neuf modèles font trois rangs pleins, sans carte
+          orpheline. Sur téléphone, la grille devient un rail horizontal à pas
+          magnétique (`.rail-modeles`) : neuf cartes empilées faisaient à elles
+          seules plus de cinq écrans de haut. Le héros porte déjà la première
+          montre de la page : ici tous les dessins sont montés à l'approche. */}
+      <ul
+        data-defilement-natif
+        aria-label="Les modèles de départ"
+        className="rail-modeles mt-12 grid gap-x-5 gap-y-12 md:grid-cols-2 lg:mt-14 lg:grid-cols-3"
+      >
         {modeles.map((modele, index) => (
-          <Reveal key={modele.slug} delay={(index % 3) * 90}>
-            <ModelCard catalogue={catalogue} modele={modele} priorite={index === 0} />
+          <Reveal as="li" key={modele.slug} delay={(index % 3) * 90}>
+            <ModelCard catalogue={catalogue} modele={modele} />
           </Reveal>
         ))}
-      </div>
+      </ul>
     </Section>
   );
 }

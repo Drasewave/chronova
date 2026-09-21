@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TuileGamme } from "@/components/collection/bloc-gamme";
+import { GrilleModeles } from "@/components/collection/grille-modeles";
 import { RappelComposer } from "@/components/collection/rappel-composer";
 import { ModelCard } from "@/components/home/model-card";
 import { ButtonLink } from "@/components/ui/button";
 import { SamplePill } from "@/components/ui/pill";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { InteractiveWatch } from "@/watch/interactive-watch";
-import { WatchSvg } from "@/watch/watch-svg";
+import { MontreDifferee } from "@/components/ui/montre-differee";
 import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
 import { estGamme, etendue, gammesAvecModeles } from "@/lib/content/gammes";
 import { getCatalogue, getModels } from "@/lib/data/queries";
@@ -74,7 +75,7 @@ export default async function PageGamme(props: PageProps<"/gammes/[style]">) {
             <nav aria-label="Fil d'Ariane">
               <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
                 <li>
-                  <Link href="/collection" className="link-underline hover:text-accent-ink">
+                  <Link href="/collection" className="link-underline relative after:absolute after:inset-x-0 after:-inset-y-[13px] after:content-[''] hover:text-accent-ink">
                     Collection
                   </Link>
                 </li>
@@ -139,15 +140,20 @@ export default async function PageGamme(props: PageProps<"/gammes/[style]">) {
       </section>
 
       <Section fond="papier" id="modeles" className="scroll-mt-20">
-        <SectionHeader
-          titre={`Les modèles ${gamme.nom}`}
-          intro="Chaque modèle est un point de départ : son boîtier est fixé, tout le reste se compose."
-        />
-        <div className="mt-10 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {gamme.modeles.map((modele, index) => (
-            <ModelCard key={modele.slug} catalogue={catalogue} modele={modele} priorite={index === 0} />
+        <GrilleModeles
+          nombre={gamme.modeles.length}
+          entete={
+            <SectionHeader
+              className={gamme.modeles.length < 3 ? "md:flex-col md:items-start" : undefined}
+              titre={`Les modèles ${gamme.nom}`}
+              intro="Chaque modèle est un point de départ : son boîtier est fixé, tout le reste se compose."
+            />
+          }
+        >
+          {gamme.modeles.map((modele) => (
+            <ModelCard key={modele.slug} catalogue={catalogue} modele={modele} />
           ))}
-        </div>
+        </GrilleModeles>
       </Section>
 
       <RappelComposer
@@ -156,7 +162,7 @@ export default async function PageGamme(props: PageProps<"/gammes/[style]">) {
             {[base, variante].map((configuration, index) => (
               <li key={index}>
                 <div className="cadre-montre overflow-hidden">
-                  <WatchSvg
+                  <MontreDifferee
                     id={`composer-${gamme.style}-${index}`}
                     render={configuration.render}
                     detail="compact"

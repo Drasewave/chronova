@@ -27,7 +27,7 @@ const FLANK: readonly [readonly [number, number], readonly [number, number], rea
 ];
 
 /** Contour fermé du coussin ; `kx`/`ky` le rétrécissent autour du centre (plat intérieur). */
-export function cushionOutline(kx = 1, ky = 1): string {
+function cushionOutline(kx = 1, ky = 1): string {
   const p = (sx: number, sy: number, x: number, d: number) => `${n(C + sx * x * kx)} ${n(C + sy * d * ky)}`;
   const [f0, f1, f2, f3] = FLANK;
   // Un demi-côté, de l'entrecorne vers 3 h ou 9 h, puis son retour symétrique.

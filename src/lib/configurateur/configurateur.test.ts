@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SAMPLE_MODELS, getSampleModel, excludedOptionsFor } from "@/lib/data/models";
 import { SAMPLE_CATALOGUE as catalogue } from "@/lib/data/catalogue";
-import { buildConfiguration, defaultConfiguration } from "./configuration";
+import { buildConfiguration, defaultConfiguration, prixAPartirDeCents, prixPlancherCents } from "./configuration";
 import { buildBom, partsCost } from "./bom";
 import { computeLeadTime, computePrice } from "./price";
 import { evaluateOption, isGroupVisible, normalizeSelections } from "./rules";
@@ -91,7 +91,38 @@ describe("règles de compatibilité", () => {
     expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "nh38" }).selectable).toBe(false);
     expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "vk64" }).selectable).toBe(false);
     expect(evaluateOption(catalogue, "date:avec", { mouvement: "vk64" }).selectable).toBe(false);
-    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "nh35" }).selectable).toBe(true);
+    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "nh36" }).selectable).toBe(true);
+  });
+
+  it("le jour-date exige le NH36 : NH35 et NH34 n'ont que le quantième", () => {
+    for (const calibre of ["nh35", "nh34"]) {
+      const verdict = evaluateOption(catalogue, "date:jour-date", { mouvement: calibre });
+      expect(verdict.selectable).toBe(false);
+      expect(verdict.reason).toContain("NH36");
+    }
+    // NH38 et VK64 gardent leur propre raison : ils n'ont pas de quantième du tout.
+    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "nh38" }).reason).toContain("NH38");
+    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "vk64" }).reason).toContain("VK64");
+    // Le NH36 accepte aussi un quantième seul (disque des jours masqué) ou un cadran sans date.
+    expect(evaluateOption(catalogue, "date:avec", { mouvement: "nh36" }).selectable).toBe(true);
+    expect(evaluateOption(catalogue, "date:sans", { mouvement: "nh36" }).selectable).toBe(true);
+  });
+
+  it("quitter le NH36 ramène le guichet au quantième seul, et le rendu suit", () => {
+    const depart = { ...abysse.defaultSelections };
+    expect(depart.mouvement).toBe("nh36");
+    const apres = normalizeSelections(catalogue, { ...depart, mouvement: "nh35" });
+    expect(apres.date).toBe("avec");
+    expect(resolveRender(catalogue, depart)).toMatchObject({ movement: "NH36", dateWindow: "jour-date" });
+    expect(resolveRender(catalogue, apres).movement).toBe("NH35");
+  });
+
+  it("aucun modèle d'exemple n'affiche le jour sans le calibre qui le donne", () => {
+    for (const modele of SAMPLE_MODELS) {
+      for (const selections of [modele.defaultSelections, { ...modele.defaultSelections, ...modele.altSelections }]) {
+        if (selections.date === "jour-date") expect(selections.mouvement, modele.slug).toBe("nh36");
+      }
+    }
   });
 
   it("la carrure coussin n'existe qu'en 40 mm", () => {
@@ -174,7 +205,7 @@ describe("nomenclature", () => {
     const refs = bom.map((ligne) => ligne.part.ref);
     expect(refs).toContain("BOI-40");
     expect(refs).toContain("CAD-BLE");
-    expect(refs).toContain("MOU-NH35");
+    expect(refs).toContain("MOU-NH36");
     expect(refs).toContain("LUN-PLO");
     expect(new Set(refs).size).toBe(refs.length);
   });
@@ -214,6 +245,60 @@ describe("configuration dans l'URL", () => {
   });
 });
 
+describe("lien partagé abîmé (audit A-10)", () => {
+  const ENTREES_HOSTILES: unknown[] = [
+    "taille:%E0%A4%A",
+    "taille:%",
+    "%E0%A4%A:40",
+    "gravure:%ZZ",
+    "taille:40~index:%C3",
+    "~~~",
+    ":::",
+    "taille",
+    "taille:",
+    ":40",
+    "\u0000",
+    "taille:40".repeat(2000),
+    ["taille:40", "index:batons"],
+    { taille: "40" },
+    42,
+    true,
+    undefined,
+    null,
+    "",
+    "__proto__:polluted",
+    "constructor:prototype",
+  ];
+
+  it("ne lève jamais, quelle que soit l'entrée", () => {
+    for (const entree of ENTREES_HOSTILES) {
+      expect(() => decodeConfig(catalogue, entree)).not.toThrow();
+    }
+  });
+
+  it("ignore la paire fautive et garde le reste du lien", () => {
+    expect(decodeConfig(catalogue, "taille:%E0%A4%A")).toEqual({});
+    expect(decodeConfig(catalogue, "taille:%E0%A4%A~index:batons")).toEqual({ index: "batons" });
+    expect(decodeConfig(catalogue, "gravure:%ZZ~index:batons")).toEqual({ index: "batons" });
+  });
+
+  it("retombe sur la configuration de départ du modèle", () => {
+    for (const entree of ENTREES_HOSTILES) {
+      const config = buildConfiguration(catalogue, abysse, {
+        ...abysse.defaultSelections,
+        ...decodeConfig(catalogue, entree),
+      });
+      expect(config.price.totalCents).toBeGreaterThanOrEqual(abysse.basePriceCents);
+      expect(Object.getPrototypeOf(config.selections)).toBe(Object.prototype);
+    }
+    const abime = buildConfiguration(catalogue, abysse, {
+      ...abysse.defaultSelections,
+      ...decodeConfig(catalogue, "taille:%E0%A4%A"),
+    });
+    expect(abime.selections).toEqual(defaultConfiguration(catalogue, abysse).selections);
+  });
+});
+
 describe("rendu déduit des sélections", () => {
   it("l'Abysse 40 part bleu, lunette de plongée, insert céramique", () => {
     const render = resolveRender(catalogue, abysse.defaultSelections);
@@ -223,7 +308,7 @@ describe("rendu déduit des sélections", () => {
       bezelStyle: "plongee",
       insertMaterial: "ceramique",
       handShape: "fleche",
-      movement: "NH35",
+      movement: "NH36",
     });
   });
 
@@ -337,5 +422,19 @@ describe("lien partagé", () => {
     expect(config.selections["cadran-teinte"]).toBe("saumon");
     expect(config.selections["lunette-style"]).toBe("plongee");
     expect(config.selections["taille"]).toBe("40");
+  });
+});
+
+describe("prix « à partir de » (audit A-08)", () => {
+  it("est atteignable : une configuration commandable existe à ce prix, pour chaque modèle", () => {
+    for (const modele of SAMPLE_MODELS) {
+      expect(prixPlancherCents(catalogue, modele), modele.slug).toBe(prixAPartirDeCents(modele));
+    }
+  });
+
+  it("ne dépasse jamais le prix de la configuration de départ", () => {
+    for (const modele of SAMPLE_MODELS) {
+      expect(prixAPartirDeCents(modele)).toBeLessThanOrEqual(defaultConfiguration(catalogue, modele).price.totalCents);
+    }
   });
 });

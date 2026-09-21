@@ -239,7 +239,7 @@ export async function ouvrirDossier(donnees: FormData): Promise<void> {
   await prisma.serviceCase.create({
     data: {
       reference: `SAV-${new Date().getFullYear()}-${String(compte + 1).padStart(4, "0")}`,
-      type: String(donnees.get("type") ?? "REPARATION") as never,
+      type: typeDossier(donnees.get("type")),
       description,
       orderId: commande?.id ?? null,
       userId: commande?.userId ?? null,
@@ -355,4 +355,10 @@ export async function enregistrerGabarit(donnees: FormData): Promise<void> {
   });
 
   revalidatePath("/atelier/parametres");
+}
+
+/** Valeur de formulaire → type de dossier connu ; sinon « réparation ». */
+function typeDossier(valeur: FormDataEntryValue | null): "GARANTIE" | "REVISION" | "REPARATION" {
+  const texte = String(valeur ?? "");
+  return texte === "GARANTIE" || texte === "REVISION" ? texte : "REPARATION";
 }

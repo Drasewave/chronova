@@ -1,4 +1,4 @@
-import type { Catalogue } from "./catalogue";
+import type { CatalogueLecture } from "./catalogue";
 import type { Selections } from "./types";
 
 export interface PriceLine {
@@ -24,7 +24,7 @@ export interface PriceBreakdown {
  * l'unité de Stripe et la seule qui ne dérive pas à l'addition.
  */
 export function computePrice(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   baseCents: number,
   selections: Selections,
 ): PriceBreakdown {
@@ -79,7 +79,7 @@ export interface LeadTime {
  * part dans l'e-mail de confirmation.
  */
 export function computeLeadTime(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   assemblyDays: number,
   selections: Selections,
 ): LeadTime {

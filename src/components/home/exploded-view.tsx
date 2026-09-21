@@ -956,7 +956,7 @@ export function ExplodedView() {
       ref={piste}
       data-theme="night"
       aria-labelledby="titre-eclate"
-      className={cn("relative bg-bg text-fg", anime && "h-[220vh] lg:h-[300vh]")}
+      className={cn("relative bg-bg text-fg", anime && "h-[170vh] md:h-[220vh] lg:h-[300vh]")}
     >
       {/* La scène se cale SOUS l'en-tête collant, en `dvh` : sur téléphone, `100vh`
           compte la barre d'adresse et le titre partait sous l'en-tête. */}
@@ -965,9 +965,11 @@ export function ExplodedView() {
           anime &&
             "sticky top-16 flex h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden md:top-20 md:h-[calc(100dvh-5rem)]",
         )}
-        style={anime ? undefined : { paddingBlock: "var(--section-y)" }}
+        // La gouttière est portée par la bande, pas par le conteneur centré : le
+        // titre part ainsi du même bord gauche que le logo et les autres sections.
+        style={{ paddingInline: "var(--gutter)", ...(anime ? {} : { paddingBlock: "var(--section-y)" }) }}
       >
-        <div className="mx-auto w-full max-w-wide" style={{ paddingInline: "var(--gutter)" }}>
+        <div className="mx-auto w-full max-w-wide">
           {/* Trois colonnes en grand écran : l'intitulé à gauche, la pile au
               centre, la nomenclature à droite. Le dessin récupère ainsi toute
               la hauteur d'écran disponible. */}

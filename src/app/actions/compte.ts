@@ -6,6 +6,8 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/db";
 import type { EtatFormulaire } from "@/lib/formulaires/etat";
 
+const ADRESSES_MAX = 10;
+
 async function utilisateurConnecte() {
   const session = await auth();
   if (!session?.user) redirect("/connexion?suite=/compte");
@@ -23,6 +25,15 @@ export async function enregistrerProfil(
   const poignet = String(donnees.get("poignet") ?? "").trim();
   const preferences = String(donnees.get("preferences") ?? "").trim();
   const newsletter = donnees.get("newsletter") === "on";
+
+  // Longueurs bornées côté serveur : les `maxLength` du HTML ne sont qu'un confort (audit A-12).
+  const tropLong: Record<string, string> = {};
+  if (nom.length > 120) tropLong["nom"] = "Nom trop long : 120 caractères au maximum.";
+  if (telephone.length > 40) tropLong["telephone"] = "Numéro trop long : 40 caractères au maximum.";
+  if (preferences.length > 2000) tropLong["preferences"] = "Texte trop long : 2 000 caractères au maximum.";
+  if (Object.keys(tropLong).length > 0) {
+    return { statut: "erreur", message: "Le formulaire n'a pas pu être enregistré.", erreurs: tropLong };
+  }
 
   const poignetMm = poignet ? Number(poignet) : null;
   if (poignetMm !== null && (!Number.isFinite(poignetMm) || poignetMm < 120 || poignetMm > 240)) {
@@ -88,12 +99,25 @@ export async function ajouterAdresse(
   if (champs.line1.length < 4) erreurs["ligne1"] = "Indiquez le numéro et la rue.";
   if (!/^\d{4,10}$/.test(champs.postalCode)) erreurs["codePostal"] = "Code postal invalide.";
   if (champs.city.length < 2) erreurs["ville"] = "Indiquez la ville.";
+  // Bornes hautes : ces champs finissent sur une étiquette de colis (audit A-12).
+  if ((champs.label?.length ?? 0) > 60) erreurs["label"] = "Libellé trop long : 60 caractères au maximum.";
+  if (champs.fullName.length > 120) erreurs["nomComplet"] = "Nom trop long : 120 caractères au maximum.";
+  if (champs.line1.length > 200) erreurs["ligne1"] = "Adresse trop longue : 200 caractères au maximum.";
+  if ((champs.line2?.length ?? 0) > 200) erreurs["ligne2"] = "Complément trop long : 200 caractères au maximum.";
+  if (champs.city.length > 120) erreurs["ville"] = "Nom de ville trop long.";
 
   if (Object.keys(erreurs).length > 0) {
     return { statut: "erreur", message: "L'adresse n'a pas pu être enregistrée.", erreurs };
   }
 
-  const premiere = (await prisma.address.count({ where: { userId: utilisateur.id } })) === 0;
+  const dejaEnregistrees = await prisma.address.count({ where: { userId: utilisateur.id } });
+  if (dejaEnregistrees >= ADRESSES_MAX) {
+    return {
+      statut: "erreur",
+      message: `Votre carnet contient déjà ${ADRESSES_MAX} adresses. Supprimez-en une avant d'en ajouter une autre.`,
+    };
+  }
+  const premiere = dejaEnregistrees === 0;
 
   await prisma.address.create({
     data: {
@@ -152,6 +176,11 @@ export async function definirAdresseParDefaut(donnees: FormData): Promise<void> 
  */
 export async function anonymiserCompte(): Promise<void> {
   const utilisateur = await utilisateurConnecte();
+  // Le compte de l'atelier ne s'efface pas d'un clic : il n'y aurait plus personne
+  // pour ouvrir le CRM (audit A-42). Le retrait d'un administrateur se fait en base.
+  if (utilisateur.role === "ADMIN") {
+    throw new Error("Le compte de l'atelier ne peut pas être effacé depuis l'espace client.");
+  }
   const anonyme = `supprime+${utilisateur.id}@chronova.invalid`;
   const { email } = await prisma.user.findUniqueOrThrow({
     where: { id: utilisateur.id },

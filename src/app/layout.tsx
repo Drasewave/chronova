@@ -3,6 +3,7 @@ import { Geist_Mono, Hanken_Grotesk, Jost } from "next/font/google";
 import { INTRO_BOOT } from "@/components/intro/intro-boot";
 import { CartDrawer } from "@/components/panier/cart-drawer";
 import { CartProvider } from "@/lib/panier/cart";
+import { HorlogeVivante } from "@/watch/horloge-vivante";
 import "./globals.css";
 
 // Jost : le géométrique des cadrans, en titrage. Variable, donc une seule
@@ -76,6 +77,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <CartDrawer />
         </CartProvider>
+        {/* Met toutes les montres du site (public et atelier) à l'heure du visiteur, d'un même battement. */}
+        <HorlogeVivante />
       </body>
     </html>
   );

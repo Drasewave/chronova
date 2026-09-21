@@ -42,15 +42,20 @@ export async function Footer() {
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
             {COLONNES.map((colonne) => (
               <nav key={colonne.titre} aria-label={colonne.titre}>
-                <h2 className="type-mono mb-5 text-fg-soft">{colonne.titre}</h2>
-                <ul className="flex flex-col gap-3">
+                <h2 className="type-mono mb-3 text-fg-soft md:mb-4">{colonne.titre}</h2>
+                {/* Le lien est une boîte de 44 px de haut sur écran tactile (cible
+                    confortable au pouce) ; le soulignement reste sous le texte, porté
+                    par le libellé et non par la boîte. */}
+                <ul className="flex flex-col md:gap-1">
                   {colonne.liens.map((lien) => (
                     <li key={lien.href}>
                       <Link
                         href={lien.href}
-                        className="type-body link-underline text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
+                        className="group/lien flex min-h-11 items-center text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink md:min-h-8"
                       >
-                        {lien.label}
+                        <span className="type-body link-underline group-hover/lien:bg-[length:100%_1px] group-focus-visible/lien:bg-[length:100%_1px]">
+                          {lien.label}
+                        </span>
                       </Link>
                     </li>
                   ))}
@@ -80,9 +85,11 @@ export async function Footer() {
             {identite.email ? (
               <a
                 href={`mailto:${identite.email}`}
-                className="type-caption link-underline self-start text-fg hover:text-accent-ink"
+                className="group/lien -my-2.5 inline-flex min-h-11 items-center self-start text-fg hover:text-accent-ink"
               >
-                {identite.email}
+                <span className="type-caption link-underline group-hover/lien:bg-[length:100%_1px] group-focus-visible/lien:bg-[length:100%_1px]">
+                  {identite.email}
+                </span>
               </a>
             ) : (
               <FillMe>adresse e-mail de contact</FillMe>

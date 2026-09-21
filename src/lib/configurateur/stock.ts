@@ -1,5 +1,5 @@
 import type { Catalogue } from "./catalogue";
-import type { Part, StockState } from "./types";
+import type { CatalogueOptionPublic, Part, StockState } from "./types";
 
 /** Quantité réellement disponible : ce qui est en rayon moins ce qui est promis. */
 export function availableQuantity(part: Part): number {
@@ -41,4 +41,20 @@ export function restockMessage(catalogue: Catalogue, partRef: string | undefined
   const part = catalogue.partIndex.get(partRef);
   if (!part || availableQuantity(part) > 0) return undefined;
   return `Réapprovisionnement annoncé sous ${part.restockDays} jours.`;
+}
+
+/**
+ * Les deux mêmes questions, posées côté navigateur : l'option ne connaît plus sa
+ * pièce, seulement l'état que la projection publique a calculé pour elle.
+ */
+export function optionStockState(option: CatalogueOptionPublic): StockState {
+  return option.stock?.state ?? "disponible";
+}
+
+export function optionRestockMessage(option: CatalogueOptionPublic): string | undefined {
+  if (option.stock?.state !== "bientot") return undefined;
+  const jours = option.stock.restockDays;
+  return jours === undefined
+    ? "Réapprovisionnement en cours."
+    : `Réapprovisionnement annoncé sous ${jours} jours.`;
 }

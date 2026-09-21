@@ -406,8 +406,6 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
                 data-defile={role}
                 className={cn(
                   "absolute inset-0",
-                  // Seule la toute première montre garde le balayage d'aiguilles de l'ouverture.
-                  !(etat.vierge && index === depart) && "defile-suite",
                   role === "sortante" && "defile-sort",
                   role === "entrante" && "defile-entre z-10",
                   role === "attente" && "invisible opacity-0 will-change-[transform,opacity,filter]",

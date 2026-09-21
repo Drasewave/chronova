@@ -12,7 +12,7 @@ const R = 40;
  * 12 h – 6 h : le miroir horizontal met la couronne de 3 h à gauche, celle de
  * 4 h en bas à gauche, sans inverser le haut et le bas de son éclairage.
  */
-export function flankTransform(at: 2 | 3 | 4, mirror: boolean): string | undefined {
+function flankTransform(at: 2 | 3 | 4, mirror: boolean): string | undefined {
   const parts: string[] = [];
   if (mirror) parts.push(`translate(${2 * C} 0) scale(-1 1)`);
   if (at !== 3) parts.push(`rotate(${(at - 3) * 30} ${C} ${C})`);

@@ -134,7 +134,8 @@ function Cyclops({ uid, light }: { uid: string; light: boolean }) {
       <g clipPath={`url(#${uid}-clip-loupe)`}>
         {/* Le guichet, grossi : il déborde de la lentille. */}
         <rect x={x - 4} y={y + 4} width={w + 8} height={h - 8} fill={disque} />
-        <text x={x + w / 2} y={y + h / 2 + 17} textAnchor="middle" fill={encre} style={{ fontFamily: "var(--font-ui)", fontWeight: 600, fontSize: 48 }}>
+        {/* Même quantième que le guichet dessous : l'horloge vivante met les deux à jour ensemble. */}
+        <text data-guichet="quantieme" x={x + w / 2} y={y + h / 2 + 17} textAnchor="middle" fill={encre} style={{ fontFamily: "var(--font-ui)", fontWeight: 600, fontSize: 48 }}>
           11
         </text>
         <rect x={x} y={y} width={w} height={h} fill={PAPER} fillOpacity="0.1" />

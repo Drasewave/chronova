@@ -51,7 +51,7 @@ export default async function Confirmation(props: PageProps<"/commande/confirmat
           <>
             <p className="type-lead mt-6 text-fg-soft">
               Commande <span className="type-mono">{commande.number}</span> enregistrée. Un e-mail de
-              confirmation part à l&apos;instant ; vous serez prévenu·e à chaque changement
+              confirmation part à l&apos;instant ; vous recevrez un message à chaque changement
               d&apos;étape.
             </p>
 

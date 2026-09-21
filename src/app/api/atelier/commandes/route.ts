@@ -26,7 +26,12 @@ const COLONNES = [
 
 /** Une cellule CSV : guillemets doublés, champ entouré si besoin. */
 function cellule(valeur: string | number): string {
-  const texte = String(valeur);
+  const brut = String(valeur);
+  // Injection de formule : un nom saisi par un client (« =HYPERLINK(…) ») serait
+  // exécuté par le tableur du comptable. Tout texte qui commence par = + - @,
+  // tabulation ou retour chariot est neutralisé par une apostrophe — sauf les
+  // vrais nombres (une marge négative « -12.00 » doit rester un nombre).
+  const texte = /^[=+\-@\t\r]/.test(brut) && !/^-?\d+(\.\d+)?$/.test(brut) ? `'${brut}` : brut;
   return /[";\n]/.test(texte) ? `"${texte.replaceAll('"', '""')}"` : texte;
 }
 

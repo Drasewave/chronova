@@ -4,17 +4,15 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { paiementSimule, stripeOuNull } from "@/lib/stripe";
-import {
-  confirmerPaiement,
-  creerCommandeEnAttente,
-  fraisDePort,
-  type LignePanier,
-} from "@/lib/commandes/creation";
+import { creerCommandeEnAttente, fraisDePort, type LignePanier } from "@/lib/commandes/creation";
+import { PanierIndisponibleError } from "@/lib/commandes/disponibilite";
+import { finaliser } from "@/lib/commandes/finalisation";
+import { REGLES } from "@/lib/securite/limite-debit";
+import { limiter } from "@/lib/securite/limite-requete";
 import { VERSION_CGV } from "@/lib/content/versions";
-import { envoyerCourriel } from "@/lib/email";
-import { formatPrice } from "@/lib/utils";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const LIGNES_MAX = 20;
 
 /**
  * Départ vers le paiement.
@@ -35,6 +33,21 @@ export async function partirAuPaiement(
     return { erreur: "Votre panier est vide." };
   }
 
+  // Une action serveur reçoit ce que le navigateur veut bien envoyer : le type
+  // TypeScript ne protège de rien. On ne garde que des lignes bien formées.
+  const lignesValides = lignes
+    .filter(
+      (ligne): ligne is LignePanier =>
+        typeof ligne?.modelSlug === "string" &&
+        ligne.modelSlug.length <= 80 &&
+        typeof ligne.shareParam === "string" &&
+        ligne.shareParam.length <= 4000 &&
+        typeof ligne.quantity === "number" &&
+        Number.isFinite(ligne.quantity),
+    )
+    .slice(0, LIGNES_MAX);
+  if (lignesValides.length === 0) return { erreur: "Votre panier est vide." };
+
   // La case du panier est un confort ; la règle, elle, se vérifie ici. Aucune
   // commande ne part au paiement sans acceptation des conditions de vente.
   if (cgvAcceptees !== true) {
@@ -53,19 +66,37 @@ export async function partirAuPaiement(
     };
   }
 
-  const commande = await creerCommandeEnAttente({
-    userId: session.user.id,
-    email: session.user.email ?? "",
-    lignes,
-    adresse: {
-      fullName: adresse.fullName,
-      line1: adresse.line1,
-      line2: adresse.line2,
-      postalCode: adresse.postalCode,
-      city: adresse.city,
-      country: adresse.country,
-    },
-  });
+  // Chaque départ au paiement crée une commande en base : on borne (audit A-12).
+  const tropVite = await limiter("commande", [
+    { cle: "ip", regle: REGLES.commandeParIp },
+    { cle: `compte:${session.user.id}`, regle: REGLES.commandeParCompte },
+  ]);
+  if (tropVite) return { erreur: tropVite };
+
+  let commande: Awaited<ReturnType<typeof creerCommandeEnAttente>>;
+  try {
+    commande = await creerCommandeEnAttente({
+      userId: session.user.id,
+      email: session.user.email ?? "",
+      lignes: lignesValides,
+      adresse: {
+        fullName: adresse.fullName,
+        line1: adresse.line1,
+        line2: adresse.line2,
+        postalCode: adresse.postalCode,
+        city: adresse.city,
+        country: adresse.country,
+      },
+    });
+  } catch (erreur) {
+    // Une pièce n'est plus disponible (stock revalidé côté serveur, audit A-13) :
+    // le message nomme le choix concerné, le client sait quoi modifier.
+    if (erreur instanceof PanierIndisponibleError) return { erreur: erreur.message };
+    if (erreur instanceof Error && erreur.message === "Panier vide.") {
+      return { erreur: "Les montres de votre panier ne sont plus au catalogue. Recomposez-les depuis la collection." };
+    }
+    throw erreur;
+  }
 
   // Preuve de l'acceptation : date, version du texte, présence d'une gravure
   // (qui retire le droit de rétractation). Interne, jamais montrée au client.
@@ -163,51 +194,6 @@ async function commandeGravee(orderId: string): Promise<boolean> {
     },
   });
   return nombre > 0;
-}
-
-/** Confirme la commande puis envoie l'e-mail, sans jamais bloquer sur l'e-mail. */
-export async function finaliser(orderId: string): Promise<void> {
-  const resultat = await confirmerPaiement({ orderId });
-  if (resultat.deja) return;
-
-  const commande = await prisma.order.findUniqueOrThrow({
-    where: { id: orderId },
-    include: { items: true, user: { select: { name: true } } },
-  });
-
-  const gabarit = await prisma.emailTemplate.findUnique({ where: { key: "commande.payee" } });
-  const prenom = commande.user?.name?.split(" ")[0] ?? "";
-  const delai = commande.promisedAt
-    ? Math.max(
-        1,
-        Math.round((commande.promisedAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000)),
-      )
-    : 14;
-
-  const corps = (gabarit?.bodyMd ?? "Votre commande {{numero}} est enregistrée.")
-    .replaceAll("{{prenom}}", prenom)
-    .replaceAll("{{numero}}", commande.number)
-    .replaceAll("{{delai}}", String(delai));
-
-  try {
-    await envoyerCourriel({
-      to: commande.email,
-      subject: (gabarit?.subject ?? "Votre commande {{numero}}").replaceAll(
-        "{{numero}}",
-        commande.number,
-      ),
-      text: [
-        corps,
-        "",
-        `Total : ${formatPrice(commande.totalCents)}`,
-        `Suivi : ${SITE}/compte/commandes/${commande.number}`,
-      ].join("\n"),
-    });
-  } catch (erreur) {
-    // Un e-mail qui ne part pas ne doit pas annuler une commande payée : on
-    // trace, la commande reste valide, et le CRM pourra relancer l'envoi.
-    console.error("E-mail de confirmation non envoyé :", erreur);
-  }
 }
 
 function resumeCourt(snapshot: unknown): string {

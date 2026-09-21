@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { envoyerCourriel } from "@/lib/email";
-import type { OrderStatus } from "@/generated/prisma/enums";
+import { OrderStatus } from "@/generated/prisma/enums";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -35,7 +35,10 @@ async function exigerAdmin() {
 export async function changerEtape(donnees: FormData): Promise<void> {
   const admin = await exigerAdmin();
   const numero = String(donnees.get("numero") ?? "");
-  const cible = String(donnees.get("etape") ?? "") as OrderStatus;
+  const etape = String(donnees.get("etape") ?? "");
+  // Valeur de formulaire : on vérifie qu'elle est bien un statut avant de l'écrire.
+  if (!Object.hasOwn(OrderStatus, etape)) throw new Error("Étape inconnue.");
+  const cible = etape as OrderStatus;
   const note = String(donnees.get("note") ?? "").trim();
 
   const commande = await prisma.order.findUniqueOrThrow({

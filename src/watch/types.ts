@@ -39,7 +39,11 @@ export type CrownStyle = "signee" | "lisse" | "oignon";
 export type StrapKind = "acier-3-maillons" | "acier-jubile" | "cuir" | "cuir-glace" | "caoutchouc" | "nato";
 /** `box` : verre très saillant à flancs droits et dessus bombé, comme les verres acryliques d'autrefois. */
 export type Crystal = "plat" | "bombe" | "box";
-export type Movement = "NH35" | "NH34" | "NH38" | "VK64";
+/**
+ * `NH36` : le NH35 doté d'un disque des jours. C'est le seul calibre de la
+ * famille qui affiche jour ET quantième ; NH35 et NH34 n'ont que le quantième.
+ */
+export type Movement = "NH35" | "NH36" | "NH34" | "NH38" | "VK64";
 export type Caseback = "plein" | "transparent";
 export type WatchView = "face" | "profil" | "dos";
 
@@ -112,25 +116,3 @@ export interface WatchRender {
   /** Heure figée du rendu. 10 h 10 : la position des photographies horlogères. */
   time?: { hours: number; minutes: number; seconds: number };
 }
-
-/** Les calques, dans l'ordre exact de superposition en vue de face. */
-export const FACE_LAYERS = [
-  "ombre",
-  "bracelet",
-  // La couronne se dessine AVANT le boîtier : son pied disparaît sous le flanc.
-  "couronne",
-  "boitier",
-  "lunette",
-  "insert",
-  "cadran",
-  "minuterie",
-  "index",
-  "signature",
-  "guichet-date",
-  "aiguilles",
-  "axe",
-  "verre",
-  "reflet",
-] as const;
-
-export type FaceLayer = (typeof FACE_LAYERS)[number];

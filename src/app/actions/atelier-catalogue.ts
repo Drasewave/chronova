@@ -27,6 +27,13 @@ function rafraichirVitrine() {
 const centimes = (valeur: FormDataEntryValue | null) =>
   Math.round(Number(String(valeur ?? "0").replace(",", ".")) * 100);
 
+/** Prix d'un modèle : strictement positif, sinon `undefined` (Prisma n'y touche pas). */
+function prixOuInchange(valeur: FormDataEntryValue | null): number | undefined {
+  if (String(valeur ?? "").trim() === "") return undefined;
+  const montant = centimes(valeur);
+  return Number.isFinite(montant) && montant > 0 && montant < 2_000_000_000 ? montant : undefined;
+}
+
 /** Une couleur de rendu : six chiffres hexadécimaux, ou rien. */
 function couleur(valeur: FormDataEntryValue | null): string | null {
   const brut = String(valeur ?? "").trim();
@@ -130,13 +137,17 @@ export async function enregistrerModele(donnees: FormData): Promise<void> {
       name: String(donnees.get("nom") ?? "").trim() || undefined,
       tagline: String(donnees.get("accroche") ?? "").trim() || undefined,
       summary: String(donnees.get("resume") ?? "").trim() || undefined,
-      basePriceCents: centimes(donnees.get("prix")),
+      // Champ vide ou invalide : on garde le prix en base. Avant, `Number("")`
+      // valait 0 et le modèle passait à 0 € sur tout le site (audit A-42).
+      basePriceCents: prixOuInchange(donnees.get("prix")),
       assemblyDays: Math.max(1, Math.round(nombre("assemblage")) || 14),
       diameterMm: Math.round(nombre("diametre")) || undefined,
       lugToLugMm: nombre("corne") || undefined,
       thicknessMm: nombre("epaisseur") || undefined,
       lugWidthMm: Math.round(nombre("entrecorne")) || undefined,
-      waterResistM: Math.round(nombre("etancheite")),
+      waterResistM: Number.isFinite(nombre("etancheite")) && String(donnees.get("etancheite") ?? "").trim() !== ""
+        ? Math.max(0, Math.round(nombre("etancheite")))
+        : undefined,
       movementNote: String(donnees.get("mouvement") ?? "").trim() || undefined,
       seoTitle: String(donnees.get("seoTitre") ?? "").trim() || null,
       seoDescription: String(donnees.get("seoDescription") ?? "").trim() || null,

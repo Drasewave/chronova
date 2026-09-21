@@ -4,8 +4,8 @@ import { C, R_DIAL, R_MINUTE_TRACK, n, polar } from "../geometry";
 import type { DateWindow as DateWindowKind, DialTexture, MetalTone, Movement } from "../types";
 
 /** Bord intérieur du réhaut imprimé d'une plongeuse, et du réhaut boussole. */
-export const R_CHAPTER_IN = 263;
-export const R_COMPASS_IN = 252;
+const R_CHAPTER_IN = 263;
+const R_COMPASS_IN = 252;
 /** Minuterie repoussée vers le centre quand le réhaut boussole prend sa place. */
 const R_TRACK_BOUSSOLE = 236;
 
@@ -29,6 +29,16 @@ interface DialProps {
   waterResistM?: number;
   /** Métal du cerclage rapporté (cœur ouvert). */
   metal?: MetalTone;
+  /**
+   * Seconde courante, en degrés : sur un chronographe elle se lit au compteur
+   * « SEC », pas au centre. Absente : compteur à zéro.
+   */
+  smallSecondsAngle?: number;
+  /**
+   * Nom resserré et descendu d'un cran : l'échelle 13–24 d'un cadran de terrain
+   * occupe la place habituelle du nom, qui buterait contre « 23 » et « 13 ».
+   */
+  compactSignature?: boolean;
 }
 
 export function Dial({
@@ -44,6 +54,8 @@ export function Dial({
   gmtScale = true,
   waterResistM,
   metal = "acier",
+  smallSecondsAngle = 0,
+  compactSignature = false,
 }: DialProps) {
   const light = isLight(color);
   const printed = light ? shade(color, 0.78) : tint(color, 0.82);
@@ -108,7 +120,7 @@ export function Dial({
       {rehaut === "boussole" && <MinuteTrack color={printed} detail={detail} radius={R_TRACK_BOUSSOLE} />}
       {movement === "NH34" && gmtScale && <GmtRing color={printed} detail={detail} />}
       {movement === "NH38" && <OpenHeart uid={uid} color={color} metal={metal} detail={detail} />}
-      {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} detail={detail} />}
+      {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} detail={detail} secondsAngle={smallSecondsAngle} />}
       {hasDate && (
         <g filter={`url(#${uid}-contact-shadow)`}>
           <DateWindow uid={uid} color={color} kind={dateWindow} />
@@ -118,10 +130,10 @@ export function Dial({
       {/* Signature : le nom, puis la ligne technique, comme une tampographie. */}
       <text
         x={C}
-        y={C - 128}
+        y={compactSignature ? C - 110 : C - 128}
         textAnchor="middle"
         fill={printed}
-        style={{ fontFamily: "var(--font-title)", fontSize: 33, fontWeight: 500, letterSpacing: "0.24em" }}
+        style={{ fontFamily: "var(--font-title)", fontSize: compactSignature ? 27 : 33, fontWeight: 500, letterSpacing: "0.24em" }}
       >
         CHRONOVA
       </text>
@@ -457,19 +469,25 @@ function OpenHeart({ uid, color, metal, detail }: { uid: string; color: string; 
 
 /**
  * Compteurs du VK64 : deux totalisateurs de part et d'autre du centre — 60
- * secondes à 9 h, 30 minutes à 3 h — dans l'axe des poussoirs. Aiguilles fixes,
- * décoratives : ce n'est pas un vrai module chronographe qui décompte. Chaque
+ * secondes à 9 h, 30 minutes à 3 h — dans l'axe des poussoirs. Chaque
  * compteur est une cuvette azurée (sillons concentriques) légèrement en creux,
  * cerclée d'un filet : c'est ce contraste franc qui fait le « panda ».
+ *
+ * Le serveur pose la petite seconde sur la seconde de catalogue et le
+ * totalisateur à zéro. Dans le navigateur, `horloge-vivante.tsx` les reprend
+ * (`data-aiguille`) avec la même convention : sur un méca-quartz la
+ * seconde courante vit dans le compteur « SEC », qui bat une fois par seconde ;
+ * le totalisateur « MIN » appartient au chronographe, arrêté et remis à zéro,
+ * et retourne donc à midi comme la grande trotteuse centrale.
  */
-function ChronoSubdials({ color, detail }: { color: string; detail: "full" | "compact" }) {
+function ChronoSubdials({ color, detail, secondsAngle }: { color: string; detail: "full" | "compact"; secondsAngle: number }) {
   const light = isLight(color);
   const ink = light ? shade(color, 0.7) : tint(color, 0.75);
   const offset = 128;
   const radius = 78;
   const full = detail === "full";
 
-  const subdial = (cx: number, angleDeg: number, label: string, chiffres: string[]) => (
+  const subdial = (cx: number, angleDeg: number, label: string, chiffres: string[], role: "petite-seconde" | "compteur-minutes") => (
     <g key={cx} transform={`translate(${cx} ${C})`}>
       {/* Cuvette : l'arête haute-gauche est dans l'ombre, la basse-droite éclairée. */}
       <circle r={radius + 2.5} fill={INK} fillOpacity="0.55" />
@@ -508,7 +526,7 @@ function ChronoSubdials({ color, detail }: { color: string; detail: "full" | "co
             </text>
           );
         })}
-      <path d={`M -2.6 12 L -0.8 ${-(radius - 16)} L 0.8 ${-(radius - 16)} L 2.6 12 Z`} fill={ink} transform={`rotate(${angleDeg})`} />
+      <path data-aiguille={role} d={`M -2.6 12 L -0.8 ${-(radius - 16)} L 0.8 ${-(radius - 16)} L 2.6 12 Z`} fill={ink} transform={`rotate(${angleDeg})`} />
       <circle r="5" fill={ink} />
       <circle r="1.6" fill={color} />
       {full && (
@@ -521,8 +539,9 @@ function ChronoSubdials({ color, detail }: { color: string; detail: "full" | "co
 
   return (
     <g data-layer="compteurs">
-      {subdial(C - offset, 55, "SEC", ["15", "30", "45", "60"])}
-      {subdial(C + offset, 205, "MIN", ["", "15", "", "30"])}
+      {subdial(C - offset, secondsAngle, "SEC", ["15", "30", "45", "60"], "petite-seconde")}
+      {/* Chronographe remis à zéro : le totalisateur des minutes est à midi, comme la trotteuse centrale. */}
+      {subdial(C + offset, 0, "MIN", ["", "15", "", "30"], "compteur-minutes")}
     </g>
   );
 }
@@ -530,7 +549,8 @@ function ChronoSubdials({ color, detail }: { color: string; detail: "full" | "co
 function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: DateWindowKind }) {
   // Jour et date : le guichet s'élargit vers le centre, le jour à gauche du
   // quantième. Deux disques superposés tournent dessous, d'où le filet qui les
-  // sépare.
+  // sépare. « LUN 11 » est la pose de catalogue ; une fois la page montée,
+  // l'horloge vivante y écrit le vrai jour et le vrai quantième (`data-guichet`).
   const jour = kind === "jour-date";
   const w = jour ? 136 : 68;
   const x = C + 232 - w;
@@ -549,12 +569,12 @@ function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: Da
       {jour && (
         <>
           <line x1={x + 78} y1={y + 6} x2={x + 78} y2={y + 44} stroke={encre} strokeOpacity="0.35" strokeWidth="1.2" />
-          <text x={x + 42} y={y + 35} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 26, letterSpacing: "0.02em" }}>
+          <text data-guichet="jour" x={x + 42} y={y + 35} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 26, letterSpacing: "0.02em" }}>
             LUN
           </text>
         </>
       )}
-      <text x={x + w - 34} y={y + 36} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 30 }}>
+      <text data-guichet="quantieme" x={x + w - 34} y={y + 36} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 30 }}>
         11
       </text>
     </g>

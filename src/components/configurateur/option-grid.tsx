@@ -1,10 +1,9 @@
 "use client";
 
 import { useId } from "react";
-import type { Catalogue } from "@/lib/configurateur/catalogue";
-import type { CatalogueOption, OptionGroup } from "@/lib/configurateur/types";
+import type { CatalogueOptionPublic, OptionGroupPublic } from "@/lib/configurateur/types";
 import type { RuleVerdict } from "@/lib/configurateur/rules";
-import { resolveStockState, restockMessage, stockLabel } from "@/lib/configurateur/stock";
+import { optionRestockMessage, optionStockState, stockLabel } from "@/lib/configurateur/stock";
 import { cn, formatPrice } from "@/lib/utils";
 
 /**
@@ -17,15 +16,13 @@ import { cn, formatPrice } from "@/lib/utils";
  * `aria-describedby`, donc lue elle aussi.
  */
 export function OptionGrid({
-  catalogue,
   group,
   value,
   verdicts,
   onChange,
   footnote,
 }: {
-  catalogue: Catalogue;
-  group: OptionGroup;
+  group: OptionGroupPublic;
   value: string | undefined;
   verdicts: Map<string, RuleVerdict>;
   onChange: (groupKey: string, optionKey: string) => void;
@@ -50,7 +47,6 @@ export function OptionGrid({
         {group.options.map((option) => (
           <OptionChoice
             key={option.key}
-            catalogue={catalogue}
             nom={nom}
             group={group}
             option={option}
@@ -68,7 +64,6 @@ export function OptionGrid({
 }
 
 function OptionChoice({
-  catalogue,
   nom,
   group,
   option,
@@ -77,19 +72,18 @@ function OptionChoice({
   pastille,
   onChange,
 }: {
-  catalogue: Catalogue;
   nom: string;
-  group: OptionGroup;
-  option: CatalogueOption;
+  group: OptionGroupPublic;
+  option: CatalogueOptionPublic;
   checked: boolean;
   verdict: RuleVerdict | undefined;
   pastille: boolean;
   onChange: (groupKey: string, optionKey: string) => void;
 }) {
-  const stock = resolveStockState(catalogue, option.partRef);
+  const stock = optionStockState(option);
   const rupture = stock === "bientot";
   const bloque = verdict?.selectable === false || rupture;
-  const motif = rupture ? restockMessage(catalogue, option.partRef) : verdict?.reason;
+  const motif = rupture ? optionRestockMessage(option) : verdict?.reason;
   const motifId = `${nom}-${option.key}-motif`;
 
   const champ = (

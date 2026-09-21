@@ -4,6 +4,7 @@ import { buildConfiguration } from "@/lib/configurateur/configuration";
 import { decodeConfig } from "@/lib/configurateur/url";
 import { getCatalogue, getModel } from "@/lib/data/queries";
 import type { OrderStatus } from "@/generated/prisma/enums";
+import { PanierIndisponibleError, piecesManquantes, type PieceManquante } from "./disponibilite";
 
 /** Ce que le client envoie : une référence, jamais un prix. */
 export interface LignePanier {
@@ -45,6 +46,7 @@ export async function chiffrerPanier(lignes: LignePanier[]) {
   const chiffrees = [];
 
   for (const ligne of lignes) {
+    if (typeof ligne?.modelSlug !== "string") continue;
     const modele = await getModel(ligne.modelSlug);
     if (!modele) continue;
 
@@ -53,7 +55,9 @@ export async function chiffrerPanier(lignes: LignePanier[]) {
       ...decodeConfig(catalogue, ligne.shareParam),
     };
     const configuration = buildConfiguration(catalogue, modele, selections);
-    const quantite = Math.min(9, Math.max(1, Math.trunc(ligne.quantity)));
+    // `quantity` vient du navigateur : un NaN traverserait `Math.min/max` intact.
+    const demandee = Number(ligne.quantity);
+    const quantite = Number.isFinite(demandee) ? Math.min(9, Math.max(1, Math.trunc(demandee))) : 1;
 
     chiffrees.push({ modele, configuration, quantite });
   }
@@ -64,6 +68,34 @@ export async function chiffrerPanier(lignes: LignePanier[]) {
   );
 
   return { chiffrees, sousTotalCents };
+}
+
+type LigneChiffree = Awaited<ReturnType<typeof chiffrerPanier>>["chiffrees"][number];
+
+/**
+ * Ce que le panier consomme, comparé à ce qui est LIBRE en base maintenant
+ * (audit A-13). Les compteurs sont relus directement, pas pris dans le catalogue
+ * mis en cache pour le rendu : c'est l'instant de la commande qui compte.
+ */
+export async function verifierDisponibilite(chiffrees: LigneChiffree[]): Promise<PieceManquante[]> {
+  const references = [
+    ...new Set(chiffrees.flatMap((ligne) => ligne.configuration.bom.map((entree) => entree.part.ref))),
+  ];
+  if (references.length === 0) return [];
+
+  const pieces = await prisma.part.findMany({
+    where: { reference: { in: references } },
+    select: { reference: true, quantityOnHand: true, quantityReserved: true },
+  });
+
+  return piecesManquantes(
+    chiffrees.map((ligne) => ({
+      modelName: ligne.modele.name,
+      quantite: ligne.quantite,
+      bom: ligne.configuration.bom,
+    })),
+    new Map(pieces.map((piece) => [piece.reference, piece] as const)),
+  );
 }
 
 /** Frais de port, lus dans les paramètres de l'atelier. */
@@ -104,7 +136,9 @@ async function numeroDisponible(): Promise<string> {
  * Crée la commande en attente de paiement.
  *
  * Rien n'est réservé à ce stade : tant que le paiement n'est pas confirmé, le
- * stock reste disponible pour quelqu'un d'autre.
+ * stock reste disponible pour quelqu'un d'autre. En revanche la disponibilité est
+ * VÉRIFIÉE ici : on n'envoie pas au paiement un panier que l'atelier ne peut pas
+ * monter. Lève `PanierIndisponibleError` (message affichable au client).
  */
 export async function creerCommandeEnAttente(options: {
   userId: string;
@@ -114,6 +148,9 @@ export async function creerCommandeEnAttente(options: {
 }) {
   const { chiffrees, sousTotalCents } = await chiffrerPanier(options.lignes);
   if (chiffrees.length === 0) throw new Error("Panier vide.");
+
+  const manquantes = await verifierDisponibilite(chiffrees);
+  if (manquantes.length > 0) throw new PanierIndisponibleError(manquantes);
 
   const port = await fraisDePort(sousTotalCents);
   const numero = await numeroDisponible();
@@ -198,7 +235,13 @@ export async function confirmerPaiement(options: {
   const catalogue = await getCatalogue();
 
   // Nomenclature : on repart des sélections figées, pas d'un calcul refait.
-  const nomenclature = [];
+  const nomenclature: {
+    orderItemId: string;
+    partId: string;
+    reference: string;
+    quantity: number;
+    unitCostCents: number;
+  }[] = [];
   for (const ligne of commande.items) {
     const modele = await getModel(
       (
@@ -221,60 +264,96 @@ export async function confirmerPaiement(options: {
       nomenclature.push({
         orderItemId: ligne.id,
         partId: piece.id,
+        reference: piece.reference,
         quantity: entree.quantity * ligne.quantity,
         unitCostCents: entree.unitCostCents,
       });
     }
   }
 
-  await prisma.$transaction([
-    prisma.order.update({
-      where: { id: commande.id },
-      data: {
-        status: "PAYEE",
-        paidAt: new Date(),
-        stripePaymentIntentId: options.stripePaymentIntentId ?? null,
-        ...(options.adresse ? { shippingAddress: options.adresse as never } : {}),
-      },
-    }),
-
-    // Réservation du stock : la quantité réservée monte, le journal enregistre
-    // le mouvement. La quantité en rayon ne bouge qu'au moment de l'assemblage.
-    ...nomenclature.map((entree) =>
-      prisma.orderItemPart.create({ data: { ...entree, reservedAt: new Date() } }),
-    ),
-    ...nomenclature.map((entree) =>
-      prisma.part.update({
-        where: { id: entree.partId },
-        data: { quantityReserved: { increment: entree.quantity } },
-      }),
-    ),
-    ...nomenclature.map((entree) =>
-      prisma.stockMovement.create({
+  /**
+   * Tout se joue dans UNE transaction, et elle commence par le changement de
+   * statut conditionnel : `updateMany … where status = EN_ATTENTE_PAIEMENT`.
+   * Si Stripe livre deux fois l'évènement en même temps, une seule des deux
+   * transactions modifie la ligne ; l'autre voit `count === 0` et s'arrête avant
+   * toute réservation. Le test de statut fait plus haut, hors transaction, n'est
+   * qu'un raccourci (audit A-14).
+   */
+  const premiere = await prisma.$transaction(
+    async (tx) => {
+      const bascule = await tx.order.updateMany({
+        where: { id: commande.id, status: "EN_ATTENTE_PAIEMENT" },
         data: {
-          partId: entree.partId,
-          type: "RESERVATION",
-          quantity: -entree.quantity,
-          orderId: commande.id,
-          reason: `Commande ${commande.number}`,
+          status: "PAYEE",
+          paidAt: new Date(),
+          stripePaymentIntentId: options.stripePaymentIntentId ?? null,
+          ...(options.adresse ? { shippingAddress: options.adresse as never } : {}),
         },
-      }),
-    ),
+      });
+      if (bascule.count === 0) return false;
 
-    prisma.orderEvent.create({
-      data: { orderId: commande.id, toStatus: "PAYEE", isPublic: true },
-    }),
+      // Réservation du stock : la quantité réservée monte, le journal enregistre
+      // le mouvement. La quantité en rayon ne bouge qu'au moment de l'assemblage.
+      const aCourt: string[] = [];
+      for (const entree of nomenclature) {
+        await tx.orderItemPart.create({
+          data: {
+            orderItemId: entree.orderItemId,
+            partId: entree.partId,
+            quantity: entree.quantity,
+            unitCostCents: entree.unitCostCents,
+            reservedAt: new Date(),
+          },
+        });
+        const piece = await tx.part.update({
+          where: { id: entree.partId },
+          data: { quantityReserved: { increment: entree.quantity } },
+          select: { quantityOnHand: true, quantityReserved: true },
+        });
+        if (piece.quantityReserved > piece.quantityOnHand) aCourt.push(entree.reference);
+        await tx.stockMovement.create({
+          data: {
+            partId: entree.partId,
+            type: "RESERVATION",
+            quantity: -entree.quantity,
+            orderId: commande.id,
+            reason: `Commande ${commande.number}`,
+          },
+        });
+      }
 
-    prisma.assemblyTask.createMany({
-      data: CHECKLIST.map((label, index) => ({
-        orderId: commande.id,
-        label,
-        sortIndex: index,
-      })),
-    }),
-  ]);
+      await tx.orderEvent.create({
+        data: { orderId: commande.id, toStatus: "PAYEE", isPublic: true },
+      });
 
-  return { deja: false, numero: commande.number };
+      // Le client a payé : on ne refuse plus rien. Mais si, entre la création de
+      // la commande et le paiement, quelqu'un d'autre a pris la dernière pièce,
+      // l'atelier doit le savoir tout de suite — note interne, jamais publique.
+      if (aCourt.length > 0) {
+        await tx.orderEvent.create({
+          data: {
+            orderId: commande.id,
+            toStatus: "PAYEE",
+            isPublic: false,
+            note: `Stock insuffisant au moment du paiement, à réapprovisionner : ${[...new Set(aCourt)].join(", ")}.`,
+          },
+        });
+      }
+
+      await tx.assemblyTask.createMany({
+        data: CHECKLIST.map((label, index) => ({
+          orderId: commande.id,
+          label,
+          sortIndex: index,
+        })),
+      });
+
+      return true;
+    },
+    { timeout: 30_000, maxWait: 10_000 },
+  );
+
+  return { deja: !premiere, numero: commande.number };
 }
 
 export const STATUT_PAYEE: OrderStatus = "PAYEE";

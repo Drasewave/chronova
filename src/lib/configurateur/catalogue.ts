@@ -1,4 +1,14 @@
-import type { CatalogueOption, CompatibilityRule, OptionGroup, OptionRef, Part, Step } from "./types";
+import type {
+  CatalogueOption,
+  CatalogueOptionPublic,
+  CompatibilityRule,
+  OptionGroup,
+  OptionGroupPublic,
+  OptionRef,
+  Part,
+  Step,
+  StepPublic,
+} from "./types";
 
 /**
  * Le catalogue tel que le configurateur le consomme.
@@ -14,20 +24,52 @@ export interface CatalogueData {
   parts: Part[];
 }
 
-export interface Catalogue extends CatalogueData {
+/**
+ * Ce dont la logique de configuration a besoin, et rien d'autre : étapes,
+ * options, règles et leurs index. Prix, délais, règles, rendu et lien partagé
+ * se calculent sur cette base, que le catalogue soit complet (serveur) ou public
+ * (navigateur).
+ */
+export interface CatalogueLecture {
+  steps: StepPublic[];
+  rules: CompatibilityRule[];
   /** `groupe:option` → l'option et son contexte. */
-  optionIndex: Map<OptionRef, { step: Step; group: OptionGroup; option: CatalogueOption }>;
-  groupIndex: Map<string, { step: Step; group: OptionGroup }>;
-  partIndex: Map<string, Part>;
+  optionIndex: Map<OptionRef, { step: StepPublic; group: OptionGroupPublic; option: CatalogueOptionPublic }>;
+  groupIndex: Map<string, { step: StepPublic; group: OptionGroupPublic }>;
   /** Règles regroupées par option contrainte : une seule passe par évaluation. */
   rulesBySubject: Map<OptionRef, CompatibilityRule[]>;
 }
 
-export function createCatalogue(data: CatalogueData): Catalogue {
-  const optionIndex = new Map<OptionRef, { step: Step; group: OptionGroup; option: CatalogueOption }>();
-  const groupIndex = new Map<string, { step: Step; group: OptionGroup }>();
+/**
+ * Le catalogue complet : nomenclature, prix d'achat, fournisseurs, quantités.
+ *
+ * NE DOIT JAMAIS être passé en prop à un composant client : tout ce qui traverse
+ * la frontière serveur → client est sérialisé dans le HTML de la page. Pour le
+ * navigateur, passer par `versCataloguePublic` (`./public.ts`). Le champ
+ * `portee` rend l'erreur visible à la compilation : un `Catalogue` n'est pas
+ * assignable à un `CataloguePublic`.
+ */
+export interface Catalogue extends CatalogueLecture, CatalogueData {
+  readonly portee: "atelier";
+  steps: Step[];
+  optionIndex: Map<OptionRef, { step: Step; group: OptionGroup; option: CatalogueOption }>;
+  groupIndex: Map<string, { step: Step; group: OptionGroup }>;
+  partIndex: Map<string, Part>;
+}
 
-  for (const step of data.steps) {
+/** Le catalogue tel qu'il peut partir dans le navigateur. Voir `./public.ts`. */
+export interface CataloguePublic extends CatalogueLecture {
+  readonly portee: "public";
+}
+
+/** Index communs aux deux portées, construits de la même façon. */
+export function indexer<S extends StepPublic>(steps: S[], rules: CompatibilityRule[]) {
+  type G = S["groups"][number];
+  type O = G["options"][number];
+  const optionIndex = new Map<OptionRef, { step: S; group: G; option: O }>();
+  const groupIndex = new Map<string, { step: S; group: G }>();
+
+  for (const step of steps) {
     for (const group of step.groups) {
       groupIndex.set(group.key, { step, group });
       for (const option of group.options) {
@@ -37,19 +79,22 @@ export function createCatalogue(data: CatalogueData): Catalogue {
   }
 
   const rulesBySubject = new Map<OptionRef, CompatibilityRule[]>();
-  for (const rule of data.rules) {
+  for (const rule of rules) {
     if (rule.isActive === false) continue;
     const liste = rulesBySubject.get(rule.subject) ?? [];
     liste.push(rule);
     rulesBySubject.set(rule.subject, liste);
   }
 
+  return { optionIndex, groupIndex, rulesBySubject };
+}
+
+export function createCatalogue(data: CatalogueData): Catalogue {
   return {
     ...data,
-    optionIndex,
-    groupIndex,
+    portee: "atelier",
+    ...indexer(data.steps, data.rules),
     partIndex: new Map(data.parts.map((part) => [part.ref, part])),
-    rulesBySubject,
   };
 }
 

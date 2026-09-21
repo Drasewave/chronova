@@ -5,7 +5,25 @@ export type OptionRef = string;
 
 export type SelectionType = "unique" | "texte" | "mesure";
 
-export interface CatalogueOption {
+/**
+ * Ce que le public a le droit de savoir du stock d'une option : un ÉTAT, et le
+ * délai de réapprovisionnement quand elle est indisponible. Jamais de quantité,
+ * de référence de pièce, de fournisseur ni de prix d'achat.
+ */
+export interface OptionStock {
+  state: StockState;
+  /** Renseigné seulement quand l'état est `bientot`. */
+  restockDays?: number;
+}
+
+/**
+ * Une option telle qu'elle peut partir dans le navigateur.
+ *
+ * Tout ce qui figure ici est affiché ou sert au calcul côté client (prix, délai,
+ * rendu). Rien d'autre ne doit y être ajouté sans se demander si un visiteur a
+ * le droit de le lire dans le source de la page.
+ */
+export interface CatalogueOptionPublic {
   key: string;
   label: string;
   /** Nom de la teinte, toujours affiché : on ne se fie jamais à la couleur seule. */
@@ -16,10 +34,24 @@ export interface CatalogueOption {
   priceDeltaCents: number;
   /** Jours d'atelier supplémentaires : réglage, cuisson, sous-traitance. */
   leadDaysDelta?: number;
-  /** Référence de la pièce de stock consommée par cette option. */
-  partRef?: string;
   /** Ce que l'option change dans le rendu. C'est tout le lien données → dessin. */
   render?: Partial<WatchRender>;
+  /** État public du stock, calculé côté serveur par la projection publique. */
+  stock?: OptionStock;
+}
+
+/** L'option complète, côté serveur : elle sait quelle pièce elle consomme. */
+export interface CatalogueOption extends CatalogueOptionPublic {
+  /** Référence de la pièce de stock consommée par cette option. Interne. */
+  partRef?: string;
+}
+
+export interface OptionGroupPublic extends Omit<OptionGroup, "options"> {
+  options: CatalogueOptionPublic[];
+}
+
+export interface StepPublic extends Omit<Step, "groups"> {
+  groups: OptionGroupPublic[];
 }
 
 export interface OptionGroup {

@@ -1,5 +1,5 @@
 import type { WatchRender } from "@/watch/types";
-import type { Catalogue } from "./catalogue";
+import type { CatalogueLecture } from "./catalogue";
 import type { Selections } from "./types";
 
 /**
@@ -36,7 +36,7 @@ export const BASE_RENDER: WatchRender = {
  * étapes. Le moteur SVG n'a donc jamais connaissance du catalogue, et le
  * catalogue n'a jamais connaissance du dessin.
  */
-export function resolveRender(catalogue: Catalogue, selections: Selections): WatchRender {
+export function resolveRender(catalogue: CatalogueLecture, selections: Selections): WatchRender {
   let render: WatchRender = { ...BASE_RENDER };
 
   for (const step of catalogue.steps) {
@@ -61,7 +61,7 @@ export function resolveRender(catalogue: Catalogue, selections: Selections): Wat
 
 /** Libellé lisible d'une sélection, pour le récapitulatif et le panier. */
 export function describeSelection(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   groupKey: string,
   value: string,
 ): string | undefined {

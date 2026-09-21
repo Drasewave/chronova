@@ -168,6 +168,37 @@
     scroll-behavior: smooth;
     scrollbar-color: color-mix(in srgb, var(--fg) 34%, transparent) transparent;
     scrollbar-width: thin;
+    /* La place de la barre reste réservée quand un dialogue verrouille la page
+       (ci-dessous) : rien ne se décale de sa largeur à l'ouverture du panier. */
+    scrollbar-gutter: stable;
+  }
+
+  /* Un dialogue modal ouvert (panier, zoom) : la page derrière ne défile plus,
+     ni à la molette ni au doigt. Sans cela le fond glissait sous le panier. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  /* Lenis (components/layout/smooth-scroll.tsx). Réglages demandés par la
+     bibliothèque : pas de hauteur imposée, et surtout pas de lissage CSS
+     pendant qu'elle anime — les deux lissages se superposeraient. */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  html.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  html.lenis.lenis-stopped {
+    overflow: clip;
+  }
+
+  .lenis [data-lenis-prevent],
+  .lenis dialog,
+  .lenis .volet {
+    overscroll-behavior: contain;
   }
 
   body {
@@ -520,7 +551,9 @@
      300 ms   le filet bleu se trace sous le nom
      800 ms   le volet se lève (600 ms) ; le nom s'efface avec lui
      1000 ms  le héros entre dessous : la montre tourne, grandit et se met au
-              point pendant que ses aiguilles balaient jusqu'à leur heure ;
+              point pendant que ses aiguilles quittent 10 h 10 pour l'heure
+              réelle (seul geste hors CSS : `src/watch/horloge-vivante.tsx`
+              lit le retard d'`arrivee-montre` et balaie au même moment) ;
               le titre sort ligne à ligne de son masque ; chapô, boutons et
               fiche suivent en cascade
      1400 ms  le rideau a disparu ; le héros finit de se poser (≈ 2 200 ms)
@@ -619,16 +652,6 @@
   }
 }
 
-/* `--depart` : l'angle que l'aiguille doit encore parcourir. */
-@keyframes balayage-aiguille {
-  from {
-    transform: rotate(var(--depart, -60deg));
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-
 /* Le masque reste fixe pendant que la ligne monte : la découpe se referme du
    même pas que la translation. Les marges négatives d'arrivée laissent vivre
    les jambages. */
@@ -671,23 +694,10 @@
   animation: tour-graduation 1500ms var(--ease) var(--entree-retard, 0ms) backwards;
 }
 
-/* Les aiguilles du moteur SVG : chaque aiguille est un <g> sans transformation,
-   enfant du <g> qui porte son angle. La faire tourner autour de l'origine de
-   son repère (le canon) s'ajoute donc à l'angle final sans le remplacer.
-   Premier groupe : heures (et GMT). Second groupe : minutes, puis trotteuse. */
-.entree-montre [data-layer="aiguilles"] > g:not([data-layer]) > g > g {
-  --depart: -48deg;
-  animation: balayage-aiguille 1250ms var(--ease) calc(var(--entree-retard, 0ms) + 40ms)
-    backwards;
-}
-
-.entree-montre [data-layer="aiguilles"] > g:not([data-layer]) ~ g:not([data-layer]) > g:first-child > g {
-  --depart: -165deg;
-}
-
-.entree-montre [data-layer="aiguilles"] > g:not([data-layer]) ~ g:not([data-layer]) > g:last-child > g {
-  --depart: -310deg;
-}
+/* Les aiguilles ne sont plus animées ici : l'horloge vivante
+   (`src/watch/horloge-vivante.tsx`) les fait balayer de la pose de catalogue à
+   l'heure réelle, en écrivant leur `transform`. Une animation CSS sur ces mêmes
+   groupes se cumulerait à la sienne : n'en ajoutez pas. */
 
 .ligne-titre {
   display: inline-block;
@@ -771,11 +781,6 @@
 
 .defile-progression {
   animation: defile-progression var(--d-defile) linear forwards;
-}
-
-/* Le balayage d'aiguilles de l'ouverture ne rejoue pas à chaque modèle. */
-.entree-montre .defile-suite [data-layer="aiguilles"] g {
-  animation: none !important;
 }
 
 /* Textes superposés du défilé : seul l'actif est visible, fondu enchaîné. */
@@ -1169,5 +1174,284 @@
   ::view-transition-image-pair(*) {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
+  }
+}
+
+/* ─────────────────────────────── Platine ──────────────────────────────────
+   Platine tournante (`platine-montre.tsx`) : la montre se manipule du doigt.
+   Le script n'écrit que des `transform` et des `opacity` sur ces conteneurs ;
+   tout le reste — lumière, ombre, boutons, indice — est décrit ici. Aucune
+   couleur en dur : l'ombre est l'encre du thème clair ou le fond du thème nuit,
+   le reflet est `--lueur`. */
+.platine {
+  --platine-ombre: light-dark(var(--fg), var(--bg));
+  position: relative;
+  /* La perspective fait déborder les dessins en tournant : le cadre coupe, et
+     `clip` (pas `hidden`) n'ouvre aucune zone de défilement. */
+  overflow: clip;
+}
+
+.platine-zone {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  /* Le doigt fait défiler la page verticalement ; l'horizontal est pour nous. */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline-offset: -3px;
+}
+
+.platine-zone[data-geste] {
+  cursor: grabbing;
+}
+
+.platine-couche {
+  position: relative;
+  grid-area: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+  z-index: 1;
+}
+
+/* Le profil est le flanc de la boîte : il passe derrière la face et le dos. */
+.platine-couche[data-couche="profil"] {
+  z-index: 0;
+}
+
+.platine-miroir,
+.platine-contre,
+.platine-dessin {
+  width: 100%;
+  height: 100%;
+}
+
+/* Fenêtre du dessin : elle déborde la couche de 3 rem de chaque côté sans en
+   changer la hauteur. Celle du profil porte un masque fondu côté fond de
+   boîte ; le script la referme (`scaleX`, contenu à l'échelle inverse) pour ne
+   laisser voir que la carrure tant que la face est encore là. */
+.platine-fenetre {
+  box-sizing: border-box;
+  width: calc(100% + 6rem);
+  height: 100%;
+  margin-inline: -3rem;
+  padding-inline: 3rem;
+  transform-origin: 0 50%;
+}
+
+.platine-contre {
+  transform-origin: -3rem 50%;
+}
+
+.platine-couche[data-couche="profil"] .platine-fenetre {
+  -webkit-mask-image: linear-gradient(90deg, black 86%, transparent 100%);
+  mask-image: linear-gradient(90deg, black 86%, transparent 100%);
+}
+
+/* Un dessin recadré (fiche modèle) est remis à l'échelle des autres : ce qui
+   sortait de son cadrage doit alors se voir. */
+.platine-dessin svg {
+  overflow: visible;
+}
+
+/* Flanc de 9 h : le profil en miroir, sans ce qui ne vit qu'à 3 h. */
+.platine-couche[data-cote="9h"] :is([data-layer="couronne"], [data-layer="poussoir"], [data-layer="protege-couronne"]) {
+  display: none;
+}
+
+.platine[data-mouvement] :is(.platine-couche, .platine-fenetre, .platine-contre, .platine-ombre, .platine-voile, .platine-reflet) {
+  will-change: transform, opacity;
+}
+
+/* Lumière de la pièce qui tourne : le côté qui fuit s'assombrit, un reflet la
+   traverse. Deux taches fondues dans leur propre dégradé, sans masque : elles
+   ne se lisent que sur la pièce, jamais comme un rectangle. Un carré centré,
+   même dans un cadre large (téléphone). */
+.platine-voile,
+.platine-reflet {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.platine-voile {
+  background-image: radial-gradient(
+    ellipse 31% 50% at 31% 50%,
+    color-mix(in srgb, var(--platine-ombre) 42%, transparent) 0%,
+    color-mix(in srgb, var(--platine-ombre) 20%, transparent) 50%,
+    transparent 100%
+  );
+}
+
+.platine-reflet {
+  background-image: radial-gradient(ellipse 13% 44% at 50% 50%, color-mix(in srgb, var(--lueur) 30%, transparent) 0%, transparent 100%);
+}
+
+.platine-couche[data-couche="profil"] > .platine-voile {
+  background-image: radial-gradient(
+    ellipse 20% 44% at 42% 50%,
+    color-mix(in srgb, var(--platine-ombre) 40%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.platine-couche[data-couche="profil"] > .platine-reflet {
+  background-image: radial-gradient(ellipse 7% 36% at 50% 50%, color-mix(in srgb, var(--lueur) 30%, transparent) 0%, transparent 100%);
+}
+
+/* Ombre portée sur le fond de studio, quand le dessin n'en porte pas (profil). */
+.platine-ombre {
+  grid-area: 1 / 1;
+  place-self: center;
+  height: 84%;
+  max-width: 100%;
+  aspect-ratio: 0.94;
+  opacity: 0;
+  pointer-events: none;
+  background-image: radial-gradient(closest-side, color-mix(in srgb, var(--platine-ombre) 24%, transparent) 0%, color-mix(in srgb, var(--platine-ombre) 9%, transparent) 55%, transparent 100%);
+}
+
+.platine-bouton {
+  position: absolute;
+  bottom: 0.75rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  transition:
+    color var(--d-fast) var(--ease),
+    border-color var(--d-fast) var(--ease),
+    transform var(--d-press) var(--ease);
+}
+
+.platine-bouton[data-sens="gauche"] {
+  left: 0.75rem;
+}
+
+.platine-bouton[data-sens="droite"] {
+  right: 0.75rem;
+}
+
+.platine-bouton:hover {
+  color: var(--accent-ink);
+  border-color: var(--fg);
+}
+
+.platine-bouton:active {
+  transform: scale(0.94);
+}
+
+.platine-actions {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+}
+
+/* L'indice de la première fois : il se pose après la montre, et s'en va dès
+   qu'on y touche. Jamais cliquable, jamais bloquant. */
+.platine-indice {
+  position: absolute;
+  left: 50%;
+  bottom: 1.125rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 0.375rem);
+  transition:
+    opacity var(--d-base) var(--ease-sortie),
+    transform var(--d-base) var(--ease-sortie),
+    visibility 0s linear var(--d-base);
+}
+
+.platine-indice[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition:
+    opacity var(--d-slow) var(--ease) var(--d-reveal),
+    transform var(--d-slow) var(--ease) var(--d-reveal),
+    visibility 0s;
+}
+
+/* ───────────────────────────── Rendu différé ─────────────────────────────
+   Les montres situées loin sous la ligne de flottaison ne sont plus écrites
+   dans le HTML : `MontreDifferee` (src/components/ui/montre-differee.tsx) les
+   dessine côté client quand leur boîte approche de l'écran. La boîte a déjà sa
+   taille finale : l'arrivée du dessin ne déplace rien. Il entre en fondu, sur
+   le fond de studio de son cadre. */
+@keyframes montre-arrivee {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.montre-differee > svg,
+.second-coloris > svg {
+  animation: montre-arrivee var(--d-reveal) var(--ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .montre-differee > svg,
+  .second-coloris > svg {
+    animation: none;
+  }
+}
+
+/* Isolation du repeint. L'horloge du site fait battre les trotteuses six fois
+   par seconde : chaque cadre de montre est une frontière de mise en page et de
+   peinture, pour qu'un battement ne fasse repeindre que son cadre. Tous ces
+   cadres rognent déjà leur contenu (`overflow-hidden`) : rien ne change à l'œil.
+   `content-visibility: auto` sur les cartes a été essayé puis retiré : la taille
+   de remplacement ne peut pas être juste à toutes les largeurs, et l'écart
+   décalait la page au défilement (CLS 0,28 sur /collection à 390 px). */
+.cadre-montre:where(.overflow-hidden),
+.montre-differee {
+  contain: layout paint;
+}
+
+/* Rail des modèles de l'accueil, sur téléphone : une rangée qui défile
+   horizontalement, à pas magnétique, au lieu de neuf cartes empilées. Le rail
+   déborde jusqu'aux bords de l'écran ; la première carte reste alignée sur la
+   gouttière, et la suivante dépasse pour dire qu'il y a une suite. */
+@media (max-width: 767px) {
+  .rail-modeles {
+    /* Bloc conteneur des descendants absolus (`sr-only`, pastilles) : sans lui,
+       ils échappent à la zone défilante et élargissent toute la page. */
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    padding-block: 0.5rem 1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-color: var(--accent-ink) var(--rule);
+    scrollbar-width: thin;
+  }
+
+  .rail-modeles > * {
+    flex: 0 0 min(78%, 20rem);
+    scroll-snap-align: start;
   }
 }

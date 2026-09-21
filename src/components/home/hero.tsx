@@ -113,8 +113,8 @@ function vueDefile(catalogue: Catalogue, modele: WatchModelView): ModeleDefile {
     styleLabel: modele.styleLabel,
     diameterMm: modele.diameterMm,
     waterResistM: modele.waterResistM,
-    // Le VK64 est un meca-quartz : l'annoncer « automatique » serait faux.
-    movement: render.movement === "VK64" ? "VK64 meca-quartz" : `${render.movement} automatique`,
+    // Le VK64 est un méca-quartz : l'annoncer « automatique » serait faux.
+    movement: render.movement === "VK64" ? "VK64 méca-quartz" : `${render.movement} automatique`,
     basePriceCents: modele.basePriceCents,
     priceLabel: formatPrice(modele.basePriceCents),
     isSample: modele.isSample,

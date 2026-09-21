@@ -126,7 +126,7 @@ export function CollectionBrowser({
           des variantes ensuite, dans le configurateur.
         </p>
       ) : (
-        <div className="mt-10 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-10 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {visibles.map((entree) => (
             <div key={entree.slug}>{entree.carte}</div>
           ))}

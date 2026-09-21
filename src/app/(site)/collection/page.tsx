@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 /** Le calibre de départ du modèle, affiché tel quel dans les filtres. */
-const MOUVEMENTS: Record<string, string> = { nh35: "NH35", nh34: "NH34", nh38: "NH38", vk64: "VK64" };
+const MOUVEMENTS: Record<string, string> = { nh35: "NH35", nh36: "NH36", nh34: "NH34", nh38: "NH38", vk64: "VK64" };
 
 /**
  * Largeur de chaque bloc sur la grille à six colonnes des grands écrans : des
@@ -38,8 +38,9 @@ export default async function Collection() {
   const gammes = gammesAvecModeles(modeles);
   const spans = largeurs(gammes.length);
 
-  // Les cartes — SVG compris — sont rendues ici, côté serveur ; le composant de
-  // filtres ne fait que choisir lesquelles montrer.
+  // Le texte des cartes (nom, lien, prix) est rendu ici, côté serveur ; leur
+  // dessin, loin sous la ligne de flottaison, est monté à l'approche de l'écran.
+  // Le composant de filtres ne fait que choisir quelles cartes montrer.
   const entrees: EntreeCollection[] = modeles.map((modele) => ({
     slug: modele.slug,
     sizes: modele.availableSizes,
@@ -59,7 +60,7 @@ export default async function Collection() {
 
         <div className="mt-10 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-6">
           {gammes.map((gamme, index) => (
-            <BlocGamme key={gamme.style} catalogue={catalogue} gamme={gamme} className={spans[index]} />
+            <BlocGamme key={gamme.style} catalogue={catalogue} gamme={gamme} className={spans[index]} differe={index >= 2} />
           ))}
         </div>
       </Section>

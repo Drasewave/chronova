@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { FonduStudio } from "@/components/motion/vue-montre";
+import { PlatineMontre, type CommandesPlatine } from "@/components/motion/platine-montre";
+import type { WatchView } from "@/watch/types";
 import { cn } from "@/lib/utils";
+
+/** Les vues qui sont des faces de l'objet : elles se relaient en tournant. */
+const VUES_PLATINE: readonly string[] = ["face", "profil", "dos"] satisfies WatchView[];
 
 export interface VueGalerie {
   cle: string;
@@ -17,13 +22,37 @@ export interface VueGalerie {
  * Galerie d'une fiche modèle : une grande vue, des vignettes pour en changer.
  *
  * Le composant ne dessine rien : les SVG arrivent déjà rendus du serveur, il ne
- * fait que choisir lequel montrer. Les vues se relaient par le même fondu de
- * studio que dans le configurateur (`FonduStudio`) ; le repère de la vignette
- * active est un seul cadre qui glisse de l'une à l'autre. Sous
- * `prefers-reduced-motion`, le changement est immédiat.
+ * fait que choisir lequel montrer. Face, profil et dos sont les faces d'un même
+ * objet : ils vivent sur la platine tournante du configurateur
+ * (`PlatineMontre`), qu'on manipule du doigt ; leurs vignettes la font tourner
+ * jusqu'à la vue voulue et reflètent celle où elle s'est calée. La platine
+ * défait le recadrage de ces dessins pour qu'ils gardent la même échelle en
+ * tournant. Les autres vues (« Cadran ») sont des gros plans fixes : on y passe
+ * par le fondu de studio (`FonduStudio`). Le repère de la vignette active est
+ * un seul cadre qui glisse de l'une à l'autre.
  */
 export function GalerieModele({ vues, nom }: { vues: VueGalerie[]; nom: string }) {
   const [active, setActive] = useState(vues[0]?.cle);
+  // La dernière vue montrée par la platine : c'est d'elle qu'elle repart
+  // quand on revient d'un gros plan.
+  const [vuePlatine, setVuePlatine] = useState<WatchView>("face");
+  const platine = useRef<CommandesPlatine>(null);
+  const tournante = vues.filter((vue) => VUES_PLATINE.includes(vue.cle)).length >= 2;
+  const surPlatine = tournante && active !== undefined && VUES_PLATINE.includes(active);
+
+  const rendreVue = useCallback((cle: WatchView) => vues.find((vue) => vue.cle === cle)?.grande, [vues]);
+  const surVue = useCallback((vue: WatchView) => {
+    setVuePlatine(vue);
+    setActive(vue);
+  }, []);
+  const choisir = (cle: string) => {
+    if (tournante && VUES_PLATINE.includes(cle)) {
+      setVuePlatine(cle as WatchView);
+      // Déjà sur la platine : elle tourne. Sinon elle revient, déjà sur la vue.
+      if (surPlatine) platine.current?.montrer(cle as WatchView);
+    }
+    setActive(cle);
+  };
 
   return (
     // Sur grand écran les vignettes passent en colonne à gauche de la grande vue :
@@ -32,8 +61,23 @@ export function GalerieModele({ vues, nom }: { vues: VueGalerie[]; nom: string }
     <div className="mx-auto w-full max-w-[36rem] lg:grid lg:max-w-none lg:grid-cols-[5.5rem_minmax(0,1fr)] lg:items-start lg:gap-4">
       <div className="cadre-montre relative aspect-square overflow-hidden lg:col-start-2 lg:row-start-1">
         {active && (
-          <FonduStudio cle={active} className="h-full w-full" classeCouche="h-full w-full">
-            {(cle) => vues.find((vue) => vue.cle === cle)?.grande}
+          <FonduStudio cle={surPlatine ? "platine" : active} className="h-full w-full" classeCouche="h-full w-full">
+            {(cle) =>
+              cle === "platine" ? (
+                <PlatineMontre
+                  vue={vuePlatine}
+                  surVue={surVue}
+                  commandes={platine}
+                  libelle={`${nom} : montre à faire tourner`}
+                  className="h-full w-full"
+                  classeCouche="h-full w-full"
+                >
+                  {rendreVue}
+                </PlatineMontre>
+              ) : (
+                vues.find((vue) => vue.cle === cle)?.grande
+              )
+            }
           </FonduStudio>
         )}
       </div>
@@ -46,7 +90,7 @@ export function GalerieModele({ vues, nom }: { vues: VueGalerie[]; nom: string }
               key={vue.cle}
               type="button"
               aria-pressed={visible}
-              onClick={() => setActive(vue.cle)}
+              onClick={() => choisir(vue.cle)}
               className="group/vignette block text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--focus)]"
             >
               <span

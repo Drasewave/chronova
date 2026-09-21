@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { libelleStatut } from "@/lib/commandes/etapes";
 
 export interface ResultatRecherche {
   groupe: string;
@@ -42,7 +43,7 @@ export async function rechercheGlobale(requete: string): Promise<ResultatRecherc
     prisma.part.findMany({
       where: { OR: [{ reference: contient }, { name: contient }] },
       take: 5,
-      select: { id: true, reference: true, name: true, quantityOnHand: true, quantityReserved: true },
+      select: { reference: true, name: true, quantityOnHand: true, quantityReserved: true },
     }),
     prisma.watchModel.findMany({
       where: { OR: [{ name: contient }, { slug: contient }] },
@@ -55,7 +56,7 @@ export async function rechercheGlobale(requete: string): Promise<ResultatRecherc
     ...commandes.map((commande) => ({
       groupe: "Commandes",
       titre: commande.number,
-      detail: `${commande.status} · ${commande.email}`,
+      detail: `${libelleStatut(commande.status)} · ${commande.email}`,
       href: `/atelier/commandes/${commande.number}`,
     })),
     ...clients.map((client) => ({
@@ -67,14 +68,22 @@ export async function rechercheGlobale(requete: string): Promise<ResultatRecherc
     ...pieces.map((piece) => ({
       groupe: "Stock",
       titre: piece.reference,
-      detail: `${piece.name} · ${piece.quantityOnHand - piece.quantityReserved} disponible(s)`,
-      href: `/atelier/stock/${piece.id}`,
+      detail: `${piece.name} · ${disponibles(piece.quantityOnHand - piece.quantityReserved)}`,
+      // La fiche de stock est adressée par RÉFÉRENCE (`/atelier/stock/[reference]`),
+      // pas par identifiant de base (audit A-09).
+      href: `/atelier/stock/${encodeURIComponent(piece.reference)}`,
     })),
     ...modeles.map((modele) => ({
       groupe: "Catalogue",
       titre: modele.name,
       detail: modele.tagline,
-      href: `/atelier/catalogue/${modele.slug}`,
+      // Route réelle : `/atelier/catalogue/modeles/[slug]` (audit A-09).
+      href: `/atelier/catalogue/modeles/${encodeURIComponent(modele.slug)}`,
     })),
   ];
+}
+
+function disponibles(quantite: number): string {
+  if (quantite <= 0) return "aucune disponible";
+  return quantite === 1 ? "1 disponible" : `${quantite} disponibles`;
 }

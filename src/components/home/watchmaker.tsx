@@ -7,14 +7,16 @@ export function Watchmaker() {
   return (
     <Section fond="alterne" id="l-horloger">
       <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
-        <Reveal className="flex flex-col gap-5">
+        {/* Deux emplacements côte à côte : empilés, ils dépassaient de 600 px la
+            colonne de texte et laissaient un grand vide à droite. */}
+        <Reveal className="grid grid-cols-2 items-start gap-4 sm:gap-5">
           <PhotoPlaceholder
             description="portrait à l'établi, lumière naturelle, loupe d'horloger relevée"
             ratio="4 / 5"
           />
           <PhotoPlaceholder
             description="plan large de l'établi : tapis vert, brucelles, boîtes à pièces"
-            ratio="16 / 10"
+            ratio="4 / 5"
           />
         </Reveal>
 

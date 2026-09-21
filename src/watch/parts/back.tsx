@@ -11,8 +11,9 @@ import { CushionBody } from "./cushion";
  * Fond plein : acier vissé, six encoches de clé, gravure au centre — l'aperçu
  * est direct, c'est là que le texte saisi dans le configurateur apparaît.
  * Fond transparent : saphir, et le mouvement travaille dessous. Le dessin change
- * avec le calibre : les NH sont des automatiques (masse oscillante, balancier),
- * le NH34 porte un rubis de plus pour son rouage GMT, le NH38 décale son
+ * avec le calibre : les NH sont des automatiques (masse oscillante, balancier) ;
+ * le NH36 a l'architecture du NH35 — son disque des jours est côté cadran, on ne
+ * le voit pas d'ici, seule la gravure du calibre change —, le NH34 porte un rubis de plus pour son rouage GMT, le NH38 décale son
  * balancier, et le VK64 — méca-quartz — n'a ni masse ni balancier mais une
  * pile, une bobine et un pont de chronographe.
  */
@@ -175,6 +176,10 @@ function SolidBack({ uid, render, trait, levre }: { uid: string; render: WatchRe
       </g>
       {/* Même remarque que pour le plat : brossé au tour, l'éventail se calme. */}
       {render.caseFinish === "brosse" && <circle cx={C} cy={C} r={R_GLACE} fill={ramp.mid} fillOpacity="0.3" />}
+      {/* Poli miroir : l'éventail du studio est si contrasté qu'il mange les petites
+          gravures. Un fond se photographie légèrement de biais pour l'éteindre : on
+          le voile d'autant. */}
+      {render.caseFinish === "poli" && <circle cx={C} cy={C} r={R_GLACE} fill={ramp.mid} fillOpacity="0.36" />}
       <circle cx={C} cy={C} r={R_GLACE} fill={`url(#${uid}-dos-galbe)`} />
 
       {/* Filets concentriques : un sillon sombre, son arête claire. */}
@@ -459,7 +464,10 @@ function Rotor({ uid, angle, calibre }: { uid: string; angle: number; calibre: s
         <path d={silhouette} fillRule="evenodd" fill="none" stroke={RHODIUM.edge} strokeOpacity="0.8" strokeWidth="1.2" />
 
         <Engraved path={`${uid}-dos-arc-masse`} size={14} spacing="0.22em" font="mono" fill={rampAt(RHODIUM, 0.06)} lip={RHODIUM.hi}>
-          {`CHRONOVA · CALIBRE ${calibre} · 24 RUBIS`}
+          {/* Le nom est déjà gravé sur le fond, juste au-dessus : la masse ne porte
+              que le calibre. Plus courte, l'inscription reste sur le haut de l'arc
+              et ne se lit plus à la verticale. */}
+          {`CALIBRE ${calibre} · 24 RUBIS`}
         </Engraved>
       </g>
 

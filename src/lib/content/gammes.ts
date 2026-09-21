@@ -29,10 +29,10 @@ export const ORDRE_GAMMES: readonly WatchStyleKey[] = [
 
 export const GAMMES: Record<WatchStyleKey, ContenuGamme> = {
   plongee: {
-    phrase: "Lunette unidirectionnelle à 120 crans, insert céramique, couronne vissée.",
+    phrase: "Lunette unidirectionnelle à 120 crans, large insert gravé, couronne vissée à 4 h.",
     presentation: [
-      "Je monte mes plongeuses sur un seul cahier des charges : lunette unidirectionnelle à 120 crans, insert céramique, couronne vissée, protège-couronne venus de matière avec le flanc.",
-      "L'insert céramique garde sa teinte au soleil, contrairement à l'aluminium.",
+      "Je monte mes plongeuses sur un seul cahier des charges : lunette unidirectionnelle à 120 crans, large insert gravé, couronne vissée déportée à 4 h, index et aiguilles luminescents.",
+      "Selon le modèle : une carrure coussin dont le flanc enveloppe la couronne, avec un insert céramique, ou un boîtier rond où la couronne se loge entre deux épaulements, avec un insert aluminium.",
       "Avant l'expédition, je contrôle l'étanchéité de chaque montre sous pression.",
     ],
   },
@@ -48,22 +48,22 @@ export const GAMMES: Record<WatchStyleKey, ContenuGamme> = {
     phrase: "Une aiguille 24 heures réglable indépendamment, pour un deuxième fuseau.",
     presentation: [
       "Une aiguille supplémentaire fait un tour de cadran en vingt-quatre heures et se règle indépendamment : elle indique l'heure d'un deuxième fuseau.",
-      "L'échelle 24 heures est imprimée sur le réhaut et reste lisible sans lunette tournante.",
+      "Le second fuseau se lit sur la lunette 24 heures bicolore, nuit en haut, jour en bas.",
       "Je monte cette gamme sur le calibre NH34, de la même famille que les autres mouvements automatiques de l'atelier.",
     ],
   },
   habillee: {
-    phrase: "Cadran sans date, index appliqués, boîtier poli, fond saphir.",
+    phrase: "Cadran soleillé, index bâtons appliqués, aiguilles dauphine, boîtier poli, fond saphir.",
     presentation: [
-      "Je laisse le cadran nu : aucun guichet de date, peu de texte, des index appliqués et une minuterie fine.",
-      "Le boîtier poli passe sous une manchette de chemise, et le fond saphir laisse voir le mouvement.",
-      "Selon le modèle, le cadran reste plein ou s'ouvre à 9 h sur le balancier.",
+      "Je garde le cadran sobre : peu de texte, des index bâtons facettés et des aiguilles dauphine polies, sans luminova.",
+      "Le boîtier poli passe sous une manchette de chemise, la couronne oignon se saisit sans ôter la montre, et le fond saphir laisse voir le mouvement.",
+      "Selon le modèle, le cadran porte un quantième encadré à 3 h, ou reste sans date et s'ouvre à 9 h sur le balancier.",
     ],
   },
   chronographe: {
-    phrase: "Deux compteurs, poussoirs sur le flanc, mouvement meca-quartz.",
+    phrase: "Deux compteurs, poussoirs sur le flanc, mouvement méca-quartz.",
     presentation: [
-      "Je monte ces chronographes sur un mouvement meca-quartz : la trotteuse et les deux compteurs sont entraînés mécaniquement, la minuterie reste au quartz, sans date.",
+      "Je monte ces chronographes sur un mouvement méca-quartz : la trotteuse et les deux compteurs sont entraînés mécaniquement, la minuterie reste au quartz, sans date.",
       "Le boîtier est épaissi pour loger le module, avec un poussoir de part et d'autre de la couronne.",
       "Les compteurs se choisissent en panda ou en inversé, comme le reste de la montre, dans le configurateur.",
     ],

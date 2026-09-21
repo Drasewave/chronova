@@ -1,4 +1,4 @@
-import type { Catalogue } from "./catalogue";
+import type { CatalogueLecture } from "./catalogue";
 import { splitRef } from "./catalogue";
 import type { OptionRef, Selections } from "./types";
 
@@ -15,7 +15,7 @@ export interface RuleVerdict {
  * `exclut` : aucune des cibles ne doit l'être.
  */
 export function evaluateOption(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   ref: OptionRef,
   selections: Selections,
   /** Options que le modèle de base ne propose pas (diamètres d'une autre ligne). */
@@ -39,7 +39,7 @@ export function evaluateOption(
 
 /** Verdict pour toutes les options du catalogue, en une passe. */
 export function evaluateRules(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   selections: Selections,
   exclus?: ReadonlySet<OptionRef>,
 ): Map<OptionRef, RuleVerdict> {
@@ -65,7 +65,7 @@ function estSelectionnee(ref: OptionRef, selections: Selections): boolean {
  * provoquer un autre.
  */
 export function normalizeSelections(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   selections: Selections,
   exclus?: ReadonlySet<OptionRef>,
 ): Selections {
@@ -109,7 +109,7 @@ export function normalizeSelections(
 
 /** Un groupe facultatif dont aucune option n'est choisissable est masqué. */
 export function isGroupVisible(
-  catalogue: Catalogue,
+  catalogue: CatalogueLecture,
   groupKey: string,
   selections: Selections,
   exclus?: ReadonlySet<OptionRef>,

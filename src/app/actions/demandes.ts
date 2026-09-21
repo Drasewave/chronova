@@ -3,8 +3,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import type { EtatFormulaire } from "@/lib/formulaires/etat";
+import { REGLES } from "@/lib/securite/limite-debit";
+import { limiter } from "@/lib/securite/limite-requete";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+/** 10 M€ : très au-dessus de toute pièce unique, très en dessous d'Int32 (21 M€ en centimes). */
+const BUDGET_MAX_CENTS = 1_000_000_000;
 
 /**
  * Réception d'une demande (contact ou pièce unique).
@@ -35,7 +39,11 @@ export async function envoyerDemande(
 
   const erreurs: Record<string, string> = {};
   if (nom.length < 2) erreurs["nom"] = "Indiquez le nom sous lequel vous répondre.";
-  if (!EMAIL.test(email)) erreurs["email"] = "Cette adresse ne semble pas valide.";
+  if (nom.length > 120) erreurs["nom"] = "Nom trop long : 120 caractères au maximum.";
+  if (email.length > 254 || !EMAIL.test(email)) erreurs["email"] = "Cette adresse ne semble pas valide.";
+  if (telephone.length > 40) erreurs["telephone"] = "Numéro trop long : 40 caractères au maximum.";
+  if (budget.length > 40) erreurs["budget"] = "Indiquez un montant en euros, par exemple 2500.";
+  if (configuration.length > 2000) erreurs["configuration"] = "Lien de configuration trop long.";
   if (message.length < 20) {
     erreurs["message"] = "Quelques phrases de plus aideront à vous répondre utilement.";
   }
@@ -45,7 +53,20 @@ export async function envoyerDemande(
     return { statut: "erreur", message: "Le formulaire n'a pas pu être envoyé.", erreurs };
   }
 
-  const budgetCents = budget ? Math.round(Number(budget.replace(/[^\d]/g, "")) * 100) : null;
+  // La colonne est un entier 32 bits : un budget démesuré faisait échouer
+  // l'insertion (erreur 500). Au-delà du plafond, on ne l'enregistre pas.
+  const budgetBrut = budget ? Math.round(Number(budget.replace(/[^\d]/g, "")) * 100) : null;
+  const budgetCents =
+    budgetBrut !== null && Number.isFinite(budgetBrut) && budgetBrut > 0 && budgetBrut <= BUDGET_MAX_CENTS
+      ? budgetBrut
+      : null;
+
+  // Chaque demande écrit en base, sans session : on borne (audit A-12).
+  const tropVite = await limiter("demande", [
+    { cle: "ip", regle: REGLES.demandeParIp },
+    { cle: `email:${email}`, regle: REGLES.demandeParEmail },
+  ]);
+  if (tropVite) return { statut: "erreur", message: tropVite };
 
   // Rattachée au compte quand la personne est connectée : la demande figure
   // alors dans son export de données et suit l'effacement du compte.
@@ -67,7 +88,7 @@ export async function envoyerDemande(
       ]
         .filter(Boolean)
         .join("\n\n"),
-      budgetCents: Number.isFinite(budgetCents) ? budgetCents : null,
+      budgetCents,
     },
   });
 

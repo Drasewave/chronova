@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GalerieModele, type VueGalerie } from "@/components/collection/galerie-modele";
+import { GrilleModeles } from "@/components/collection/grille-modeles";
 import { RappelComposer } from "@/components/collection/rappel-composer";
 import { ModelCard } from "@/components/home/model-card";
 import { ButtonLink } from "@/components/ui/button";
@@ -12,8 +13,10 @@ import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { ViewTransition } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
-import { WatchSvg } from "@/watch/watch-svg";
-import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
+import { MontreCliente, MontreDifferee } from "@/components/ui/montre-differee";
+import { cadrageCadran } from "@/components/home/cadrages";
+import { deLa } from "@/lib/content/articles";
+import { altConfiguration, defaultConfiguration, prixAPartirDeCents } from "@/lib/configurateur/configuration";
 import { cheminGamme, gammesAvecModeles } from "@/lib/content/gammes";
 import { getCatalogue, getModel, getModels } from "@/lib/data/queries";
 import { formatPrice } from "@/lib/utils";
@@ -60,8 +63,10 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
   const variante = altConfiguration(catalogue, model);
 
   /**
-   * Données structurées `Product`. Le prix annoncé est celui de la configuration
-   * de départ : c'est le « à partir de » affiché sur la page, pas un prix fixe.
+   * Données structurées `Product`. Même règle que partout ailleurs (voir
+   * `prixAPartirDeCents`) : « à partir de » = prix de base du modèle, publié en
+   * `AggregateOffer.lowPrice`. Le prix de la configuration de départ, lui, est
+   * affiché sous son vrai nom dans la page et n'est pas un « à partir de ».
    */
   const donneesStructurees = {
     "@context": "https://schema.org",
@@ -70,9 +75,9 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
     description: model.tagline,
     brand: { "@type": "Brand", name: "Chronova" },
     offers: {
-      "@type": "Offer",
+      "@type": "AggregateOffer",
       priceCurrency: "EUR",
-      price: (base.price.totalCents / 100).toFixed(2),
+      lowPrice: (prixAPartirDeCents(model) / 100).toFixed(2),
       availability: "https://schema.org/MadeToOrder",
       url: `${SITE}/collection/${model.slug}`,
       seller: { "@id": `${SITE}/#atelier` },
@@ -85,11 +90,15 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
 
   // Quatre vues de la même pièce : le rendu est vectoriel et paramétrique, on
   // peut donc tourner autour de la configuration de départ et s'en approcher.
+  // Le gros plan « Cadran » est calculé depuis la géométrie du modèle (diamètre,
+  // largeur de lunette) : il cadre le cadran jusqu'au réhaut sur chaque fiche.
   const PLANS = [
     { cle: "face", titre: "Face", vue: "face", crop: undefined, libelle: "vue de face" },
     { cle: "profil", titre: "Profil", vue: "profil", crop: "190 170 620 620", libelle: "vue de profil" },
-    { cle: "dos", titre: "Dos", vue: "dos", crop: "150 150 700 700", libelle: "vue du fond" },
-    { cle: "cadran", titre: "Cadran", vue: "face", crop: "270 270 460 460", libelle: "gros plan sur le cadran" },
+    // Le dos garde le cadrage de la face : recadré plus serré, il coupait la
+    // carrure coussin, la couronne et les cornes (A-30).
+    { cle: "dos", titre: "Dos", vue: "dos", crop: undefined, libelle: "vue du fond" },
+    { cle: "cadran", titre: "Cadran", vue: "face", crop: cadrageCadran(base.render), libelle: "gros plan sur le cadran" },
   ] as const;
 
   const vues: VueGalerie[] = PLANS.map((plan) => ({
@@ -107,7 +116,9 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
           />
         </ViewTransition>
       ) : (
-        <WatchSvg
+        // Vues cachées au chargement : un composant client, que la galerie ne
+        // dessine qu'à l'affichage. Le serveur n'envoie que `render`.
+        <MontreCliente
           id={`galerie-${plan.cle}`}
           render={base.render}
           view={plan.vue}
@@ -117,7 +128,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
         />
       ),
     vignette: (
-      <WatchSvg
+      <MontreCliente
         id={`vignette-${plan.cle}`}
         render={base.render}
         view={plan.vue}
@@ -192,7 +203,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(donneesStructurees) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(donneesStructurees).replace(/</g, "\\u003c") }}
       />
 
       <Section fond="papier" compact>
@@ -203,13 +214,13 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
             <nav aria-label="Fil d'Ariane">
               <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
                 <li>
-                  <Link href="/collection" className="link-underline hover:text-accent-ink">
+                  <Link href="/collection" className="link-underline relative after:absolute after:inset-x-0 after:-inset-y-[13px] after:content-[''] hover:text-accent-ink">
                     Collection
                   </Link>
                 </li>
                 <li aria-hidden="true">›</li>
                 <li>
-                  <Link href={hrefGamme} className="link-underline hover:text-accent-ink">
+                  <Link href={hrefGamme} className="link-underline relative after:absolute after:inset-x-0 after:-inset-y-[13px] after:content-[''] hover:text-accent-ink">
                     {model.styleLabel}
                   </Link>
                 </li>
@@ -303,8 +314,9 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
           {[base, variante].map((configuration, index) => (
             <Reveal key={index} delay={index * 60}>
               <div className="cadre-montre overflow-hidden px-6 py-4">
-                <WatchSvg
+                <MontreDifferee
                   id={`variante-${model.slug}-${index}`}
+                  classeBoite="mx-auto aspect-square w-full max-w-[30rem]"
                   render={configuration.render}
                   label={`${model.name}, ${index === 0 ? "configuration de départ" : "second coloris"}`}
                   className="mx-auto h-auto w-full max-w-[30rem]"
@@ -335,7 +347,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
             ratio="4 / 5"
           />
           <PhotoPlaceholder
-            description={`Détail du cadran de la ${model.name} en lumière rasante`}
+            description={`Détail du cadran ${deLa(model.name)} en lumière rasante`}
             ratio="4 / 5"
           />
         </div>
@@ -343,19 +355,24 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
 
       {voisins.length > 0 && (
         <Section fond="papier">
-          <SectionHeader
-            titre="Autres modèles de la gamme"
-            action={
-              <ButtonLink href={hrefGamme} variant="discret">
-                Voir la gamme {model.styleLabel}
-              </ButtonLink>
+          <GrilleModeles
+            nombre={voisins.length}
+            entete={
+              <SectionHeader
+                className={voisins.length < 3 ? "md:flex-col md:items-start" : undefined}
+                titre="Autres modèles de la gamme"
+                action={
+                  <ButtonLink href={hrefGamme} variant="discret">
+                    Voir la gamme {model.styleLabel}
+                  </ButtonLink>
+                }
+              />
             }
-          />
-          <div className="mt-10 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          >
             {voisins.map((voisin) => (
               <ModelCard key={voisin.slug} catalogue={catalogue} modele={voisin} />
             ))}
-          </div>
+          </GrilleModeles>
         </Section>
       )}
 

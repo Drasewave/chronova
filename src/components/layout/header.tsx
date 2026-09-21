@@ -19,6 +19,9 @@ export function Header() {
   // chargement. La mesure ci-dessous corrige aussitôt si la page est autre.
   const [surNuit, setSurNuit] = useState(() => chemin.startsWith("/gammes/"));
   const panier = useCart();
+  const entete = useRef<HTMLElement>(null);
+  const tiroir = useRef<HTMLDivElement>(null);
+  const boutonMenu = useRef<HTMLButtonElement>(null);
 
   // Sur l'accueil, l'en-tête flotte sur la scène nuit du héros tant que la page
   // n'a pas défilé : il en prend le thème, sans fond.
@@ -52,9 +55,68 @@ export function Header() {
     };
   }, [ouvert]);
 
+  // Tiroir mobile ouvert = dialogue modal. Le reste de la page (contenu, pied de
+  // page, lien d'évitement) devient `inert` : ni tabulation ni lecteur d'écran
+  // n'y entrent. Le focus passe dans le tiroir, Tab tourne entre l'en-tête
+  // (logo, compte, panier, bouton de fermeture, tous visibles) et le tiroir,
+  // Échap ferme et rend le focus au bouton du menu.
+  useEffect(() => {
+    if (!ouvert) return;
+    const figes = Array.from(document.querySelectorAll<HTMLElement>("main, footer, .skip-link")).filter(
+      (element) => !element.inert,
+    );
+    for (const element of figes) element.inert = true;
+
+    const image = requestAnimationFrame(() => tiroir.current?.querySelector<HTMLElement>("a[href]")?.focus());
+
+    const focusables = () =>
+      [entete.current, tiroir.current]
+        .flatMap((zone) => Array.from(zone?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []))
+        .filter((element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden");
+
+    const surTouche = (event: globalThis.KeyboardEvent) => {
+      // Un dialogue natif ouvert par-dessus (le tiroir du panier) gère ses propres touches.
+      if (document.querySelector("dialog[open]")) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOuvert(false);
+        boutonMenu.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const liste = focusables();
+      const premier = liste[0];
+      const dernier = liste[liste.length - 1];
+      if (!premier || !dernier) return;
+      const courant = document.activeElement;
+      if (event.shiftKey && (courant === premier || !liste.includes(courant as HTMLElement))) {
+        event.preventDefault();
+        dernier.focus();
+      } else if (!event.shiftKey && (courant === dernier || !liste.includes(courant as HTMLElement))) {
+        event.preventDefault();
+        premier.focus();
+      }
+    };
+    document.addEventListener("keydown", surTouche);
+
+    // Le tiroir n'existe que sous `lg` : si la fenêtre s'élargit, on le referme
+    // plutôt que de laisser la page figée derrière un menu devenu invisible.
+    const large = window.matchMedia("(min-width: 1024px)");
+    const surLargeur = () => large.matches && setOuvert(false);
+    large.addEventListener("change", surLargeur);
+
+    return () => {
+      cancelAnimationFrame(image);
+      document.removeEventListener("keydown", surTouche);
+      large.removeEventListener("change", surLargeur);
+      for (const element of figes) element.inert = false;
+    };
+  }, [ouvert]);
+
   return (
     <>
     <header
+      ref={entete}
       // L'en-tête ne bouge pas pendant une transition de page : c'est le seul
       // point fixe qui dit au lecteur que le contenu a changé, pas l'écran.
       // La gouttière est portée par l'en-tête lui-même, comme par chaque section :
@@ -73,12 +135,15 @@ export function Header() {
       )}
     >
       <div
-        className="mx-auto flex h-16 max-w-wide items-center justify-between gap-6 md:h-20"
+        className="mx-auto flex h-16 max-w-wide items-center justify-between gap-4 md:h-20 xl:gap-6"
       >
         <Wordmark />
 
         <nav aria-label="Navigation principale" className="hidden lg:block">
-          <ul className="flex items-center gap-10">
+          {/* À 1024 px tout juste, la navigation, les icônes et le bouton tiennent
+              sur une ligne à condition de resserrer les écarts ; aucun libellé
+              ne passe à la ligne (`whitespace-nowrap`). */}
+          <ul className="flex items-center gap-5 whitespace-nowrap xl:gap-10">
             {NAV_PRINCIPALE.map((lien) =>
               lien.sousLiens ? (
                 <EntreeAvecPanneau key={lien.href} lien={lien} chemin={chemin} />
@@ -130,10 +195,11 @@ export function Header() {
               </span>
             )}
           </button>
-          <ButtonLink href="/composer" className="ml-2 hidden md:inline-flex" size="sm">
+          <ButtonLink href="/composer" className="ml-2 hidden whitespace-nowrap md:inline-flex" size="sm">
             Composer ma montre
           </ButtonLink>
           <button
+            ref={boutonMenu}
             type="button"
             onClick={() => setOuvert((v) => !v)}
             aria-expanded={ouvert}
@@ -155,7 +221,11 @@ export function Header() {
           pendant qu'il se referme. Toujours monté, il entre et sort en fondu
           (`.volet`) ; fermé, `visibility` le retire de la tabulation. */}
       <div
+        ref={tiroir}
         id="menu-mobile"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
         data-ouvert={ouvert}
         style={{ "--volet-y": "0px" } as CSSProperties}
         className="volet fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-rule bg-bg md:top-20 lg:hidden"

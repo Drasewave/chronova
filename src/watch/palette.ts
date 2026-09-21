@@ -74,7 +74,7 @@ export function glow(hex: string, amount: number): string {
 }
 
 /** Luminance relative WCAG 2.1. */
-export function relativeLuminance(hex: string): number {
+function relativeLuminance(hex: string): number {
   const [r, g, b] = parseHex(hex);
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 }

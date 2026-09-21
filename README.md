@@ -151,8 +151,8 @@ quoi l'enchaîner dans un script de déploiement.
 
 Le partage des rôles est volontairement net :
 
-- **la géométrie vit dans le code** — `src/watch/parts/`, référencée par
-  `src/watch/registry.ts` ;
+- **la géométrie vit dans le code** — `src/watch/parts/`, un fichier par calque,
+  pilotée par les clés typées de `src/watch/types.ts` (il n'y a plus de registre) ;
 - **l'apparence vit en base** — teinte, libellé, prix, pièce de stock liée,
   activation.
 
@@ -166,7 +166,8 @@ rien de ce que donne un soleillé sous un saphir bombé.
 
 1. Dessiner la pièce dans `src/watch/parts/<calque>.tsx`, dans le repère
    `1000 × 1000` du moteur (`src/watch/geometry.ts` donne les rayons).
-2. Déclarer sa clé dans `PART_REGISTRY` (`src/watch/registry.ts`).
+2. Ajouter sa clé au type correspondant de `src/watch/types.ts` (`HandShape`,
+   `BezelStyle`…) : c'est la frontière entre la base et le dessin.
 3. Créer l'option depuis le CRM en la pointant sur cette clé.
 
 **Règles de compatibilité.** Des données, pas du code : *Catalogue → Règles*,
@@ -204,7 +205,8 @@ src/components/
   atelier/             coquille du CRM, champs, panneaux, graphiques
 src/watch/             moteur de rendu SVG de la montre
   parts/               un fichier par calque
-  registry.ts          frontière code / base
+  types.ts             frontière code / base (`WatchRender`)
+  geometry.ts          repère, rayons, échelles
 src/lib/
   configurateur/       prix, règles, nomenclature, stock, URL
   commandes/           étapes, création, réservation, confirmation

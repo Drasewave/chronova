@@ -46,12 +46,12 @@ export const FAQ = [
   {
     question: "Quels mouvements équipent les montres ?",
     reponse:
-      "Je monte trois calibres automatiques japonais de la famille NH. Je les ai retenus pour leur robustesse et parce que n'importe quel horloger sait les réviser. Le NH35 : 24 rubis, 21 600 alternances par heure, arrêt de la trotteuse et remontage manuel possibles, environ 41 heures de réserve de marche. Le NH34 ajoute une aiguille 24 heures réglable indépendamment. Le NH38 n'a pas de date et laisse voir le balancier par une ouverture du cadran.",
+      "Je monte quatre calibres automatiques japonais de la famille NH, et un calibre méca-quartz, le VK64, sur les chronographes. Je les ai retenus pour leur robustesse et parce que n'importe quel horloger sait les réviser. Le NH35 : 24 rubis, 21 600 alternances par heure, arrêt de la trotteuse et remontage manuel possibles, environ 41 heures de réserve de marche, quantième à 3 h. Le NH36 est le même calibre avec le jour de la semaine en plus du quantième. Le NH34 ajoute une aiguille 24 heures réglable indépendamment. Le NH38 n'a pas de date et laisse voir le balancier par une ouverture du cadran. Sur le VK64, la trotteuse et les compteurs du chronographe sont entraînés mécaniquement, et la marche de la montre est réglée par un quartz.",
   },
   {
     question: "Que signifie l'étanchéité annoncée ?",
     reponse:
-      "Les valeurs suivent la norme ISO 22810 : elles indiquent la pression statique que la montre supporte en laboratoire, ce qui ne correspond pas à une profondeur de plongée. En pratique, 50 m supporte les éclaboussures et le lavage des mains, 100 m la natation, 200 m la plongée en apnée et en bouteille. Quelle que soit la valeur, vissez ou enfoncez la couronne avant tout contact avec l'eau, et ne la manipulez pas sous l'eau.",
+      "Les valeurs suivent la norme ISO 22810 : elles indiquent la pression statique que la montre supporte en laboratoire, ce qui ne correspond pas à une profondeur de plongée. En pratique, 50 m supporte les éclaboussures et le lavage des mains, 100 m la natation, 200 m la baignade, l'apnée et les sports nautiques. La plongée en bouteille relève d'une autre norme, l'ISO 6425, que je ne revendique pas. Quelle que soit la valeur, vissez ou enfoncez la couronne avant tout contact avec l'eau, et ne la manipulez pas sous l'eau.",
   },
   {
     question: "Combien de temps faut-il pour recevoir sa montre ?",
@@ -75,8 +75,8 @@ export const COUCHES_ECLATEES = [
   { cle: "verre", titre: "Verre", detail: "Saphir bombé, antireflet interne" },
   { cle: "lunette", titre: "Lunette", detail: "120 crans, insert céramique" },
   { cle: "cadran", titre: "Cadran", detail: "Index appliqués, luminova à la main" },
-  { cle: "aiguilles", titre: "Aiguilles", detail: "Chassées au potence, une à une" },
-  { cle: "mouvement", titre: "Mouvement", detail: "Automatique NH35, 24 rubis" },
+  { cle: "aiguilles", titre: "Aiguilles", detail: "Chassées à la potence, une à une" },
+  { cle: "mouvement", titre: "Mouvement", detail: "Automatique NH36, 24 rubis" },
   { cle: "boitier", titre: "Boîtier", detail: "Acier 316L, flancs brossés" },
   { cle: "fond", titre: "Fond", detail: "Vissé, joint torique, gravure possible" },
 ] as const;

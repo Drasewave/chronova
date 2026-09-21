@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { Pill, SamplePill } from "@/components/ui/pill";
-import { WatchSvg } from "@/watch/watch-svg";
+import { MontreCliente, MontreDifferee } from "@/components/ui/montre-differee";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import { getCatalogue, getModels } from "@/lib/data/queries";
 import { formatPrice } from "@/lib/utils";
@@ -23,13 +23,17 @@ export default async function ChoixDuModele() {
   return (
     <Section fond="papier">
       <SectionHeader
+        niveau={1}
         titre="Choisissez votre base"
         intro="Le modèle fixe le boîtier, le diamètre et l'étanchéité, que vous ne pourrez plus changer ensuite. Vous composez le reste à l'étape suivante, et vous pouvez revenir sur chaque choix tant que la commande n'est pas passée."
       />
 
       <ul className="mt-16 grid gap-10 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8">
-        {modeles.map((modele) => {
+        {modeles.map((modele, index) => {
           const configuration = defaultConfiguration(catalogue, modele);
+          // Le premier rang est rendu par le serveur ; les suivants, sous la ligne
+          // de flottaison, sont dessinés à l'approche de l'écran.
+          const Montre = index < 4 ? MontreCliente : MontreDifferee;
           return (
             <li key={modele.slug} className="carte-montre group">
               <Link
@@ -38,7 +42,7 @@ export default async function ChoixDuModele() {
               >
                 <div className="overflow-hidden rounded-card border border-rule bg-bg-alt p-5 transition-colors duration-(--d-base) ease-atelier group-hover:border-accent-decor">
                   <div className="transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.035]">
-                    <WatchSvg
+                    <Montre
                       id={`composer-${modele.slug}`}
                       render={configuration.render}
                       detail="compact"

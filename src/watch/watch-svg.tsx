@@ -251,6 +251,8 @@ function FaceView({
           gmtScale={gmtScale}
           waterResistM={render.waterResistM}
           metal={render.caseMetal}
+          smallSecondsAngle={time.seconds * 6}
+          compactSignature={render.indexStyle === "terrain-24h"}
         />
 
         <g filter={`url(#${id}-contact-shadow)`}>
@@ -274,6 +276,8 @@ function FaceView({
           time={time}
           detail={detail}
           accent={render.accentHandColor}
+          // Une heure imposée par le rendu est une pose voulue : l'horloge du site la respecte.
+          vivante={render.time === undefined}
         />
 
         <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} cyclops={cyclops} dialColor={render.dialColor} />

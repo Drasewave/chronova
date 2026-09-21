@@ -13,12 +13,12 @@ export const metadata: Metadata = {
 
 const ETABLI = [
   {
-    titre: "Le potence",
+    titre: "La potence",
     texte:
       "Je m'en sers pour chasser les aiguilles sur leurs canons sans les tordre. C'est le geste le plus délicat du montage : une aiguille posée de travers touche la suivante et arrête la montre.",
   },
   {
-    titre: "La machine à étancher",
+    titre: "L'appareil de contrôle d'étanchéité",
     texte:
       "Chaque montre y passe avant de partir : je la mets sous pression, puis je cherche la moindre fuite. Si elle échoue, je la rouvre, je change les joints et je refais le test.",
   },
@@ -84,7 +84,7 @@ export default function Horloger() {
               Les calibres de la famille NH sont produits à grande échelle. Les pièces de rechange
               se trouvent, et n&apos;importe quel horloger sait les démonter. Dans vingt ans, votre
               montre sera encore révisable, ce qui n&apos;est pas le cas de tous les mouvements
-              montés par les microbrands.
+              montés par les petites marques.
             </p>
           </Reveal>
           <Reveal delay={60}>
@@ -112,7 +112,7 @@ export default function Horloger() {
           intro="Vous les trouverez sur l'établi de n'importe quel horloger. J'explique ici à quoi me sert chacun."
         />
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-16">
           <PhotoPlaceholder
             description="plan large de l'établi : tapis vert, brucelles, boîtes à pièces, potence"
             ratio="4 / 3"

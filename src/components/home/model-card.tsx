@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ViewTransition } from "react";
 import { IconFleche } from "@/components/ui/icons";
 import { Pill, SamplePill } from "@/components/ui/pill";
-import { WatchSvg } from "@/watch/watch-svg";
+import { MontreCliente, MontreDifferee, SecondColoris } from "@/components/ui/montre-differee";
 import { altConfiguration, defaultConfiguration } from "@/lib/configurateur/configuration";
 import type { WatchModelView } from "@/lib/data/models";
 import type { Catalogue } from "@/lib/configurateur/catalogue";
@@ -18,11 +18,18 @@ export function ModelCard({
   catalogue,
   modele,
   priorite = false,
+  differe = !priorite,
   niveau = 3,
 }: {
   catalogue: Catalogue;
   modele: WatchModelView;
   priorite?: boolean;
+  /**
+   * Dessin monté côté client à l'approche de l'écran (voir `MontreDifferee`).
+   * Par défaut, toute carte qui n'est pas prioritaire : le nom, le lien et le
+   * prix restent rendus par le serveur, seul le dessin attend.
+   */
+  differe?: boolean;
   /**
    * Niveau du nom du modèle. 3 sous un titre de section, 2 quand la grille est
    * directement sous le titre de la page : la hiérarchie ne doit pas sauter de
@@ -32,6 +39,7 @@ export function ModelCard({
 }) {
   const base = defaultConfiguration(catalogue, modele);
   const variante = altConfiguration(catalogue, modele);
+  const intitule = `${modele.name}, ${modele.styleLabel.toLowerCase()}, ${modele.diameterMm} millimètres`;
 
   return (
     <article className="carte-montre group">
@@ -49,25 +57,26 @@ export function ModelCard({
               la fiche — elle s'y déplace et grandit au lieu de disparaître. */}
           <ViewTransition name={`montre-${modele.slug}`} share="morph" default="none">
             <div className="relative transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.035] group-focus-within:scale-[1.035]">
-            <WatchSvg
-              id={`carte-${modele.slug}`}
-              render={base.render}
-              detail={priorite ? "full" : "compact"}
-              label={`${modele.name}, ${modele.styleLabel.toLowerCase()}, ${modele.diameterMm} millimètres`}
-              className="h-auto w-full"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 opacity-0 transition-opacity duration-(--d-reveal) ease-atelier group-hover:opacity-100"
-            >
-              <WatchSvg
-                id={`carte-alt-${modele.slug}`}
-                render={variante.render}
+            {differe ? (
+              <MontreDifferee
+                id={`carte-${modele.slug}`}
+                render={base.render}
                 detail="compact"
-                label=""
+                label={intitule}
                 className="h-auto w-full"
               />
-            </div>
+            ) : (
+              <MontreCliente
+                id={`carte-${modele.slug}`}
+                render={base.render}
+                detail={priorite ? "full" : "compact"}
+                label={intitule}
+                className="h-auto w-full"
+              />
+            )}
+            {/* Le second coloris ne se voit qu'au survol : il n'est dessiné, côté
+                client, qu'à la première intention sur la carte. */}
+            <SecondColoris id={`carte-alt-${modele.slug}`} render={variante.render} detail="compact" label="" />
             </div>
           </ViewTransition>
         </div>

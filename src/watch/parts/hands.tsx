@@ -1,7 +1,7 @@
-import { LUME_EDGE, LUME_FILL, METALS, rampAt, shade } from "../palette";
-import { C, handAngles, n } from "../geometry";
+import { LUME_EDGE, LUME_FILL, METALS, shade } from "../palette";
+import { C, POSE_GMT_OFFSET_DEG, handAngles, n } from "../geometry";
+import { teintesDauphine, teintesFacettes } from "../facettes";
 import type { HandShape, MetalTone, Movement } from "../types";
-import { studioLum } from "./conic";
 
 interface HandsProps {
   uid: string;
@@ -13,6 +13,12 @@ interface HandsProps {
   detail?: "full" | "compact";
   /** Teinte laquée de l'aiguille de fonction (GMT, trotteuse de chronographe). */
   accent?: string;
+  /**
+   * `false` quand le rendu impose son heure (`render.time`) : l'horloge du site
+   * n'y touche pas. Par défaut la pose de catalogue est reprise en main, une
+   * fois la page montée, par `horloge-vivante.tsx`.
+   */
+  vivante?: boolean;
 }
 
 const HOUR_LEN = 182;
@@ -36,9 +42,25 @@ const PROPORTIONS: Record<HandShape, readonly [number, number, number]> = {
  * un dégradé à rupture franche propre à chaque aiguille. Les ombres portées
  * sont appliquées hors rotation, pour tomber toutes du même côté, et
  * s'allongent avec la hauteur de l'aiguille sur le canon.
+ *
+ * Le serveur pose les aiguilles à l'heure de catalogue. Dans le navigateur,
+ * `horloge-vivante.tsx` les retrouve par leurs attributs (`data-aiguille` sur
+ * chaque groupe tournant, `data-facette` sur chaque teinte qui dépend de
+ * l'angle) et écrit leur rotation sans passer par React : ce composant reste
+ * pur, et comme ses props ne changent pas, React ne réécrit jamais par-dessus.
  */
-export function Hands({ uid, shape, metal, lume, movement, time, detail = "full", accent }: HandsProps) {
-  const angles = handAngles(time);
+export function Hands({ uid, shape, metal, lume, movement, time, detail = "full", accent, vivante = true }: HandsProps) {
+  const lus = handAngles(time);
+  const angles = {
+    ...lus,
+    // Chronographe arrêté et remis à zéro : sa grande aiguille centrale attend
+    // à midi. La seconde courante vit dans le compteur « SEC » (`dial.tsx`).
+    // C'est exactement ce que l'horloge vivante tient ensuite dans le navigateur :
+    // entre le rendu serveur et la première image client, seule l'heure change.
+    second: movement === "VK64" ? 0 : lus.second,
+    // Pose de catalogue : l'aiguille 24 h montre un second fuseau (voir `geometry.ts`).
+    gmt: vivante ? (lus.gmt + POSE_GMT_OFFSET_DEG) % 360 : lus.gmt,
+  };
   const ramp = METALS[metal];
   const low = `url(#${uid}-hand-shadow)`;
   const high = detail === "full" ? `url(#${uid}-hand-shadow-haut)` : undefined;
@@ -47,29 +69,29 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
   const [hourLen, hourW, minW] = PROPORTIONS[shape];
 
   return (
-    <g data-layer="aiguilles" transform={`translate(${C} ${C})`}>
+    <g data-layer="aiguilles" data-calibre={movement} data-heure={vivante ? "vivante" : "fixe"} transform={`translate(${C} ${C})`}>
       <defs>
-        <FacetGradient id={`${uid}-hand-heure`} metal={metal} angle={angles.hour} />
-        <FacetGradient id={`${uid}-hand-minute`} metal={metal} angle={angles.minute} />
-        <FacetGradient id={`${uid}-hand-seconde`} metal={metal} angle={angles.second} />
-        <FacetGradient id={`${uid}-hand-gmt`} metal={metal} angle={angles.gmt} />
+        <FacetGradient id={`${uid}-hand-heure`} role="heure" metal={metal} angle={angles.hour} />
+        <FacetGradient id={`${uid}-hand-minute`} role="minute" metal={metal} angle={angles.minute} />
+        <FacetGradient id={`${uid}-hand-seconde`} role="seconde" metal={metal} angle={angles.second} />
+        <FacetGradient id={`${uid}-hand-gmt`} role="gmt" metal={metal} angle={angles.gmt} />
       </defs>
 
       <g filter={low}>
         {movement === "NH34" && (
-          <g transform={`rotate(${angles.gmt})`}>
+          <g data-aiguille="gmt" transform={`rotate(${angles.gmt})`}>
             <GmtHand fill={accent ?? `url(#${uid}-hand-gmt)`} metal={metal} lume={lume} laquee={Boolean(accent)} />
           </g>
         )}
-        <g transform={`rotate(${angles.hour})`}>
+        <g data-aiguille="heure" transform={`rotate(${angles.hour})`}>
           <Hand fill={`url(#${uid}-hand-heure)`} shape={shape} role="heure" length={hourLen} width={hourW} metal={metal} lume={lume} angle={angles.hour} />
         </g>
         {!high && (
           <>
-            <g transform={`rotate(${angles.minute})`}>
+            <g data-aiguille="minute" transform={`rotate(${angles.minute})`}>
               <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
             </g>
-            <g transform={`rotate(${angles.second})`}>
+            <g data-aiguille="seconde" transform={`rotate(${angles.second})`}>
               <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
             </g>
           </>
@@ -78,10 +100,10 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
 
       {high && (
         <g filter={high}>
-          <g transform={`rotate(${angles.minute})`}>
+          <g data-aiguille="minute" transform={`rotate(${angles.minute})`}>
             <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
           </g>
-          <g transform={`rotate(${angles.second})`}>
+          <g data-aiguille="seconde" transform={`rotate(${angles.second})`}>
             <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
           </g>
         </g>
@@ -98,13 +120,16 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
   );
 }
 
-/** Dégradé à rupture franche sur l'axe : facette gauche, facette droite. */
-function FacetGradient({ id, metal, angle }: { id: string; metal: MetalTone; angle: number }) {
-  const ramp = METALS[metal];
-  const left = rampAt(ramp, 0.3 + 0.7 * studioLum(angle - 90, "poli"));
-  const right = rampAt(ramp, 0.3 + 0.7 * studioLum(angle + 90, "poli"));
+/**
+ * Dégradé à rupture franche sur l'axe : facette gauche, facette droite.
+ * `data-facette` et `data-metal` disent à l'horloge vivante quelle aiguille ce
+ * dégradé habille et dans quel métal : de quoi recalculer les deux teintes
+ * quand l'aiguille a tourné, avec la même formule (`facettes.ts`).
+ */
+function FacetGradient({ id, role, metal, angle }: { id: string; role: "heure" | "minute" | "seconde" | "gmt"; metal: MetalTone; angle: number }) {
+  const [left, right] = teintesFacettes(metal, angle);
   return (
-    <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id={id} data-facette={role} data-metal={metal} x1="0" y1="0" x2="1" y2="0">
       <stop offset="0.5" stopColor={left} />
       <stop offset="0.5" stopColor={right} />
     </linearGradient>
@@ -188,16 +213,14 @@ function Hand({
   // tournant la montre d'un degré. Pas de luminova par tradition ; s'il est
   // demandé, il tient dans une fine rainure.
   if (shape === "dauphine") {
-    const lumG = studioLum(angle - 90, "poli");
-    const lumD = studioLum(angle + 90, "poli");
-    const gaucheClair = lumG >= lumD;
-    const clair = (l: number) => rampAt(ramp, 0.62 + 0.38 * l);
-    const sombre = (l: number) => rampAt(ramp, 0.1 + 0.26 * l);
+    // Les deux versants sont teints en dur, pas par dégradé : ils portent donc
+    // eux-mêmes de quoi être reteints quand l'aiguille tourne.
+    const [gauche, droite] = teintesDauphine(metal, angle);
     const epaule = n(-L * 0.12);
     return (
       <g>
-        <path d={`M 0 26 L ${-w / 2} ${epaule} L 0 ${-L} Z`} fill={gaucheClair ? clair(lumG) : sombre(lumG)} />
-        <path d={`M 0 26 L ${w / 2} ${epaule} L 0 ${-L} Z`} fill={gaucheClair ? sombre(lumD) : clair(lumD)} />
+        <path data-versant="gauche" data-metal={metal} d={`M 0 26 L ${-w / 2} ${epaule} L 0 ${-L} Z`} fill={gauche} />
+        <path data-versant="droit" data-metal={metal} d={`M 0 26 L ${w / 2} ${epaule} L 0 ${-L} Z`} fill={droite} />
         {/* L'arête du pli : un filet d'éclat, le seul trait de l'aiguille. */}
         <line x1="0" y1="24" x2="0" y2={-L + 2} stroke={ramp.hi} strokeOpacity="0.85" strokeWidth="0.9" />
         {lume && (

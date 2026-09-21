@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { IconFleche } from "@/components/ui/icons";
 import { SamplePill } from "@/components/ui/pill";
-import { WatchSvg } from "@/watch/watch-svg";
+import { MontreCliente, MontreDifferee } from "@/components/ui/montre-differee";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import type { Catalogue } from "@/lib/configurateur/catalogue";
 import type { GammeVue } from "@/lib/content/gammes";
@@ -23,19 +23,24 @@ export function BlocGamme({
   catalogue,
   gamme,
   className,
+  differe = false,
 }: {
   catalogue: Catalogue;
   gamme: GammeVue;
   className?: string;
+  /** Bloc situé sous la ligne de flottaison : son dessin est monté à l'approche de l'écran. */
+  differe?: boolean;
 }) {
+  const Montre = differe ? MontreDifferee : MontreCliente;
   const { render } = defaultConfiguration(catalogue, gamme.phare);
 
   return (
-    <article className={cn("group", className)}>
+    <article className={cn("tuile-montre group", className)}>
       <Link href={gamme.href} className={cn("block", FOCUS)}>
         <div className="cadre-montre relative aspect-[4/3] overflow-hidden sm:aspect-[16/10]">
-          <WatchSvg
+          <Montre
             id={`gamme-${gamme.style}`}
+            classeBoite="absolute inset-0"
             render={render}
             label={`${gamme.phare.name}, montre phare de la gamme ${gamme.nom}`}
             className="absolute inset-0 h-full w-full transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.04]"
@@ -65,10 +70,11 @@ export function TuileGamme({ catalogue, gamme }: { catalogue: Catalogue; gamme: 
   const { render } = defaultConfiguration(catalogue, gamme.phare);
 
   return (
-    <Link href={gamme.href} className={cn("group block", FOCUS)}>
+    <Link href={gamme.href} className={cn("tuile-montre group block", FOCUS)}>
       <div className="cadre-montre relative aspect-square overflow-hidden">
-        <WatchSvg
+        <MontreDifferee
           id={`tuile-gamme-${gamme.style}`}
+          classeBoite="absolute inset-0"
           render={render}
           detail="compact"
           label=""

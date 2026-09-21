@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
 import { BoutonPaiement } from "@/components/panier/bouton-paiement";
+import { ChampQuantite } from "@/components/panier/champ-quantite";
 import { SamplePill } from "@/components/ui/pill";
 import { Section } from "@/components/ui/section";
 import { useCart } from "@/lib/panier/cart";
@@ -71,12 +72,9 @@ export function PanierComplet() {
               <div className="mt-5 flex flex-wrap items-center gap-5">
                 <label className="flex items-center gap-2">
                   <span className="type-caption text-fg-soft">Quantité</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={9}
-                    value={ligne.quantity}
-                    onChange={(event) => setQuantity(ligne.id, Number(event.target.value))}
+                  <ChampQuantite
+                    quantite={ligne.quantity}
+                    onChange={(quantite) => setQuantity(ligne.id, quantite)}
                     className="type-ui h-10 w-16 rounded-field border border-field bg-panel px-2 text-center text-fg"
                   />
                 </label>

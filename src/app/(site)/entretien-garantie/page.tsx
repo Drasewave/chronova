@@ -70,7 +70,7 @@ export default function EntretienGarantie() {
           La garantie couvre le <strong>mouvement</strong> et l&apos;<strong>assemblage</strong> :
           un calibre qui s&apos;arrête, une aiguille qui touche, un défaut d&apos;étanchéité
           constaté à la réception, un index décollé. Dans ces cas, la montre revient à
-          l&apos;atelier, elle est reprise et repartie sans frais, port retour compris.
+          l&apos;atelier, je la reprends et je vous la réexpédie sans frais, port retour compris.
         </p>
 
         <h2>Ce qui n&apos;est pas couvert</h2>

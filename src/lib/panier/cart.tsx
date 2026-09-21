@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { SummaryLine } from "@/lib/configurateur/configuration";
+import { bornerQuantite } from "./quantite";
 import type { WatchRender } from "@/watch/types";
 
 const CLE = "chronova:panier";
@@ -92,7 +93,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
       if (existante) {
         return prev.map((item) =>
-          item.id === existante.id ? { ...item, quantity: item.quantity + 1 } : item,
+          item.id === existante.id ? { ...item, quantity: bornerQuantite(item.quantity + 1, item.quantity) } : item,
         );
       }
       return [
@@ -113,11 +114,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  /**
+   * Ne supprime JAMAIS une ligne (audit A-02) : une quantité vide, nulle ou
+   * invalide laisse la ligne telle quelle. Retirer une montre = `remove`.
+   */
   const setQuantity = useCallback((id: string, quantity: number) => {
     setItems((prev) =>
-      quantity <= 0
-        ? prev.filter((item) => item.id !== id)
-        : prev.map((item) => (item.id === id ? { ...item, quantity: Math.min(9, quantity) } : item)),
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: bornerQuantite(quantity, item.quantity) } : item,
+      ),
     );
   }, []);
 

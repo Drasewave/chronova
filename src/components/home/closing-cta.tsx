@@ -1,6 +1,6 @@
 import { ButtonLink } from "@/components/ui/button";
 import { IconFleche } from "@/components/ui/icons";
-import { WatchSvg } from "@/watch/watch-svg";
+import { MontreDifferee } from "@/components/ui/montre-differee";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import type { Catalogue } from "@/lib/configurateur/catalogue";
 import type { WatchModelView } from "@/lib/data/models";
@@ -38,7 +38,8 @@ export function ClosingCta({ catalogue, modele }: { catalogue: Catalogue; modele
         </div>
 
         <div className="pointer-events-none relative -mb-[30%] hidden lg:block" aria-hidden="true">
-          <WatchSvg id="cloture" render={render} label="" className="h-auto w-full -rotate-12" />
+          {/* Dernière scène de la page, masquée sous `lg` : dessinée à l'approche seulement. */}
+          <MontreDifferee id="cloture" render={render} label="" classeBoite="aspect-square w-full -rotate-12" className="h-auto w-full" />
         </div>
       </div>
     </section>
