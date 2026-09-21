@@ -12,7 +12,7 @@ export interface EvenementFrise {
  * Frise d'assemblage.
  *
  * Verticale : les intitulés d'étapes sont des phrases, pas des mots, et une
- * frise horizontale les écraserait. Le trait de liaison est en laiton jusqu'à
+ * frise horizontale les écraserait. Le trait de liaison est à la couleur d'accent jusqu'à
  * l'étape atteinte, en filet neutre au-delà — la progression se lit sans
  * dépendre de la couleur seule, puisque chaque étape porte aussi sa date.
  */

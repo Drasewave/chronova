@@ -204,7 +204,7 @@ export function Configurator({
       </div>
 
       {/* Barre fixe sur mobile : le prix et l'action restent sous le pouce. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-panel px-[var(--gutter)] py-3 shadow-sheet lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-panel px-[var(--gutter)] py-3 lg:hidden">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="type-title-2 whitespace-nowrap text-fg" data-numeric>

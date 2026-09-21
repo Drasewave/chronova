@@ -89,7 +89,7 @@ export function CrmShell({
                             actif ? "bg-panel" : "hover:bg-panel/60",
                           )}
                         >
-                          {/* L'entrée active : un fond de panneau et un point d'or,
+                          {/* L'entrée active : un fond de panneau et un point d'accent,
                               pas de filet latéral épais. */}
                           <span className="type-ui flex items-center justify-between gap-2">
                             {entree.label}

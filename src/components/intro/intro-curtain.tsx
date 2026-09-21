@@ -28,7 +28,7 @@ function retirerRetard() {
 }
 
 /**
- * Rideau d'entrée. Sur la nuit, le nom s'écrit lettre à lettre, un filet d'or se
+ * Rideau d'entrée. Sur la nuit, le nom s'écrit lettre à lettre, un filet bleu se
  * trace dessous, puis le volet se lève et découvre le héros qui entre au même
  * moment (montre, aiguilles, titre, cascade : voir « Ouverture » dans
  * globals.css). 1,4 s du premier pixel au volet levé.

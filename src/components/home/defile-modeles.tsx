@@ -67,6 +67,8 @@ export interface ModeleDefile {
 }
 
 /** Temps d'exposition d'un modèle, transition non comprise. */
+// Ces deux durées doublent `--d-defile` et `--d-scene` de globals.css : le
+// minuteur JS et la barre de progression CSS doivent finir ensemble.
 const INTERVALLE_MS = 5000;
 /** Durée de la transition : doit couvrir `defile-entre` (globals.css). */
 const TRANSITION_MS = 850;
@@ -377,7 +379,7 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
 
       <div className="relative mx-auto w-[min(92%,30rem)] lg:w-[min(100%,35rem)]">
         <div
-          className="pointer-events-none absolute inset-0 -z-10 transition-transform duration-[850ms] ease-[var(--ease)]"
+          className="pointer-events-none absolute inset-0 -z-10 transition-transform duration-(--d-scene) ease-(--ease)"
           style={{ transform: `rotate(${etat.crans * 30}deg)` }}
         >
           {graduation}

@@ -117,6 +117,8 @@ export interface WatchRender {
 export const FACE_LAYERS = [
   "ombre",
   "bracelet",
+  // La couronne se dessine AVANT le boîtier : son pied disparaît sous le flanc.
+  "couronne",
   "boitier",
   "lunette",
   "insert",
@@ -129,7 +131,6 @@ export const FACE_LAYERS = [
   "axe",
   "verre",
   "reflet",
-  "couronne",
 ] as const;
 
 export type FaceLayer = (typeof FACE_LAYERS)[number];

@@ -53,7 +53,6 @@
   --breakpoint-3xl: 90rem; /* 1440 px, la référence large du projet */
 
   --container-prose: 68ch;
-  --container-content: 80rem; /* 1280 px */
   --container-wide: 84rem; /* 1344 px */
 }
 
@@ -94,7 +93,9 @@
      Cinq durées, plus l'appui. Les états (survol, pastille, chevron) vivent
      entre 240 et 350 ms ; les panneaux à 500 ms ; les changements de scène
      (vues de la montre, apparitions, survol des cartes) entre 700 et 900 ms.
-     Aucune durée en dur dans les composants : tout passe par ces tokens. */
+     Aucune durée en dur dans les composants : tout passe par ces tokens. Seule
+     l'ouverture garde sa propre partition (voir « Ouverture »), parce que ses
+     temps se répondent entre eux et non au reste du site. */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-sortie: cubic-bezier(0.5, 0, 0.9, 0.4);
   --ease-passage: cubic-bezier(0.6, 0, 0.2, 1);
@@ -104,6 +105,9 @@
   --d-slow: 500ms;
   --d-reveal: 700ms;
   --d-long: 900ms;
+  /* Changement de scène (défilé du héros, lignes du titre) et tenue d'un modèle. */
+  --d-scene: 850ms;
+  --d-defile: 5000ms;
   /* Écart entre deux voisins qui entrent l'un après l'autre. */
   --d-decalage: 90ms;
   /* La lumière d'un reflet : claire sur papier comme sur nuit. */
@@ -497,8 +501,8 @@
     transform: translateX(4px);
   }
 
-  /* Filet d'or : le seul ornement du site. */
-  .filet-or {
+  /* Filet d'accent : le seul ornement du site. */
+  .filet-accent {
     height: 1px;
     border: 0;
     background-image: linear-gradient(90deg, transparent, var(--accent-ink) 18%, var(--accent-ink) 82%, transparent);
@@ -513,7 +517,7 @@
 
      0 ms     la nuit ; « Passer » est déjà là
      60 ms    CHRONOVA, lettre à lettre (8 × 45 ms)
-     300 ms   le filet d'or se trace sous le nom
+     300 ms   le filet bleu se trace sous le nom
      800 ms   le volet se lève (600 ms) ; le nom s'efface avec lui
      1000 ms  le héros entre dessous : la montre tourne, grandit et se met au
               point pendant que ses aiguilles balaient jusqu'à leur heure ;
@@ -533,7 +537,7 @@
   place-items: center;
   background-color: var(--color-nuit);
   border-bottom: 1px solid color-mix(in srgb, var(--color-bleu-clair) 55%, transparent);
-  animation: intro-leve 600ms cubic-bezier(0.76, 0, 0.24, 1) 800ms forwards;
+  animation: intro-leve 600ms var(--ease-passage) 800ms forwards;
 }
 
 .intro-lettre {
@@ -673,7 +677,7 @@
    Premier groupe : heures (et GMT). Second groupe : minutes, puis trotteuse. */
 .entree-montre [data-layer="aiguilles"] > g:not([data-layer]) > g > g {
   --depart: -48deg;
-  animation: balayage-aiguille 1250ms cubic-bezier(0.33, 1, 0.68, 1) calc(var(--entree-retard, 0ms) + 40ms)
+  animation: balayage-aiguille 1250ms var(--ease) calc(var(--entree-retard, 0ms) + 40ms)
     backwards;
 }
 
@@ -687,11 +691,11 @@
 
 .ligne-titre {
   display: inline-block;
-  animation: leve-ligne 850ms var(--ease) calc(var(--entree-retard, 0ms) + 60ms + var(--rang, 0) * 85ms) backwards;
+  animation: leve-ligne var(--d-scene) var(--ease) calc(var(--entree-retard, 0ms) + 60ms + var(--rang, 0) * 85ms) backwards;
 }
 
 .entree-texte {
-  animation: montee-texte 700ms var(--ease) calc(var(--entree-retard, 0ms) + 250ms + var(--rang, 0) * 80ms) backwards;
+  animation: montee-texte var(--d-reveal) var(--ease) calc(var(--entree-retard, 0ms) + 250ms + var(--rang, 0) * 80ms) backwards;
 }
 
 /* Reflet qui traverse le verre au survol d'une carte. Une animation CSS prend le
@@ -757,16 +761,16 @@
 .defile-sort {
   pointer-events: none;
   will-change: transform, opacity;
-  animation: defile-sort 700ms var(--ease) forwards;
+  animation: defile-sort var(--d-reveal) var(--ease-sortie) forwards;
 }
 
 .defile-entre {
   will-change: transform, opacity, filter;
-  animation: defile-entre 850ms var(--ease) backwards;
+  animation: defile-entre var(--d-scene) var(--ease) backwards;
 }
 
 .defile-progression {
-  animation: defile-progression 5000ms linear forwards;
+  animation: defile-progression var(--d-defile) linear forwards;
 }
 
 /* Le balayage d'aiguilles de l'ouverture ne rejoue pas à chaque modèle. */
@@ -779,8 +783,8 @@
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 800ms var(--ease),
-    visibility 0s linear 800ms;
+    opacity var(--d-scene) var(--ease),
+    visibility 0s linear var(--d-scene);
 }
 
 .defile-texte[data-actif="true"] {

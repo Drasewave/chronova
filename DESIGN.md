@@ -285,7 +285,7 @@ Le système est plat. La profondeur vient de la lumière du studio — le dégra
 
 Trois rayons, trois rôles. La pilule (999 px) pour tout ce qui se presse ou étiquette : boutons, puces de filtre, pastilles, contrôle segmenté, boutons d'icône, repères numérotés, pastilles de couleur. Des angles doucement arrondis (8 px) pour les champs de saisie, les petits blocs et les lignes du panneau de navigation. Des angles plus amples (14 px) pour les cartes : tuiles de montre, blocs de gamme, vignettes de galerie, cartes d'option, panneaux, boîte de zoom, emplacements photo. L'anneau de focus a son propre rayon de 4 px.
 
-Les filets font 1 px. Les bordures en pointillés signalent exclusivement ce qui manque : emplacement photo, avis à venir, information `À remplir`. Le cercle est la forme récurrente, empruntée à la montre : couronne graduée de soixante traits derrière la montre du héros, repères ronds de la frise. Le filet d'accent (classe `.filet-or`, nom hérité) est un trait de 1 px en `accent-ink` qui s'efface en dégradé à ses deux extrémités (opacité 0,55) : le seul ornement du site.
+Les filets font 1 px. Les bordures en pointillés signalent exclusivement ce qui manque : emplacement photo, avis à venir, information `À remplir`. Le cercle est la forme récurrente, empruntée à la montre : couronne graduée de soixante traits derrière la montre du héros, repères ronds de la frise. Le filet d'accent (classe `.filet-accent`, nom hérité) est un trait de 1 px en `accent-ink` qui s'efface en dégradé à ses deux extrémités (opacité 0,55) : le seul ornement du site.
 
 ## Components
 

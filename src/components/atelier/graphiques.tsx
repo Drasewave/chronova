@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * nécessaire — le titre nomme la série. Les axes restent en filet, les valeurs
  * en encre : jamais de texte coloré à la couleur de la barre.
  *
- * La couleur est `--accent`, qui bascule en laiton clair sur fond nuit ; les
+ * La couleur est `--accent`, qui passe au bleu clair sur fond nuit ; les
  * deux versions passent le niveau AA sur leur fond respectif.
  */
 
