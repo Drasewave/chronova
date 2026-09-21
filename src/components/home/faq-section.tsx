@@ -11,7 +11,6 @@ export function FaqSection() {
   return (
     <Section fond="alterne" id="faq">
       <SectionHeader
-        surtitre="Questions fréquentes"
         titre="Ce qu'on me demande le plus"
         action={
           <ButtonLink href="/contact" variant="contour">
@@ -23,10 +22,10 @@ export function FaqSection() {
       <div className="mt-14 border-t border-rule">
         {FAQ.map((entree) => (
           <details key={entree.question} className="group border-b border-rule">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-fg marker:content-none">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-fg transition-colors duration-200 marker:content-none hover:text-gold">
               <h3 className="type-title-2">{entree.question}</h3>
               <IconChevron
-                className="shrink-0 text-accent transition-transform duration-300 ease-atelier group-open:rotate-180"
+                className="shrink-0 text-gold transition-transform duration-300 ease-atelier group-open:rotate-180"
                 width={22}
                 height={22}
               />

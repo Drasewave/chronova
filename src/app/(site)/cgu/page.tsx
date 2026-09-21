@@ -19,7 +19,6 @@ export default async function Cgu() {
 
   return (
     <LegalPage
-      surtitre="Conditions d'utilisation"
       titre="Conditions générales d'utilisation"
       chapo="Les règles d'usage du site, du configurateur et du compte client. La vente elle-même relève des conditions générales de vente."
       miseAJour={`[à dater lors de la mise en ligne] · version ${VERSION_CGU}`}

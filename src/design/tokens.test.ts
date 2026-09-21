@@ -19,57 +19,52 @@ function token(nom: string): string {
 
 const AA = 4.5;
 
-describe("palette sur fond clair (marble)", () => {
-  const marble = token("marble");
-
+describe("palette sur fond clair (papier)", () => {
   it.each([
-    ["graphite", 11],
-    ["graphite-soft", AA],
-    ["chrome", AA],
-    ["chrome-deep", AA],
-    ["jade", AA],
-    ["ember", AA],
-  ])("%s atteint le niveau AA", (nom, minimum) => {
-    expect(contrastRatio(token(nom), marble)).toBeGreaterThanOrEqual(minimum);
+    ["encre", 11],
+    ["encre-douce", AA],
+    ["marine", AA],
+    ["marine-vive", AA],
+    ["or", AA],
+    ["sapin", AA],
+    ["grenat", AA],
+  ])("%s atteint le niveau AA sur le papier et sur son alterné", (nom, minimum) => {
+    expect(contrastRatio(token(nom), token("papier"))).toBeGreaterThanOrEqual(minimum);
+    expect(contrastRatio(token(nom), token("papier-alt"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("un bouton plein reste lisible : marbre sur chrome", () => {
-    expect(contrastRatio(token("marble"), token("chrome"))).toBeGreaterThanOrEqual(AA);
+  it("un bouton plein reste lisible : panneau sur marine", () => {
+    expect(contrastRatio(token("panneau"), token("marine"))).toBeGreaterThanOrEqual(AA);
+    expect(contrastRatio(token("panneau"), token("marine-vive"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("le chrome clair est bien trop faible pour du texte : décor uniquement", () => {
-    expect(contrastRatio(token("chrome-light"), marble)).toBeLessThan(3);
+  it("l'or clair est bien trop faible pour du texte sur papier : décor uniquement", () => {
+    expect(contrastRatio(token("or-clair"), token("papier"))).toBeLessThan(3);
   });
 });
 
-describe("palette sur fond sombre (onyx)", () => {
-  const onyx = token("onyx");
-
+describe("palette sur fond sombre (nuit)", () => {
   it.each([
-    ["onyx-ink", 11],
-    ["onyx-soft", AA],
-    ["chrome-light", AA],
-    ["jade-light", AA],
-    ["ember-light", AA],
-  ])("%s atteint le niveau AA", (nom, minimum) => {
-    expect(contrastRatio(token(nom), onyx)).toBeGreaterThanOrEqual(minimum);
+    ["nuit-encre", 11],
+    ["nuit-douce", AA],
+    ["or-clair", AA],
+    ["or-pale", AA],
+    ["sapin-clair", AA],
+    ["grenat-clair", AA],
+  ])("%s atteint le niveau AA sur la nuit et sur son panneau", (nom, minimum) => {
+    expect(contrastRatio(token(nom), token("nuit"))).toBeGreaterThanOrEqual(minimum);
+    expect(contrastRatio(token(nom), token("nuit-panneau"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("le chrome normal chute sous le seuil : c'est pourquoi l'accent bascule en mode sombre", () => {
-    expect(contrastRatio(token("chrome"), onyx)).toBeLessThan(3);
+  it("un bouton plein reste lisible : nuit sur or clair", () => {
+    expect(contrastRatio(token("nuit"), token("or-clair"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("le vert jade normal chute aussi", () => {
-    expect(contrastRatio(token("jade"), onyx)).toBeLessThan(3);
+  it("la marine disparaît sur la nuit : c'est pourquoi l'accent bascule sur l'or", () => {
+    expect(contrastRatio(token("marine"), token("nuit"))).toBeLessThan(3);
   });
-});
 
-describe("interdits de la direction artistique", () => {
-  it("aucun blanc pur ni noir pur dans la palette", () => {
-    const teintes = /--color-[a-z-]+:\s*(#[0-9a-fA-F]{6});/g;
-    const trouvees = [...css.matchAll(teintes)].map((m) => m[1]?.toLowerCase());
-    expect(trouvees.length).toBeGreaterThan(10);
-    expect(trouvees).not.toContain("#ffffff");
-    expect(trouvees).not.toContain("#000000");
+  it("le vert sapin normal chute aussi", () => {
+    expect(contrastRatio(token("sapin"), token("nuit"))).toBeLessThan(3);
   });
 });

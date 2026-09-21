@@ -6,7 +6,7 @@ type Fond = "papier" | "alterne" | "nuit";
 const FONDS: Record<Fond, string> = {
   papier: "bg-bg text-fg",
   alterne: "bg-bg-alt text-fg",
-  nuit: "bg-onyx text-onyx-ink",
+  nuit: "bg-bg text-fg",
 };
 
 /**
@@ -42,14 +42,12 @@ export function Section({
 }
 
 export function SectionHeader({
-  surtitre,
   titre,
   niveau = 2,
   intro,
   action,
   className,
 }: {
-  surtitre?: string;
   titre: ReactNode;
   /**
    * Niveau du titre. Une page dont ce bloc est le titre principal passe 1 ;
@@ -61,9 +59,8 @@ export function SectionHeader({
   className?: string;
 }) {
   return (
-    <header className={cn("flex flex-col gap-6 md:flex-row md:items-end md:justify-between", className)}>
-      <div className="max-w-[46ch]">
-        {surtitre && <p className="type-mono surtitre mb-5 text-fg-soft">{surtitre}</p>}
+    <header className={cn("flex flex-col gap-8 md:flex-row md:items-end md:justify-between", className)}>
+      <div className="max-w-[52ch]">
         {niveau === 1 ? (
           <h1 className="type-display-2">{titre}</h1>
         ) : (

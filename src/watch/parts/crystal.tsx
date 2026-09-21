@@ -1,10 +1,13 @@
+import { PAPER } from "../palette";
 import { C, R_DIAL } from "../geometry";
 import type { Crystal as CrystalKind } from "../types";
 
 /**
- * Verre saphir. Le reflet est un simple dégradé translaté : aucune image, aucun
- * filtre coûteux, donc un suivi du pointeur à 60 images par seconde.
- * `sheen` va de -1 à 1 sur chaque axe ; 0,0 = montre de face.
+ * Verre saphir. Un saphir traité ne voile pas le cadran : il ne se trahit que
+ * par son chant, un liseré de lumière sur le pourtour, et par le reflet discret
+ * d'une boîte à lumière. Le reflet est un simple dégradé translaté : aucune
+ * image, aucun filtre coûteux, donc un suivi du pointeur à 60 images par
+ * seconde. `sheen` va de -1 à 1 sur chaque axe ; 0,0 = montre de face.
  */
 export function Crystal({
   uid,
@@ -17,61 +20,53 @@ export function Crystal({
   antiGlare: boolean;
   sheen?: { x: number; y: number };
 }) {
+  const circ = 2 * Math.PI * (R_DIAL - 3);
   return (
     <g data-layer="verre" clipPath={`url(#${uid}-dial-clip)`}>
       {antiGlare && <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-ar)`} />}
 
       {/* Le saphir bombé courbe la lumière sur tout le pourtour. */}
       {kind === "bombe" && (
-        <>
-          <circle
-            cx={C}
-            cy={C}
-            r={R_DIAL - 10}
-            fill="none"
-            stroke="#FBF8F3"
-            strokeOpacity="0.16"
-            strokeWidth="20"
-          />
-          <circle
-            cx={C}
-            cy={C}
-            r={R_DIAL - 4}
-            fill="none"
-            stroke="#FBF8F3"
-            strokeOpacity="0.3"
-            strokeWidth="6"
-            strokeDasharray="300 640"
-            strokeDashoffset="500"
-          />
-        </>
+        <circle cx={C} cy={C} r={R_DIAL - 9} fill="none" stroke={PAPER} strokeOpacity="0.1" strokeWidth="18" />
       )}
 
-      {/* Le saphir plat garde un chant net : un seul filet clair, sans le galbe. */}
-      {kind === "plat" && (
-        <circle
-          cx={C}
-          cy={C}
-          r={R_DIAL - 3}
-          fill="none"
-          stroke="#FBF8F3"
-          strokeOpacity="0.22"
-          strokeWidth="3"
-          strokeDasharray="260 620"
-          strokeDashoffset="480"
-        />
-      )}
+      {/* Chant du verre : un arc vif face à la boîte principale, un arc faible
+          à l'opposé. `rotate` place le début du tiret ; 0° = 3 h. */}
+      <circle
+        cx={C}
+        cy={C}
+        r={R_DIAL - 3}
+        fill="none"
+        stroke="#FFFFFF"
+        strokeOpacity={kind === "bombe" ? 0.8 : 0.6}
+        strokeWidth={kind === "bombe" ? 4 : 2.4}
+        strokeLinecap="round"
+        strokeDasharray={`${circ * 0.17} ${circ}`}
+        transform={`rotate(-167 ${C} ${C})`}
+      />
+      <circle
+        cx={C}
+        cy={C}
+        r={R_DIAL - 3}
+        fill="none"
+        stroke="#FFFFFF"
+        strokeOpacity="0.28"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeDasharray={`${circ * 0.09} ${circ}`}
+        transform={`rotate(28 ${C} ${C})`}
+      />
 
       {/* Point chaud fixe : le spot studio, discret, qui ne dépend pas du
           survol — c'est le reflet qui bouge par-dessus. */}
       <ellipse
-        cx={C - 120}
-        cy={C - 150}
-        rx="96"
-        ry="58"
+        cx={C - 150}
+        cy={C - 176}
+        rx="70"
+        ry="26"
         fill={`url(#${uid}-hotspot)`}
-        opacity="0.26"
-        transform={`rotate(-24 ${C - 120} ${C - 150})`}
+        opacity={antiGlare ? 0.22 : 0.4}
+        transform={`rotate(-40 ${C - 150} ${C - 176})`}
       />
 
       <g
@@ -84,11 +79,11 @@ export function Crystal({
       >
         <rect
           x={C - 700}
-          y={C - 150}
+          y={C - 330}
           width="1400"
           height="300"
           fill={`url(#${uid}-sheen)`}
-          transform={`rotate(-26 ${C} ${C})`}
+          transform={`rotate(-32 ${C} ${C})`}
         />
       </g>
     </g>

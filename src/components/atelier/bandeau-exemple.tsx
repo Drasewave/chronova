@@ -11,7 +11,7 @@ export function BandeauExemple({ nombre, quoi }: { nombre: number; quoi: string 
   if (nombre === 0) return null;
 
   return (
-    <p className="type-caption mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 border border-alert px-4 py-3 text-fg-soft">
+    <p className="type-caption mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-field border border-alert px-4 py-3 text-fg-soft">
       <Pill ton="alerte">Exemple</Pill>
       <span>
         {nombre} {quoi} {nombre > 1 ? "proviennent" : "provient"} des données de démonstration :

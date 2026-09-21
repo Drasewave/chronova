@@ -18,6 +18,7 @@ import { formatPrice } from "@/lib/utils";
 import type { WatchRender } from "@/watch/types";
 import type { SummaryLine } from "@/lib/configurateur/configuration";
 import type { InquiryStatus } from "@/generated/prisma/enums";
+import { BLOC, FilAriane, TitrePage } from "@/components/atelier/gabarit";
 
 export const dynamic = "force-dynamic";
 
@@ -58,23 +59,16 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
     <div className="mx-auto max-w-[76rem]">
       {demande.status === "NOUVEAU" && <MarquerLu id={demande.id} />}
 
-      <nav aria-label="Fil d'Ariane" className="mb-4">
-        <Link
-          href="/atelier/demandes"
-          className="type-mono link-underline text-fg-soft hover:text-accent"
-        >
-          ← Demandes
-        </Link>
-      </nav>
+      <FilAriane href="/atelier/demandes">Demandes</FilAriane>
 
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="type-mono flex flex-wrap items-center gap-3 text-fg-soft">
             {demande.type === "SUR_MESURE" ? "Pièce unique" : "Contact"}
             {demande.isSample && <SamplePill />}
           </p>
-          <h1 className="type-display-2 mt-2">{demande.name}</h1>
-          <p className="type-body mt-2 text-fg-soft">
+          <TitrePage className="mt-1">{demande.name}</TitrePage>
+          <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {demande.user ? (
               <Link href={`/atelier/clients/${demande.user.id}`} className="link-underline text-accent">
                 {demande.email}
@@ -86,9 +80,9 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
             {demande.budgetCents ? ` · budget annoncé ${formatPrice(demande.budgetCents)}` : ""}
           </p>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <Pill ton={TON_DEMANDE[demande.status]}>{LIBELLE_DEMANDE[demande.status]}</Pill>
-          <p className="type-mono mt-3 text-fg-soft">Reçue le {formatDate(demande.createdAt)}</p>
+          <p className="type-caption mt-2 text-fg-soft" data-numeric>Reçue le {formatDate(demande.createdAt)}</p>
         </div>
       </header>
 
@@ -155,7 +149,7 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
                           (ligne, index) => (
                             <li key={index} className="flex justify-between gap-3">
                               <span className="type-caption text-fg-soft">{ligne.intitule}</span>
-                              <span className="type-mono text-fg-soft" data-numeric>
+                              <span className="type-caption text-fg-soft" data-numeric>
                                 {formatPrice(ligne.montantCents)}
                               </span>
                             </li>
@@ -216,7 +210,7 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
               titre="La configuration jointe"
               aide="Telle que le client l'avait composée au moment de sa demande."
             >
-              <div className="border border-rule bg-bg-alt p-3">
+              <div className={`p-3 ${BLOC}`}>
                 <WatchSvg
                   id={`demande-${demande.id}`}
                   render={instantane.render}
@@ -255,7 +249,7 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
             <Panneau titre="Ce qu'on sait déjà">
               <p className="type-caption text-fg-soft">
                 Tour de poignet mesuré :{" "}
-                <span className="type-mono text-fg" data-numeric>
+                <span className="type-caption text-fg" data-numeric>
                   {demande.user.wristSizeMm} mm
                 </span>
               </p>

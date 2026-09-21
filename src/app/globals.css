@@ -1,49 +1,51 @@
 @import "tailwindcss";
 
-/* Le CRM bascule en sombre via [data-theme="night"] ; variante `night:` côté markup. */
+/* Le CRM et les sections nuit basculent via [data-theme="night"] ; variante `night:` côté markup. */
 @custom-variant night (&:where([data-theme="night"], [data-theme="night"] *));
 
 /* ─────────────────────────── Palette de marque ───────────────────────────
+   « Vitrine » : le standard des grandes maisons, joué sans détour. Un papier
+   neutre et clair où la montre est photographiée ; une nuit bleu-noir pour les
+   scènes où l'acier doit briller ; un or champagne, rare, pour ce qui compte.
    Valeurs brutes. Les composants ne les utilisent JAMAIS directement :
    ils passent par les tokens sémantiques plus bas, qui basculent avec le thème.
-   Contrastes vérifiés sur --marble : graphite 13,89:1 · graphite-soft 5,78:1 ·
-   chrome 6,88:1 · chrome-deep 9,86:1 · jade 5,46:1 · ember 6,81:1.
-   chrome-light tombe à 2,04:1 → décor uniquement. */
+   Contrastes vérifiés par `src/design/tokens.test.ts`. */
 @theme {
-  --color-marble: #edeff1;
-  --color-marble-alt: #e3e6ea;
-  --color-cloud: #f6f7f9;
-  --color-graphite: #1e2226;
-  --color-graphite-soft: #565d65;
-  --color-chrome: #2e5570;
-  --color-chrome-deep: #1f3d52;
-  --color-chrome-light: #8fadc2;
-  --color-jade: #2c6b54;
-  --color-jade-light: #7fcbaa;
-  --color-ember: #8c3346;
-  --color-ember-light: #e195a8;
-  --color-line: #d5d9de;
-  --color-onyx: #15181b;
-  --color-onyx-alt: #1d2124;
-  --color-onyx-panel: #232729;
-  --color-onyx-ink: #e7eaed;
-  --color-onyx-soft: #a9afb6;
-  --color-onyx-line: #33383d;
+  --color-papier: #f5f5f3;
+  --color-papier-alt: #ebebe8;
+  --color-panneau: #fdfdfc;
+  --color-encre: #111417;
+  --color-encre-douce: #555b63;
+  --color-filet: #dadad6;
+  --color-marine: #14263a;
+  --color-marine-vive: #1f3b5a;
+  --color-or: #7d5e27;
+  --color-or-clair: #d9bc7a;
+  --color-or-pale: #ead7a6;
+  --color-sapin: #1e6b4c;
+  --color-sapin-clair: #7fd0a8;
+  --color-grenat: #a12a3c;
+  --color-grenat-clair: #f09aaa;
+  --color-nuit: #0b1118;
+  --color-nuit-alt: #111923;
+  --color-nuit-panneau: #16202c;
+  --color-nuit-encre: #eef0f2;
+  --color-nuit-douce: #a3abb5;
+  --color-nuit-filet: #263241;
 
-  --font-title: var(--font-space-grotesk), "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-ui: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-title: var(--font-jost), "Futura", "Century Gothic", "Helvetica Neue", Arial, sans-serif;
+  --font-ui: var(--font-hanken), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --radius-field: 2px;
-  --radius-card: 3px;
-  /* 999 px réservé aux pastilles de couleur et aux compteurs. */
+  --radius-field: 8px;
+  --radius-card: 14px;
   --radius-pill: 999px;
 
-  /* Une seule ombre, teintée graphite, réservée aux éléments flottants. */
-  --shadow-lift: 0 2px 32px -12px rgb(21 24 27 / 0.32);
-  --shadow-sheet: 0 -4px 32px -14px rgb(21 24 27 / 0.34);
+  /* Une seule ombre, teintée nuit, réservée aux éléments flottants. */
+  --shadow-lift: 0 18px 48px -20px rgb(11 17 24 / 0.38);
+  --shadow-sheet: 0 -12px 40px -18px rgb(11 17 24 / 0.36);
 
-  --ease-atelier: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-atelier: cubic-bezier(0.16, 1, 0.3, 1);
 
   --breakpoint-3xl: 90rem; /* 1440 px, la référence large du projet */
 
@@ -56,54 +58,63 @@
 :root {
   color-scheme: light;
 
-  --bg: var(--color-marble);
-  --bg-alt: var(--color-marble-alt);
-  --panel: var(--color-cloud);
-  --fg: var(--color-graphite);
-  --fg-soft: var(--color-graphite-soft);
-  --rule: var(--color-line);
+  --bg: var(--color-papier);
+  --bg-alt: var(--color-papier-alt);
+  --panel: var(--color-panneau);
+  --fg: var(--color-encre);
+  --fg-soft: var(--color-encre-douce);
+  --rule: var(--color-filet);
   /* Contour des champs de saisie : 3:1 au moins sur tous les fonds (WCAG
-     1.4.11). Le filet `--rule` (1,2:1) reste réservé aux séparateurs décoratifs. */
-  --field: #7a828b;
-  --accent: var(--color-chrome);
-  --accent-hover: var(--color-chrome-deep);
-  --accent-decor: var(--color-chrome-light);
-  --on-accent: var(--color-marble);
-  --positive: var(--color-jade);
-  --alert: var(--color-ember);
-  --focus: var(--color-chrome);
+     1.4.11). Le filet `--rule` reste réservé aux séparateurs décoratifs. */
+  --field: #767c84;
+  --accent: var(--color-marine);
+  --accent-hover: var(--color-marine-vive);
+  --accent-decor: var(--color-or-clair);
+  --on-accent: var(--color-panneau);
+  /* L'or : ce qui est précieux sur la page — prix, mention d'atelier, filet. */
+  --gold: var(--color-or);
+  --positive: var(--color-sapin);
+  --alert: var(--color-grenat);
+  --focus: var(--color-marine);
 
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* La scène d'une montre : le dégradé d'un fond de studio. */
+  --stage-in: #ffffff;
+  --stage-out: #e3e4e6;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --d-fast: 200ms;
-  --d-base: 250ms;
-  --d-slow: 350ms;
-  --d-reveal: 450ms;
-  --d-long: 600ms;
+  --d-base: 280ms;
+  --d-slow: 400ms;
+  --d-reveal: 700ms;
+  --d-long: 900ms;
 
-  --gutter: clamp(20px, 4vw, 48px);
-  --section-y: clamp(64px, 9vw, 128px);
+  --gutter: clamp(20px, 4vw, 56px);
+  --section-y: clamp(72px, 9vw, 136px);
   --measure: 68ch;
 }
 
-/* Sur --onyx, le chrome chute à 2,25:1 : c'est --chrome-light qui devient
-   l'accent de texte (7,57:1). Même logique pour jade et ember. */
+/* Sur la nuit, la marine disparaît : c'est l'or clair qui porte l'accent. */
 [data-theme="night"] {
   color-scheme: dark;
 
-  --bg: var(--color-onyx);
-  --bg-alt: var(--color-onyx-alt);
-  --panel: var(--color-onyx-panel);
-  --fg: var(--color-onyx-ink);
-  --fg-soft: var(--color-onyx-soft);
-  --rule: var(--color-onyx-line);
-  --field: #767e87;
-  --accent: var(--color-chrome-light);
-  --accent-hover: #a9c4d6;
-  --accent-decor: var(--color-chrome);
-  --on-accent: var(--color-onyx);
-  --positive: var(--color-jade-light);
-  --alert: var(--color-ember-light);
-  --focus: var(--color-onyx-ink);
+  --bg: var(--color-nuit);
+  --bg-alt: var(--color-nuit-alt);
+  --panel: var(--color-nuit-panneau);
+  --fg: var(--color-nuit-encre);
+  --fg-soft: var(--color-nuit-douce);
+  --rule: var(--color-nuit-filet);
+  --field: #78828e;
+  --accent: var(--color-or-clair);
+  --accent-hover: var(--color-or-pale);
+  --accent-decor: var(--color-or);
+  --on-accent: var(--color-nuit);
+  --gold: var(--color-or-clair);
+  --positive: var(--color-sapin-clair);
+  --alert: var(--color-grenat-clair);
+  --focus: var(--color-or-clair);
+
+  --stage-in: #223246;
+  --stage-out: #0b1118;
 }
 
 /* `inline` : les utilitaires générés pointent sur la variable, pas sur sa
@@ -120,6 +131,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-decor: var(--accent-decor);
   --color-on-accent: var(--on-accent);
+  --color-gold: var(--gold);
   --color-positive: var(--positive);
   --color-alert: var(--alert);
 }
@@ -129,6 +141,8 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    scrollbar-color: color-mix(in srgb, var(--fg) 34%, transparent) transparent;
+    scrollbar-width: thin;
   }
 
   body {
@@ -140,6 +154,7 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    caret-color: var(--gold);
   }
 
   h1,
@@ -149,24 +164,30 @@
     font-family: var(--font-title);
     font-weight: 400;
     color: var(--fg);
+    text-wrap: balance;
+  }
+
+  a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
   }
 
   /* Aucun focus n'est jamais supprimé. */
   :focus-visible {
     outline: 2px solid var(--focus);
-    outline-offset: 2px;
-    border-radius: 2px;
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
   ::selection {
-    background-color: var(--accent);
-    color: var(--on-accent);
+    background-color: var(--color-or-clair);
+    color: var(--color-nuit);
   }
 
   /* Les prix, quantités et mesures s'alignent en colonne. */
   table,
   [data-numeric] {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums lining-nums;
   }
 
   hr {
@@ -182,42 +203,45 @@
   }
 }
 
-/* ──────────────────────── Échelle typographique ───────────────────────── */
+/* ──────────────────────── Échelle typographique ─────────────────────────
+   Jost en titrage : un géométrique d'horlogerie, celui des cadrans. Léger et
+   grand en vitrine, plus ferme dans les titres courants. Hanken Grotesk pour
+   tout ce qui se lit et se manipule. */
 @layer components {
   .type-display-1 {
     font-family: var(--font-title);
-    font-weight: 400;
-    font-size: clamp(2.75rem, 6vw, 4.5rem);
-    line-height: 1.04;
+    font-weight: 300;
+    font-size: clamp(2.6rem, 6.4vw, 5.5rem);
+    line-height: 1.02;
     letter-spacing: -0.025em;
   }
 
   .type-display-2 {
     font-family: var(--font-title);
-    font-weight: 400;
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.1;
+    font-weight: 300;
+    font-size: clamp(2rem, 4.2vw, 3.5rem);
+    line-height: 1.08;
     letter-spacing: -0.02em;
   }
 
   .type-title-1 {
     font-family: var(--font-title);
-    font-weight: 500;
-    font-size: 1.75rem;
-    line-height: 1.2;
-    letter-spacing: -0.015em;
+    font-weight: 400;
+    font-size: 1.875rem;
+    line-height: 1.18;
+    letter-spacing: -0.012em;
   }
 
   .type-title-2 {
     font-family: var(--font-title);
     font-weight: 500;
     font-size: 1.375rem;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    line-height: 1.28;
+    letter-spacing: -0.005em;
   }
 
   .type-lead {
-    font-size: 1.25rem;
+    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.25rem);
     line-height: 1.55;
   }
 
@@ -243,15 +267,17 @@
     line-height: 1.45;
   }
 
-  /* Réservé aux références techniques : calibre, diamètre, étanchéité,
-     référence de pièce, numéro de commande. Jamais décoratif. */
+  /* L'étiquette technique : calibre, diamètre, étanchéité, référence, numéro
+     de commande. Petites capitales espacées, comme une gravure de fond de
+     boîte — dans la police de lecture, pas en machine à écrire. */
   .type-mono {
-    font-family: var(--font-mono);
-    font-weight: 400;
+    font-family: var(--font-ui);
+    font-weight: 500;
     font-size: 0.8125rem;
     line-height: 1.4;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    font-variant-numeric: tabular-nums lining-nums;
   }
 
   .measure {
@@ -273,30 +299,35 @@
 
   .prose-atelier h2 {
     font-family: var(--font-title);
-    font-weight: 500;
-    font-size: 1.5rem;
-    line-height: 1.3;
+    font-weight: 400;
+    font-size: 1.625rem;
+    line-height: 1.25;
     color: var(--fg);
-    margin-top: 2.4em;
+    margin-top: 2.6em;
   }
 
   .prose-atelier h3 {
     font-family: var(--font-ui);
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1.0625rem;
     color: var(--fg);
-    margin-top: 1.8em;
+    margin-top: 1.9em;
   }
 
   .prose-atelier strong {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--fg);
   }
 
   .prose-atelier a {
-    color: var(--accent);
+    color: var(--fg);
     text-decoration: underline;
+    text-decoration-color: var(--gold);
     text-underline-offset: 3px;
+  }
+
+  .prose-atelier a:hover {
+    color: var(--gold);
   }
 
   .prose-atelier ul,
@@ -312,6 +343,10 @@
     list-style: disc;
   }
 
+  .prose-atelier ul > li::marker {
+    color: var(--gold);
+  }
+
   .prose-atelier ol > li {
     list-style: decimal;
   }
@@ -325,8 +360,8 @@
     transform: translateY(-160%);
     background-color: var(--accent);
     color: var(--on-accent);
-    padding: 12px 20px;
-    border-radius: var(--radius-field);
+    padding: 12px 22px;
+    border-radius: var(--radius-pill);
     font-weight: 500;
     transition: transform var(--d-fast) var(--ease);
   }
@@ -335,14 +370,14 @@
     transform: translateY(0);
   }
 
-  /* Soulignement laiton tracé de gauche à droite. */
+  /* Soulignement tracé de gauche à droite. */
   .link-underline {
-    background-image: linear-gradient(var(--accent), var(--accent));
+    background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
     background-position: 0 100%;
     background-size: 0% 1px;
     transition: background-size var(--d-base) var(--ease);
-    padding-bottom: 1px;
+    padding-bottom: 2px;
   }
 
   .link-underline:hover,
@@ -352,12 +387,12 @@
 
   /* Variante des liens déjà soulignés qui s'effacent au survol. */
   .link-underline-out {
-    background-image: linear-gradient(var(--accent), var(--accent));
+    background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
     background-position: 100% 100%;
     background-size: 100% 1px;
     transition: background-size var(--d-base) var(--ease);
-    padding-bottom: 1px;
+    padding-bottom: 2px;
   }
 
   .link-underline-out:hover {
@@ -373,71 +408,62 @@
     min-height: 44px;
   }
 
-  /* Conteneur qui défile horizontalement (le kanban de l'atelier).
-     La barre reste visible : sur une tablette, rien n'indiquerait sinon qu'il
-     reste des colonnes à droite. Elle est dessinée au filet, comme le reste. */
+  /* Conteneur qui défile horizontalement (le kanban de l'atelier, la rangée de
+     modèles). La barre reste visible : sur une tablette, rien n'indiquerait
+     sinon qu'il reste des colonnes à droite. */
   .defilement-atelier {
     scroll-snap-type: x proximity;
-    scrollbar-color: var(--accent-decor) var(--rule);
+    scrollbar-color: var(--gold) var(--rule);
     scrollbar-width: thin;
   }
 
   .defilement-atelier::-webkit-scrollbar {
-    height: 8px;
+    height: 6px;
   }
 
   .defilement-atelier::-webkit-scrollbar-track {
     background: var(--rule);
+    border-radius: 999px;
   }
 
   .defilement-atelier::-webkit-scrollbar-thumb {
-    background: var(--accent-decor);
+    background: var(--gold);
+    border-radius: 999px;
   }
 }
 
 /* ──────────────────────────── Mise en scène ───────────────────────────── */
 @layer components {
-  /* Surtitre : un court filet d'accent l'ancre à gauche, comme un repère de
-     minuterie. */
-  .surtitre {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .surtitre::before {
-    content: "";
-    flex: none;
-    width: 28px;
-    height: 1px;
-    background-color: var(--accent);
-  }
-
-  /* Fond des vignettes de montre : une lumière de studio posée derrière la
-     pièce. Ni grain ni ombre — un simple dégradé entre deux tokens. */
+  /* Fond des vignettes de montre : le fond de studio, une lumière posée
+     derrière la pièce, plus dense vers les bords. */
   .cadre-montre {
-    background-image: radial-gradient(circle at 50% 44%, var(--panel) 0%, var(--bg-alt) 72%);
+    background-image: radial-gradient(ellipse 78% 70% at 50% 42%, var(--stage-in) 0%, var(--stage-out) 100%);
+    border-radius: var(--radius-card);
   }
 
-  /* Halo du héros : même lumière, sans bord, qui s'éteint dans le fond. */
-  .scene-montre {
-    position: relative;
-    isolation: isolate;
+  /* Grande scène nuit du héros : un cyclorama, un halo froid derrière la
+     montre, le sol qui se perd. */
+  .scene-nuit {
+    background-color: var(--color-nuit);
+    background-image:
+      radial-gradient(ellipse 46% 58% at 70% 46%, rgb(60 88 122 / 0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 90% 60% at 50% 118%, rgb(217 188 122 / 0.1) 0%, transparent 60%),
+      linear-gradient(180deg, #080d13 0%, #0b1118 46%, #0e1620 100%);
   }
 
-  .scene-montre::before {
-    content: "";
-    position: absolute;
-    inset: -6% -10%;
-    z-index: -1;
-    background-image: radial-gradient(closest-side, var(--panel) 0%, var(--panel) 38%, transparent 100%);
+  @media (max-width: 1023px) {
+    .scene-nuit {
+      background-image:
+        radial-gradient(ellipse 90% 40% at 50% 50%, rgb(60 88 122 / 0.5) 0%, transparent 70%),
+        linear-gradient(180deg, #080d13 0%, #0b1118 46%, #0e1620 100%);
+    }
   }
 
   /* L'en-tête collant laisse deviner la page qui défile dessous. */
   .entete-voile {
-    background-color: color-mix(in srgb, var(--bg) 84%, transparent);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    backdrop-filter: saturate(1.4) blur(14px);
+    background-color: color-mix(in srgb, var(--bg) 82%, transparent);
+    -webkit-backdrop-filter: saturate(1.6) blur(18px);
+    backdrop-filter: saturate(1.6) blur(18px);
   }
 
   /* Flèche des boutons et des cartes : elle avance de quelques pixels. */
@@ -449,6 +475,50 @@
   .group:hover .fleche-glisse {
     transform: translateX(4px);
   }
+
+  /* Filet d'or : le seul ornement du site. */
+  .filet-or {
+    height: 1px;
+    border: 0;
+    background-image: linear-gradient(90deg, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+    opacity: 0.55;
+  }
+}
+
+/* La montre du héros se pose : elle arrive nette depuis un léger flou, une
+   seule fois, pendant que le texte monte par paliers. C'est le seul moment
+   chorégraphié du site. */
+@keyframes pose-montre {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.965);
+    filter: blur(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes montee-texte {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.entree-montre {
+  animation: pose-montre 1400ms var(--ease) 120ms both;
+}
+
+.entree-texte {
+  animation: montee-texte 900ms var(--ease) both;
+  animation-delay: calc(var(--rang, 0) * 110ms + 250ms);
 }
 
 /* Reflet qui traverse le verre au survol d'une carte. Une animation CSS prend le
@@ -464,7 +534,7 @@
 
 .carte-montre:hover [data-sheen],
 .carte-montre:focus-within [data-sheen] {
-  animation: reflet-balayage 900ms var(--ease);
+  animation: reflet-balayage 1100ms var(--ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -529,7 +599,7 @@
 /* La montre passe de la carte à la fiche. Un flou léger à mi-parcours masque
    l'interpolation pixel à pixel d'un SVG qui change de taille. */
 ::view-transition-group(.morph) {
-  animation-duration: 380ms;
+  animation-duration: 420ms;
   animation-timing-function: var(--ease);
 }
 
@@ -553,6 +623,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

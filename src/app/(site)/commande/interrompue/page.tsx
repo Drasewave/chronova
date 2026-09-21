@@ -11,8 +11,7 @@ export default function Interrompue() {
   return (
     <Section fond="papier">
       <div className="mx-auto max-w-[40rem]">
-        <p className="type-mono text-fg-soft">Rien n&apos;a été débité</p>
-        <h1 className="type-display-2 mt-4">Paiement interrompu</h1>
+        <h1 className="type-display-2">Paiement interrompu</h1>
         <p className="type-lead mt-6 text-fg-soft">
           Le paiement n&apos;est pas allé à son terme, et aucune somme n&apos;a été prélevée. Votre
           panier vous attend tel que vous l&apos;aviez laissé.

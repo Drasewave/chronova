@@ -6,12 +6,13 @@ import {
   changerEtiquettes,
   enregistrerFicheClient,
 } from "@/app/actions/atelier-relation";
-import { Bouton, BoutonLeger, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
+import { Bouton, BoutonLeger, CASE, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import { formatDate, libelleStatut } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
+import { CHIFFRE_FORT, FilAriane, LIGNE_LISTE, TitrePage } from "@/components/atelier/gabarit";
 
 export const dynamic = "force-dynamic";
 
@@ -64,21 +65,14 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
 
   return (
     <div className="mx-auto max-w-[84rem]">
-      <nav aria-label="Fil d'Ariane" className="mb-4">
-        <Link
-          href="/atelier/clients"
-          className="type-mono link-underline text-fg-soft hover:text-accent"
-        >
-          ← Clients
-        </Link>
-      </nav>
+      <FilAriane href="/atelier/clients">Clients</FilAriane>
 
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="type-display-2">
+          <TitrePage>
             {client.anonymizedAt ? "Compte anonymisé" : (client.name ?? client.email)}
-          </h1>
-          <p className="type-body mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-fg-soft">
+          </TitrePage>
+          <p className="type-ui mt-2 font-normal flex flex-wrap items-center gap-x-3 gap-y-2 text-fg-soft">
             {client.anonymizedAt ? (
               <span>Données personnelles effacées le {formatDate(client.anonymizedAt)}</span>
             ) : (
@@ -91,8 +85,8 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
             {client.isSample && <SamplePill />}
           </p>
         </div>
-        <div className="text-right">
-          <p className="type-display-2" data-numeric>
+        <div className="sm:text-right">
+          <p className={CHIFFRE_FORT} data-numeric>
             {formatPrice(total)}
           </p>
           <p className="type-caption mt-1 text-fg-soft">
@@ -136,7 +130,7 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
                       name="etiquette"
                       value={etiquette.id}
                       defaultChecked={client.tags.some((t) => t.id === etiquette.id)}
-                      className="size-6 accent-[var(--accent)]"
+                      className={CASE}
                     />
                     <span className="type-ui text-fg">{etiquette.label}</span>
                   </label>
@@ -187,7 +181,7 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
               <ul className="mt-4 flex flex-col gap-1 border-t border-rule pt-4">
                 {client.consents.map((consentement) => (
                   <li key={consentement.id} className="flex flex-wrap items-baseline gap-x-3">
-                    <span className="type-mono text-fg-soft">
+                    <span className="type-caption text-fg-soft" data-numeric>
                       {formatDate(consentement.createdAt)}
                     </span>
                     <span className="type-caption flex-1 text-fg">
@@ -230,7 +224,7 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
                   <li key={commande.id} className="border-b border-rule last:border-0">
                     <Link
                       href={`/atelier/commandes/${commande.number}`}
-                      className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
+                      className={LIGNE_LISTE}
                     >
                       <span className="type-mono text-accent">{commande.number}</span>
                       <span className="type-ui flex-1 text-fg">
@@ -263,7 +257,7 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
                       >
                         {demande.type === "SUR_MESURE" ? "Pièce unique" : "Contact"}
                       </Link>
-                      <span className="type-mono text-fg-soft">
+                      <span className="type-caption text-fg-soft" data-numeric>
                         {formatDate(demande.createdAt)}
                       </span>
                     </div>
@@ -301,7 +295,7 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
               <ul className="mt-6 flex flex-col gap-4 border-t border-rule pt-5">
                 {client.notes.map((note) => (
                   <li key={note.id}>
-                    <p className="type-mono text-fg-soft">{formatDate(note.createdAt)}</p>
+                    <p className="type-caption text-fg-soft" data-numeric>{formatDate(note.createdAt)}</p>
                     <p className="type-caption mt-1 whitespace-pre-line text-fg">{note.body}</p>
                   </li>
                 ))}

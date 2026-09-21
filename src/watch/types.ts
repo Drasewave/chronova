@@ -11,9 +11,9 @@ export type CaseSize = 37 | 38 | 39 | 40 | 41;
 export type CaseFinish = "brosse" | "poli" | "microbille";
 export type MetalTone = "acier" | "dore" | "noir" | "bleui";
 export type DialTexture = "emaille" | "soleille" | "mat";
-export type IndexStyle = "batons" | "arabes";
+export type IndexStyle = "batons" | "arabes" | "plongee";
 export type HandShape = "glaive" | "mercedes" | "crayon";
-export type BezelStyle = "lisse" | "cannelee" | "plongee";
+export type BezelStyle = "lisse" | "cannelee" | "plongee" | "gmt";
 export type InsertMaterial = "ceramique" | "aluminium";
 export type CrownStyle = "signee" | "lisse";
 export type StrapKind = "acier-3-maillons" | "acier-jubile" | "cuir" | "caoutchouc" | "nato";
@@ -29,6 +29,8 @@ export interface WatchRender {
 
   bezelStyle: BezelStyle;
   insertColor?: string;
+  /** Demi-lunette de jour d'un insert GMT bicolore (6 h – 18 h). Absent : insert uni. */
+  insertColor2?: string;
   insertMaterial?: InsertMaterial;
 
   dialColor: string;

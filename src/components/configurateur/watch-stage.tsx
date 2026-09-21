@@ -48,7 +48,7 @@ export function WatchStage({
       <button
         type="button"
         onClick={() => setZoom(true)}
-        className="flex h-[27vh] w-full cursor-zoom-in items-center justify-center rounded-card lg:h-auto"
+        className="cadre-montre flex h-[27vh] w-full cursor-zoom-in items-center justify-center lg:h-auto lg:p-6"
         aria-label="Agrandir la montre"
       >
         {/* La hauteur doit traverser tous les conteneurs intermédiaires : un div
@@ -63,7 +63,11 @@ export function WatchStage({
         />
       </button>
 
-      <div className="mt-3 flex items-center justify-center gap-1" role="group" aria-label="Vue de la montre">
+      <div
+        className="mx-auto mt-4 flex w-fit items-center gap-1 rounded-pill border border-rule bg-panel p-1"
+        role="group"
+        aria-label="Vue de la montre"
+      >
         {VUES.map((item) => (
           <button
             key={item.key}
@@ -71,8 +75,8 @@ export function WatchStage({
             onClick={() => setVue(item.key)}
             aria-pressed={vue === item.key}
             className={cn(
-              "type-mono min-h-11 rounded-field px-4 transition-colors duration-200 ease-atelier",
-              vue === item.key ? "bg-accent text-on-accent" : "text-fg-soft hover:text-accent",
+              "type-mono min-h-11 rounded-pill px-5 transition-colors duration-200 ease-atelier",
+              vue === item.key ? "bg-accent text-on-accent" : "text-fg-soft hover:text-fg",
             )}
           >
             {item.label}
@@ -86,7 +90,7 @@ export function WatchStage({
         onClick={(event) => {
           if (event.target === dialogue.current) setZoom(false);
         }}
-        className="m-auto max-h-[92dvh] w-[min(92vw,52rem)] rounded-card border border-rule bg-bg p-0 text-fg backdrop:bg-[color-mix(in_srgb,var(--color-graphite)_58%,transparent)]"
+        className="m-auto max-h-[92dvh] w-[min(92vw,52rem)] rounded-card border border-rule bg-bg p-0 text-fg backdrop:bg-[color-mix(in_srgb,var(--color-nuit)_58%,transparent)]"
       >
         <div className="relative p-4 sm:p-8">
           <button

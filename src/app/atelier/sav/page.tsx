@@ -9,6 +9,7 @@ import { LIBELLE_DOSSIER, LIBELLE_TYPE_DOSSIER, TON_DOSSIER } from "@/lib/atelie
 import { formatDate } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
 import type { CaseStatus, CaseType } from "@/generated/prisma/enums";
+import { CHIFFRE_FORT, Filtre, Filtres, TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Après-vente" };
 export const dynamic = "force-dynamic";
@@ -58,9 +59,9 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
 
   return (
     <div className="mx-auto max-w-[84rem]">
-      <header className="mb-8">
-        <h1 className="type-display-2">Après-vente</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Après-vente</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {dossiers.length} dossier(s) {clos ? "classés" : "ouverts"} · {garanties.length}{" "}
           garantie(s) enregistrée(s).
         </p>
@@ -71,14 +72,14 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
         quoi="dossiers d'après-vente"
       />
 
-      <nav aria-label="Filtrer les dossiers" className="mb-6 flex flex-wrap gap-2">
+      <Filtres label="Filtrer les dossiers">
         <Filtre href="/atelier/sav" actif={!clos}>
           En cours
         </Filtre>
         <Filtre href="/atelier/sav?filtre=clos" actif={clos}>
           Classés
         </Filtre>
-      </nav>
+      </Filtres>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] [&>div]:min-w-0">
         <div className="flex flex-col gap-4">
@@ -203,7 +204,7 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
                       <div className="flex flex-wrap items-baseline justify-between gap-3">
                         <Link
                           href={`/atelier/commandes/${garantie.order.number}`}
-                          className="type-mono link-underline text-accent"
+                          className="type-mono lien-atelier link-underline text-accent"
                         >
                           {garantie.order.number}
                         </Link>
@@ -233,7 +234,7 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
           </Panneau>
 
           <Panneau titre="Coût des interventions" aide="Sur les dossiers affichés.">
-            <p className="type-display-2" data-numeric>
+            <p className={CHIFFRE_FORT} data-numeric>
               {formatPrice(dossiers.reduce((somme, d) => somme + (d.costCents ?? 0), 0))}
             </p>
             <p className="type-caption mt-2 text-fg-soft">
@@ -244,29 +245,5 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
         </div>
       </div>
     </div>
-  );
-}
-
-function Filtre({
-  href,
-  actif,
-  children,
-}: {
-  href: string;
-  actif: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={actif ? "page" : undefined}
-      className={
-        actif
-          ? "type-ui flex min-h-11 items-center rounded-field border border-accent bg-accent px-4 text-on-accent"
-          : "type-ui flex min-h-11 items-center rounded-field border border-rule px-4 text-fg hover:border-accent-decor hover:text-accent"
-      }
-    >
-      {children}
-    </Link>
   );
 }

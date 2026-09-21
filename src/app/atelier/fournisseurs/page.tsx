@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import { etatPiece } from "@/lib/atelier/stock";
+import { SURFACE, TitrePage } from "@/components/atelier/gabarit";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Fournisseurs" };
 export const dynamic = "force-dynamic";
@@ -36,9 +38,9 @@ export default async function Fournisseurs() {
 
   return (
     <div>
-      <header className="mb-8">
-        <h1 className="type-display-2">Fournisseurs</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Fournisseurs</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {fournisseurs.length} maison(s). Les coordonnées sont à compléter : elles n&apos;ont pas
           été inventées.
         </p>
@@ -46,9 +48,9 @@ export default async function Fournisseurs() {
 
       <ul className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
         {lignes.map(({ fournisseur, aCommander, incomplet }) => (
-          <li key={fournisseur.id} className="border border-rule bg-bg p-5">
+          <li key={fournisseur.id} className={cn(SURFACE, "p-5")}>
             <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="type-title-2">
+              <h2 className="font-title text-[1.25rem] font-medium leading-[1.3] text-fg">
                 <Link
                   href={`/atelier/fournisseurs/${fournisseur.id}`}
                   className="link-underline text-fg"

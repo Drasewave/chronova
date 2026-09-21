@@ -29,8 +29,7 @@ export default async function Contact() {
     <Section fond="papier">
       <div className="grid gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
         <div>
-          <p className="type-mono text-fg-soft">Écrire à l&apos;atelier</p>
-          <h1 className="type-display-2 mt-4">Contact</h1>
+          <h1 className="type-display-2">Écrire à l&apos;atelier</h1>
           <p className="type-lead measure mt-6 text-fg-soft">
             C&apos;est l&apos;horloger qui lit et qui répond. Il n&apos;y a ni formulaire trié par
             un robot, ni numéro de ticket.

@@ -16,7 +16,7 @@ Le lire avant d'ajouter quoi que ce soit fait gagner du temps.
 | | |
 |---|---|
 | Vitrine | accueil, collection, fiches modèles, l'horloger, entretien, FAQ, contact, sur-mesure, pages légales |
-| Configurateur | 9 étapes, 75 options, 21 règles de compatibilité, rendu SVG en calques, lien partageable |
+| Configurateur | 9 étapes, 83 options, 27 règles de compatibilité, rendu SVG en calques, lien partageable |
 | Commerce | panier, paiement Stripe, compte client avec suivi d'assemblage |
 | Atelier | tableau de bord, kanban des commandes, fiche d'atelier, stock et journal, fournisseurs et bons de commande, clients et RGPD, demandes et devis, après-vente, catalogue éditable, paramètres |
 

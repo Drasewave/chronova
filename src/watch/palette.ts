@@ -2,29 +2,48 @@ import type { MetalTone } from "./types";
 
 /**
  * Rampes métalliques. Ce ne sont pas des couleurs d'interface mais des
- * matières : elles restent chaudes pour s'accorder au crème du site, et
- * n'atteignent jamais le blanc ni le noir purs.
+ * matières photographiées en studio : l'acier est froid et neutre, et sa
+ * dynamique est large — un poli passe du quasi-blanc au quasi-noir selon ce
+ * qu'il reflète. C'est cet écart qui fait lire « métal » plutôt que « gris ».
  */
 export interface MetalRamp {
+  /** Éclat spéculaire : le reflet direct de la boîte à lumière. */
+  hi: string;
   /** Arête la plus éclairée. */
   light: string;
   mid: string;
   /** Creux, sous la lumière rasante. */
   dark: string;
-  /** Filet de contour. */
+  /** Filet de contour, et reflet du fond noir du studio. */
   edge: string;
 }
 
 export const METALS: Record<MetalTone, MetalRamp> = {
-  acier: { light: "#DCD5C6", mid: "#B0A899", dark: "#7A7367", edge: "#615A4F" },
-  dore: { light: "#E3C795", mid: "#C09755", dark: "#8A6A33", edge: "#6B5127" },
-  noir: { light: "#585047", mid: "#3D372F", dark: "#2A251F", edge: "#211E1B" },
-  bleui: { light: "#6E80A0", mid: "#3F4F6C", dark: "#26324A", edge: "#1C253A" },
+  acier: { hi: "#FFFFFF", light: "#E9ECEF", mid: "#A9AFB6", dark: "#565C64", edge: "#23272C" },
+  dore: { hi: "#FFF6DA", light: "#F1D48F", mid: "#C99A45", dark: "#7C5A22", edge: "#3E2B0E" },
+  noir: { hi: "#AEB3BA", light: "#676C73", mid: "#33373C", dark: "#17191C", edge: "#08090A" },
+  bleui: { hi: "#C9D8F5", light: "#7D93C4", mid: "#3A4E82", dark: "#1B2748", edge: "#0C1226" },
 };
 
+/** Les deux extrêmes neutres du rendu : l'ombre du studio et sa lumière. */
+export const INK = "#0E1013";
+export const PAPER = "#F6F8FA";
+
 /** Teinte du luminova au repos : un vert-crème, pas un vert fluo. */
-export const LUME_FILL = "#D8DCC2";
-export const LUME_EDGE = "#A9AE90";
+export const LUME_FILL = "#E4E9D2";
+export const LUME_EDGE = "#A4AB8C";
+
+/**
+ * Couleur d'un métal pour une luminance reçue de 0 (reflet du noir) à 1 (éclat).
+ * Cinq paliers plutôt qu'un simple mélange : la teinte d'un or sombre n'est pas
+ * celle d'un or clair assombri.
+ */
+export function rampAt(ramp: MetalRamp, t: number): string {
+  const stops = [ramp.edge, ramp.dark, ramp.mid, ramp.light, ramp.hi];
+  const x = Math.max(0, Math.min(1, t)) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(x));
+  return mix(stops[i] as string, stops[i + 1] as string, x - i);
+}
 
 /** Mélange deux couleurs hexadécimales. `amount` = part de `b`. */
 export function mix(a: string, b: string, amount: number): string {
@@ -35,11 +54,23 @@ export function mix(a: string, b: string, amount: number): string {
 }
 
 export function shade(hex: string, amount: number): string {
-  return mix(hex, "#211E1B", amount);
+  return mix(hex, INK, amount);
 }
 
 export function tint(hex: string, amount: number): string {
-  return mix(hex, "#F5F0E8", amount);
+  return mix(hex, PAPER, amount);
+}
+
+/**
+ * Éclaircit sans délaver : les canaux sont multipliés, pas tirés vers le blanc.
+ * Un bleu soleillé reste bleu dans ses rayons clairs.
+ */
+export function glow(hex: string, amount: number): string {
+  const [r, g, b] = parseHex(hex);
+  const k = 1 + amount;
+  const lift = 18 * amount;
+  const ch = (v: number) => Math.max(0, Math.min(255, Math.round(v * k + lift)));
+  return `#${[ch(r), ch(g), ch(b)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
 /** Luminance relative WCAG 2.1. */

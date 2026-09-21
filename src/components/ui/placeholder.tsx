@@ -17,7 +17,7 @@ export function PhotoPlaceholder({
   return (
     <div
       className={cn(
-        "flex items-center justify-center border border-rule bg-bg-alt p-6 text-center",
+        "cadre-montre flex items-center justify-center border border-dashed border-field/60 p-6 text-center",
         className,
       )}
       style={{ aspectRatio: ratio }}
@@ -35,7 +35,7 @@ export function FillMe({ children, inline = false }: { children: string; inline?
   return (
     <span
       className={cn(
-        "type-mono border border-dashed border-alert px-2 py-1 text-alert",
+        "type-mono rounded-field border border-dashed border-alert px-3 py-2 text-alert",
         inline ? "inline-block" : "block",
       )}
     >

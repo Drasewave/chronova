@@ -6,6 +6,7 @@ import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import { ETAPES_CLIENT, formatDate } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
+import { TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Commandes" };
 export const dynamic = "force-dynamic";
@@ -28,10 +29,10 @@ export default async function Kanban() {
 
   return (
     <div>
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="type-display-2">Commandes</h1>
-          <p className="type-body mt-2 text-fg-soft">
+          <TitrePage>Commandes</TitrePage>
+          <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {commandes.length} montre(s) dans le circuit. Le bouton avance d&apos;une étape et
             prévient le client.
           </p>
@@ -48,21 +49,24 @@ export default async function Kanban() {
 
       {/* Sept étapes ne tiennent pas de front sur un écran : le tableau défile. */}
       <TableauDefilant label="Étapes de l'atelier">
-        <div className="flex min-w-max gap-3">
+        <div className="flex min-w-max items-stretch gap-3">
           {ETAPES_CLIENT.map((etape, index) => {
             const colonne = commandes.filter((commande) => commande.status === etape.statut);
             const suivante = ETAPES_CLIENT[index + 1];
 
             return (
-              <section key={etape.statut} className="w-[17.5rem] shrink-0 snap-start">
-                <header className="flex items-baseline justify-between gap-3 border-b-2 border-accent-decor pb-2">
+              <section
+                key={etape.statut}
+                className="flex w-[17.5rem] shrink-0 snap-start flex-col rounded-card bg-bg-alt p-2"
+              >
+                {/* La colonne est un plateau teinté, sans bordure : seules les
+                    cartes qu'elle porte en ont une. */}
+                <header className="flex min-h-11 items-center justify-between gap-3 px-2">
                   <h2 className="type-ui text-fg">{etape.label}</h2>
-                  <span className="type-mono text-fg-soft" data-numeric>
-                    {colonne.length}
-                  </span>
+                  <Pill ton={colonne.length > 0 ? "accent" : "neutre"}>{colonne.length}</Pill>
                 </header>
 
-                <ul className="mt-3 flex min-h-40 flex-col gap-3">
+                <ul className="mt-1 flex min-h-32 flex-1 flex-col gap-2">
                   {colonne.map((commande) => {
                     // Une fois la montre partie, la date promise est tenue ou
                     // manquée : plus rien à faire, on n'alerte donc que sur les
@@ -72,40 +76,40 @@ export default async function Kanban() {
                       commande.promisedAt !== null &&
                       commande.promisedAt < maintenant;
                     return (
-                      <li key={commande.id} className="border border-rule bg-bg p-4">
-                        <div className="flex items-baseline justify-between gap-3">
+                      <li key={commande.id} className="rounded-field border border-rule bg-panel px-3 pb-3 pt-1">
+                        <div className="flex items-center justify-between gap-3">
                           <Link
                             href={`/atelier/commandes/${commande.number}`}
                             className="type-mono lien-atelier link-underline text-accent"
                           >
                             {commande.number}
                           </Link>
-                          <span className="type-mono text-fg-soft" data-numeric>
+                          <span className="type-ui text-fg" data-numeric>
                             {formatPrice(commande.totalCents)}
                           </span>
                         </div>
 
-                        <p className="type-ui mt-2 text-fg">
+                        <p className="type-ui text-fg">
                           {(commande.items[0]?.snapshot as { modele?: string } | null)?.modele ?? "—"}
                         </p>
                         <p className="type-caption text-fg-soft">
                           {commande.user?.name ?? commande.email}
                         </p>
 
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
                           {enRetard && <Pill ton="alerte">En retard</Pill>}
-                          <span className="type-caption text-fg-soft">
+                          <span className="type-caption text-fg-soft" data-numeric>
                             Promis le {formatDate(commande.promisedAt) ?? "—"}
                           </span>
                         </div>
 
                         {suivante && (
-                          <form action={changerEtape} className="mt-4">
+                          <form action={changerEtape} className="mt-3">
                             <input type="hidden" name="numero" value={commande.number} />
                             <input type="hidden" name="etape" value={suivante.statut} />
                             <button
                               type="submit"
-                              className="type-ui flex min-h-11 w-full items-center justify-center rounded-field border border-accent px-3 text-accent transition-colors duration-200 hover:bg-accent hover:text-on-accent"
+                              className="type-ui flex min-h-11 w-full items-center justify-center rounded-pill border border-field px-3 text-fg transition-colors duration-200 hover:border-accent hover:bg-accent hover:text-on-accent"
                             >
                               → {suivante.label}
                             </button>
@@ -116,7 +120,7 @@ export default async function Kanban() {
                   })}
 
                   {colonne.length === 0 && (
-                    <li className="flex min-h-40 items-center justify-center border border-dashed border-rule p-5">
+                    <li className="flex min-h-32 flex-1 items-center justify-center rounded-field border border-dashed border-rule p-5">
                       <p className="type-caption text-fg-soft">Rien à cette étape.</p>
                     </li>
                   )}

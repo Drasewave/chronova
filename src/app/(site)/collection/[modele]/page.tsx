@@ -120,9 +120,48 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
         </div>
       </Section>
 
+      {/* Trois vues de la même pièce : le rendu est vectoriel et paramétrique,
+          on peut donc tourner autour de la configuration de départ. */}
+      <section
+        data-theme="night"
+        className="bg-bg text-fg"
+        style={{ paddingInline: "var(--gutter)", paddingBlock: "clamp(56px, 7vw, 112px)" }}
+        aria-labelledby="titre-vues"
+      >
+        <div className="mx-auto max-w-wide">
+          <h2 id="titre-vues" className="type-display-2 max-w-[18ch]">
+            Sous tous les angles.
+          </h2>
+          <ul className="mt-12 grid gap-6 md:grid-cols-3 lg:gap-8">
+            {(
+              [
+                { cle: "cadran", titre: "Le cadran", crop: "270 270 460 460", vue: "face" },
+                { cle: "profil", titre: "Le profil", crop: "190 170 620 620", vue: "profil" },
+                { cle: "dos", titre: "Le fond", crop: "150 150 700 700", vue: "dos" },
+              ] as const
+            ).map((plan) => (
+              <li key={plan.cle}>
+                <figure>
+                  <div className="overflow-hidden rounded-card bg-[#05080c]">
+                    <WatchSvg
+                      id={`vue-${plan.cle}`}
+                      render={base.render}
+                      view={plan.vue}
+                      crop={plan.crop}
+                      label={`${model.name}, ${plan.titre.toLowerCase()}`}
+                      className="block aspect-square h-auto w-full"
+                    />
+                  </div>
+                  <figcaption className="type-title-2 mt-5">{plan.titre}</figcaption>
+                </figure>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <Section fond="alterne">
         <SectionHeader
-          surtitre="Caractéristiques"
           titre="Ce que le boîtier fixe"
           intro="Ces valeurs ne se configurent pas : elles définissent le modèle. Tout le reste se choisit."
         />
@@ -141,7 +180,6 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
 
       <Section fond="papier">
         <SectionHeader
-          surtitre="Deux exemples"
           titre="Le même boîtier, deux caractères"
           intro="Ces deux montres sortent du même boîtier. Seules changent des pièces que vous choisissez."
           action={<ButtonLink href={`/composer/${model.slug}`}>Composer la mienne</ButtonLink>}

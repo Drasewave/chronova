@@ -2,7 +2,7 @@ import type { OptionRef, Selections } from "@/lib/configurateur/types";
 import type { WatchStyleKey } from "./types";
 
 /**
- * Quatre modèles de base, en DONNÉES D'EXEMPLE.
+ * Modèles de base, en DONNÉES D'EXEMPLE.
  *
  * `WatchModelView` est la forme qu'attendent les pages : les fixtures ci-dessous
  * et le chargement depuis la base (`queries.ts`) produisent exactement la même.
@@ -83,6 +83,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       ...COMMUN,
       taille: "40",
       "cadran-teinte": "bleu-abysse",
+      index: "plongee",
       "aiguilles-forme": "mercedes",
       "lunette-style": "plongee",
       "insert-matiere": "ceramique",
@@ -161,12 +162,16 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       mouvement: "nh34",
       "aiguille-24h": "fleche",
     },
+    // Second coloris : la voyageuse bicolore, lunette 24 heures jour et nuit.
     altSelections: {
-      "cadran-teinte": "saumon",
-      "aiguilles-metal": "dore",
-      "couronne-metal": "dore",
-      "bracelet-type": "cuir",
-      "bracelet-teinte": "chocolat",
+      "cadran-teinte": "noir-mat",
+      "cadran-finition": "mat",
+      index: "plongee",
+      "aiguilles-forme": "mercedes",
+      "lunette-style": "gmt",
+      "insert-matiere": "aluminium",
+      "insert-teinte": "bleu-nuit",
+      "insert-bicolore": "rouge",
     },
   },
   {

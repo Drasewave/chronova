@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { enregistrerModele } from "@/app/actions/atelier-catalogue";
-import { Bouton, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
+import { Bouton, CASE, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill, SamplePill } from "@/components/ui/pill";
 import { WatchSvg } from "@/watch/watch-svg";
@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { getCatalogue, getModels } from "@/lib/data/queries";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import { formatPrice } from "@/lib/utils";
+import { BLOC, CODE, FilAriane, Filtre, Filtres, TitrePage } from "@/components/atelier/gabarit";
 
 export const dynamic = "force-dynamic";
 
@@ -40,52 +41,36 @@ export default async function FicheModele(props: PageProps<"/atelier/catalogue/m
 
   return (
     <div className="mx-auto max-w-[84rem]">
-      <nav aria-label="Fil d'Ariane" className="mb-4">
-        <Link
-          href="/atelier/catalogue"
-          className="type-mono link-underline text-fg-soft hover:text-accent"
-        >
-          ← Catalogue
-        </Link>
-      </nav>
+      <FilAriane href="/atelier/catalogue">Catalogue</FilAriane>
 
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="type-mono flex flex-wrap items-center gap-3 text-fg-soft">
-            {enregistre.slug}
+          <p className="flex flex-wrap items-center gap-3 text-fg-soft">
+            <span className={CODE}>{enregistre.slug}</span>
             {enregistre.isSample && <SamplePill />}
             {!enregistre.isPublished && <Pill ton="alerte">Hors ligne</Pill>}
           </p>
-          <h1 className="type-display-2 mt-2">{enregistre.name}</h1>
-          <p className="type-body mt-2 text-fg-soft">{enregistre.tagline}</p>
+          <TitrePage className="mt-1">{enregistre.name}</TitrePage>
+          <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">{enregistre.tagline}</p>
         </div>
         <Link href={`/collection/${slug}`} className="type-ui lien-atelier link-underline text-accent">
           Voir la fiche publique
         </Link>
       </header>
 
-      <nav aria-label="Modèles" className="mb-6 flex flex-wrap gap-2">
+      <Filtres label="Modèles">
         {modeles.map((autre) => (
-          <Link
-            key={autre.slug}
-            href={`/atelier/catalogue/modeles/${autre.slug}`}
-            aria-current={autre.slug === slug ? "page" : undefined}
-            className={
-              autre.slug === slug
-                ? "type-ui flex min-h-11 items-center rounded-field border border-accent bg-accent px-4 text-on-accent"
-                : "type-ui flex min-h-11 items-center rounded-field border border-rule px-4 text-fg hover:border-accent-decor hover:text-accent"
-            }
-          >
+          <Filtre key={autre.slug} href={`/atelier/catalogue/modeles/${autre.slug}`} actif={autre.slug === slug}>
             {autre.name}
-          </Link>
+          </Filtre>
         ))}
-      </nav>
+      </Filtres>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] [&>div]:min-w-0">
         <div className="flex flex-col gap-4">
           {configuration && (
             <Panneau titre="Configuration signature" aide="Ce que le visiteur voit en arrivant.">
-              <div className="border border-rule bg-bg-alt p-3">
+              <div className={`p-3 ${BLOC}`}>
                 <WatchSvg
                   id={`modele-${enregistre.id}`}
                   render={configuration.render}
@@ -178,7 +163,7 @@ export default async function FicheModele(props: PageProps<"/atelier/catalogue/m
                   type="checkbox"
                   name="publie"
                   defaultChecked={enregistre.isPublished}
-                  className="size-6 accent-[var(--accent)]"
+                  className={CASE}
                 />
                 <span className="type-ui text-fg">Visible sur le site</span>
               </label>
@@ -191,7 +176,9 @@ export default async function FicheModele(props: PageProps<"/atelier/catalogue/m
             titre="Diamètres proposés"
             aide="Les autres tailles sont exclues du configurateur pour cette ligne. Modifiable au prochain chantier."
           >
-            <p className="type-mono text-fg">{enregistre.availableSizes.join(" · ")} mm</p>
+            <p className="type-ui text-fg" data-numeric>
+              {enregistre.availableSizes.join(" · ")} mm
+            </p>
           </Panneau>
         </div>
       </div>

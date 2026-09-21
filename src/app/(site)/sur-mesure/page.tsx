@@ -35,8 +35,7 @@ export default function SurMesure() {
     <>
       <Section fond="papier" compact>
         <header className="measure">
-          <p className="type-mono text-fg-soft">Hors configurateur</p>
-          <h1 className="type-display-2 mt-4">Demander une pièce unique</h1>
+          <h1 className="type-display-2">Demander une pièce unique</h1>
           <p className="type-lead mt-6 text-fg-soft">
             Le configurateur couvre ce que l&apos;atelier sait monter à coup sûr. Pour le reste — un
             cadran particulier, une gravure ambitieuse, une pièce que vous fournissez, une montre

@@ -22,7 +22,6 @@ export default async function MentionsLegales() {
 
   return (
     <LegalPage
-      surtitre="Informations légales"
       titre="Mentions légales"
       chapo="Les informations que tout site marchand français doit rendre accessibles, en application de l'article 1-1 de la loi du 21 juin 2004 pour la confiance dans l'économie numérique."
       miseAJour="[à dater lors de la mise en ligne]"

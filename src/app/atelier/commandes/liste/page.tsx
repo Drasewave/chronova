@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { formatDate, libelleStatut } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
 import type { OrderStatus } from "@/generated/prisma/enums";
+import { EtatVide, Filtre, Filtres, LIGNE_TABLEAU, Tableau, Td, Th, TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Commandes — liste" };
 export const dynamic = "force-dynamic";
@@ -45,8 +46,8 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
     <div>
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="type-display-2">Commandes</h1>
-          <p className="type-body mt-2 text-fg-soft">
+          <TitrePage>Commandes</TitrePage>
+          <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {commandes.length} commande(s) · marge cumulée {formatPrice(marge)} (prix de vente moins
             coût des pièces)
           </p>
@@ -70,27 +71,17 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
         quoi="commandes de cette liste"
       />
 
-      <nav aria-label="Filtrer les commandes" className="mb-6 flex flex-wrap gap-2">
+      <Filtres label="Filtrer les commandes">
         {FILTRES.map((item) => (
-          <Link
-            key={item.cle}
-            href={item.cle === "toutes" ? "/atelier/commandes/liste" : `?filtre=${item.cle}`}
-            aria-current={item.cle === actif.cle ? "page" : undefined}
-            className={
-              item.cle === actif.cle
-                ? "type-ui flex min-h-11 items-center rounded-field border border-accent bg-accent px-4 text-on-accent"
-                : "type-ui flex min-h-11 items-center rounded-field border border-rule px-4 text-fg hover:border-accent-decor hover:text-accent"
-            }
-          >
+          <Filtre key={item.cle} href={item.cle === "toutes" ? "/atelier/commandes/liste" : `?filtre=${item.cle}`} actif={item.cle === actif.cle}>
             {item.label}
-          </Link>
+          </Filtre>
         ))}
-      </nav>
+      </Filtres>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[54rem] border-collapse">
+      <Tableau largeurMin="min-w-[54rem]" cadre>
           <thead>
-            <tr className="border-b border-rule text-left">
+            <tr className="border-b border-rule">
               <Th>Numéro</Th>
               <Th>Passée le</Th>
               <Th>Client</Th>
@@ -108,20 +99,20 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
                 0,
               );
               return (
-                <tr key={commande.id} className="border-b border-rule">
+                <tr key={commande.id} className={LIGNE_TABLEAU}>
                   <Td>
                     <Link
                       href={`/atelier/commandes/${commande.number}`}
-                      className="type-mono link-underline text-accent"
+                      className="type-mono lien-atelier link-underline text-accent"
                     >
                       {commande.number}
                     </Link>
                     {commande.isSample && (
-                      <span className="type-caption ml-2 text-alert">exemple</span>
+                      <span className="type-caption ml-2 text-fg-soft">exemple</span>
                     )}
                   </Td>
                   <Td>
-                    <span className="type-mono text-fg-soft">{formatDate(commande.createdAt)}</span>
+                    <span className="type-caption text-fg-soft" data-numeric>{formatDate(commande.createdAt)}</span>
                   </Td>
                   <Td>
                     {commande.user ? (
@@ -149,7 +140,7 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
                     </span>
                   </Td>
                   <Td align="right">
-                    <span className="type-mono text-fg-soft" data-numeric>
+                    <span className="type-caption text-fg-soft" data-numeric>
                       {formatPrice(margeLigne)}
                     </span>
                   </Td>
@@ -157,27 +148,11 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
               );
             })}
           </tbody>
-        </table>
-      </div>
+        </Tableau>
 
       {commandes.length === 0 && (
-        <p className="type-body mt-8 text-fg-soft">Aucune commande dans ce filtre.</p>
+        <EtatVide className="mt-4">Aucune commande dans ce filtre.</EtatVide>
       )}
     </div>
   );
-}
-
-function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return (
-    <th
-      scope="col"
-      className={`type-mono px-3 py-3 font-normal text-fg-soft ${align === "right" ? "text-right" : ""}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return <td className={`px-3 py-3 ${align === "right" ? "text-right" : ""}`}>{children}</td>;
 }

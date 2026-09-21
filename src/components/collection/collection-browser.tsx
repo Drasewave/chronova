@@ -90,7 +90,7 @@ export function CollectionBrowser({
 
   return (
     <div>
-      <div className="flex flex-col gap-5 border-y border-rule py-6">
+      <div className="grid gap-x-14 gap-y-6 border-y border-rule py-7 lg:grid-cols-2">
         <GroupeFiltre
           label="Style"
           valeur={filtres.style}
@@ -138,7 +138,7 @@ export function CollectionBrowser({
           des variations se joue ensuite dans le configurateur.
         </p>
       ) : (
-        <div className="mt-12 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-10">
+        <div className="mt-12 grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
           {visibles.map((entree) => (
             <div key={entree.slug}>{entree.carte}</div>
           ))}
@@ -160,8 +160,8 @@ function GroupeFiltre({
   onChange: (valeur: string) => void;
 }) {
   return (
-    <fieldset className="flex flex-col gap-3 border-0 p-0 sm:flex-row sm:items-baseline sm:gap-6">
-      <legend className="type-mono float-left w-36 shrink-0 pt-1 text-fg-soft sm:float-none">
+    <fieldset className="min-w-0 border-0 p-0">
+      <legend className="type-mono mb-3 p-0 text-fg-soft">
         {label}
       </legend>
       <div className="flex flex-wrap gap-2">
@@ -193,10 +193,10 @@ function Puce({
       onClick={onClick}
       aria-pressed={actif}
       className={cn(
-        "type-ui min-h-11 rounded-field border px-4 transition-colors duration-200 ease-atelier",
+        "type-ui min-h-11 rounded-pill border px-5 transition-colors duration-200 ease-atelier",
         actif
           ? "border-accent bg-accent text-on-accent"
-          : "border-rule text-fg hover:border-accent-decor hover:text-accent",
+          : "border-rule bg-panel text-fg hover:border-fg",
       )}
     >
       {children}

@@ -20,8 +20,12 @@ export async function Footer() {
   const identite = await lireIdentiteLegale();
 
   return (
-    <footer className="border-t border-rule bg-bg-alt" style={{ paddingInline: "var(--gutter)" }}>
-      <div className="mx-auto max-w-content" style={{ paddingBlock: "clamp(48px, 6vw, 88px)" }}>
+    <footer
+      data-theme="night"
+      className="border-t border-rule bg-bg text-fg"
+      style={{ paddingInline: "var(--gutter)" }}
+    >
+      <div className="mx-auto max-w-wide" style={{ paddingBlock: "clamp(56px, 7vw, 104px)" }}>
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
           <div>
             <Wordmark />

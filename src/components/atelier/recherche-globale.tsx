@@ -61,7 +61,7 @@ export function RechercheGlobale() {
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className="type-ui flex min-h-11 flex-1 items-center justify-between gap-4 rounded-field border border-rule bg-panel px-4 text-fg-soft hover:border-accent-decor sm:max-w-md"
+        className="type-ui flex min-h-11 flex-1 items-center justify-between gap-4 rounded-pill border border-rule bg-panel px-5 font-normal text-fg-soft transition-colors duration-200 hover:border-fg-soft sm:max-w-md"
       >
         <span>Rechercher une commande, un client, une pièce…</span>
         <kbd className="type-mono hidden shrink-0 text-fg-soft sm:block">⌘K</kbd>
@@ -74,7 +74,7 @@ export function RechercheGlobale() {
           if (event.target === dialogue.current) setOuvert(false);
         }}
         aria-label="Recherche"
-        className="mx-auto mt-[10vh] w-[min(94vw,40rem)] rounded-card border border-rule bg-bg p-0 text-fg shadow-lift backdrop:bg-[color-mix(in_srgb,var(--color-graphite)_55%,transparent)]"
+        className="mx-auto mt-[10vh] w-[min(94vw,40rem)] rounded-card bg-panel p-0 text-fg shadow-lift night:border night:border-rule night:shadow-none backdrop:bg-[color-mix(in_srgb,var(--color-nuit)_55%,transparent)]"
       >
         <div className="border-b border-rule p-4">
           <input
@@ -121,8 +121,8 @@ export function RechercheGlobale() {
                     onMouseEnter={() => setActif(index)}
                     onClick={() => aller(resultat.href)}
                     className={cn(
-                      "flex w-full items-baseline justify-between gap-4 rounded-field px-4 py-3 text-left",
-                      index === actif ? "bg-panel" : "hover:bg-panel",
+                      "flex min-h-11 w-full items-baseline justify-between gap-4 rounded-field px-4 py-3 text-left",
+                      index === actif ? "bg-bg-alt" : "hover:bg-bg-alt",
                     )}
                   >
                     <span className="min-w-0">

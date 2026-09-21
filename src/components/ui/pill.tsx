@@ -23,7 +23,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "type-mono inline-flex items-center gap-1.5 border px-2 py-1 leading-none",
+        "type-mono inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-1 leading-none",
         TONS[ton],
         className,
       )}

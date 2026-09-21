@@ -44,7 +44,6 @@ const TRACEURS = [
 export default function Cookies() {
   return (
     <LegalPage
-      surtitre="Traceurs"
       titre="Cookies"
       chapo="Ce site en dépose le strict minimum. Voici lesquels, qui les dépose, à quoi ils servent et combien de temps ils restent."
       miseAJour="[à dater lors de la mise en ligne]"

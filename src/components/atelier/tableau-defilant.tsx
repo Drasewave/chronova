@@ -92,7 +92,7 @@ function Bouton({
       onClick={() => action(sens)}
       disabled={inactif}
       aria-label={libelle}
-      className="inline-flex size-11 items-center justify-center rounded-field border border-rule text-fg transition-colors duration-200 hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:border-rule disabled:text-fg-soft disabled:hover:border-rule disabled:hover:text-fg-soft"
+      className="inline-flex size-11 items-center justify-center rounded-pill border border-field text-fg transition-colors duration-200 hover:border-fg hover:bg-bg-alt disabled:cursor-not-allowed disabled:border-rule disabled:text-fg-soft disabled:hover:border-rule disabled:hover:bg-transparent disabled:hover:text-fg-soft"
     >
       <IconFleche className={sens === -1 ? "rotate-180" : undefined} />
     </button>

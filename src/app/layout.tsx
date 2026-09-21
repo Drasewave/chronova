@@ -1,31 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Inter, Space_Grotesk } from "next/font/google";
+import { Geist_Mono, Hanken_Grotesk, Jost } from "next/font/google";
 import { INTRO_BOOT } from "@/components/intro/intro-boot";
 import { CartDrawer } from "@/components/panier/cart-drawer";
 import { CartProvider } from "@/lib/panier/cart";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+// Jost : le géométrique des cadrans, en titrage. Variable, donc une seule
+// requête pour le 300 des grands titres comme pour le 500 des intertitres.
+const jost = Jost({
   subsets: ["latin"],
-  weight: ["500", "700"],
   display: "swap",
-  variable: "--font-space-grotesk",
+  variable: "--font-jost",
 });
 
-const inter = Inter({
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-hanken",
 });
 
-const plexMono = IBM_Plex_Mono({
+// Réservée aux vraies chaînes machine du CRM (identifiants, journaux).
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  // Une seule graisse : les références techniques ne sont jamais mises en gras,
-  // et la 500 partait dans le navigateur sans que rien ne l'utilise.
-  weight: ["400"],
   display: "swap",
-  variable: "--font-plex-mono",
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -51,7 +49,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#15181B",
+  themeColor: "#0B1118",
   colorScheme: "light",
 };
 
@@ -59,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="fr"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${plexMono.variable}`}
+      className={`${jost.variable} ${hanken.variable} ${geistMono.variable}`}
     >
       <body>
         {/* Décide du rideau d'entrée avant que le navigateur ne peigne la page.

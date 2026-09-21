@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { BarresHorizontales, Chiffre, HistogrammeMois, Panneau } from "@/components/atelier/graphiques";
+import { BarresHorizontales, HistogrammeMois, Panneau, Synthese } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import { etatPiece } from "@/lib/atelier/stock";
 import { ETAPES_CLIENT, formatDate, libelleStatut } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
+import { LIGNE_LISTE, TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -101,48 +102,55 @@ export default async function TableauDeBord() {
 
   return (
     <div className="mx-auto max-w-[80rem]">
-      <header className="mb-8">
-        <h1 className="type-display-2">Tableau de bord</h1>
-        <p className="type-body measure mt-3 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Tableau de bord</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {formatDate(maintenant)} — ce qu&apos;il y a à faire, et ce qui bloque.
         </p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Chiffre
-          terme="À assembler"
-          valeur={String(aFaire.length)}
-          detail="Commandes en atelier ou attendues sous sept jours"
-        />
-        <Chiffre
-          terme="Chiffre d'affaires du mois"
-          valeur={formatPrice(caMois)}
-          detail={
-            evolution === null
-              ? `${moisCourant._count._all} commande(s) réglée(s)`
-              : `${evolution >= 0 ? "+" : ""}${evolution} % par rapport au mois précédent`
-          }
-        />
-        <Chiffre
-          terme="Pièces sous le seuil"
-          valeur={String(sousSeuil.length)}
-          ton={sousSeuil.length > 0 ? "alerte" : "neutre"}
-          detail={sousSeuil.length > 0 ? "À recommander" : "Rien à recommander"}
-        />
-        <Chiffre
-          terme="Demandes non lues"
-          valeur={String(demandes.length)}
-          ton={demandes.length > 0 ? "alerte" : "neutre"}
-          detail={sav > 0 ? `${sav} dossier(s) SAV ouvert(s)` : "Aucun dossier SAV ouvert"}
-        />
-      </div>
+      {/* Une seule bande, quatre chiffres alignés ; chacun mène là où l'on agit.
+          La couleur d'alerte est réservée à ce qui bloque : le stock sous le seuil. */}
+      <Synthese
+        label="Synthèse du jour"
+        elements={[
+          {
+            terme: "À assembler",
+            valeur: String(aFaire.length),
+            detail: "Commandes en atelier ou attendues sous sept jours",
+            href: "/atelier/commandes",
+          },
+          {
+            terme: "Chiffre d'affaires du mois",
+            valeur: formatPrice(caMois),
+            detail:
+              evolution === null
+                ? `${moisCourant._count._all} commande(s) réglée(s)`
+                : `${evolution >= 0 ? "+" : ""}${evolution} % par rapport au mois précédent`,
+            href: "/atelier/commandes/liste",
+          },
+          {
+            terme: "Pièces sous le seuil",
+            valeur: String(sousSeuil.length),
+            ton: sousSeuil.length > 0 ? "alerte" : "neutre",
+            detail: sousSeuil.length > 0 ? "À recommander" : "Rien à recommander",
+            href: sousSeuil.length > 0 ? "/atelier/stock?filtre=alertes" : "/atelier/stock",
+          },
+          {
+            terme: "Demandes non lues",
+            valeur: String(demandes.length),
+            detail: sav > 0 ? `${sav} dossier(s) SAV ouvert(s)` : "Aucun dossier SAV ouvert",
+            href: "/atelier/demandes",
+          },
+        ]}
+      />
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <Panneau
           titre="À faire cette semaine"
           aide="Par date d'expédition annoncée, la plus proche en premier."
           action={
-            <Link href="/atelier/commandes" className="type-mono lien-atelier link-underline text-accent">
+            <Link href="/atelier/commandes" className="type-ui lien-atelier link-underline text-accent">
               Tout le kanban
             </Link>
           }
@@ -157,7 +165,7 @@ export default async function TableauDeBord() {
                   <li key={commande.id} className="border-b border-rule last:border-0">
                     <Link
                       href={`/atelier/commandes/${commande.number}`}
-                      className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
+                      className={LIGNE_LISTE}
                     >
                       <span className="type-mono text-fg-soft">{commande.number}</span>
                       <span className="type-ui flex-1 truncate text-fg">
@@ -205,7 +213,7 @@ export default async function TableauDeBord() {
           action={
             <Link
               href={sousSeuil.length > 0 ? "/atelier/stock?filtre=alertes" : "/atelier/stock"}
-              className="type-mono lien-atelier link-underline text-accent"
+              className="type-ui lien-atelier link-underline text-accent"
             >
               {sousSeuil.length > 0 ? "Les commander" : "Tout le stock"}
             </Link>
@@ -221,14 +229,23 @@ export default async function TableauDeBord() {
                   <li key={piece.id} className="border-b border-rule last:border-0">
                     <Link
                       href={`/atelier/stock/${piece.reference}`}
-                      className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
+                      className={LIGNE_LISTE}
                     >
                       <span className="type-mono text-fg-soft">{piece.reference}</span>
                       <span className="type-ui flex-1 truncate text-fg">{piece.name}</span>
-                      <span className={libre <= 0 ? "type-mono text-alert" : "type-mono text-fg-soft"}>
+                      <span
+                        className={
+                          libre <= 0
+                            ? "type-caption font-medium text-alert"
+                            : "type-caption text-fg-soft"
+                        }
+                        data-numeric
+                      >
                         {libre} libre · seuil {piece.reorderThreshold}
                       </span>
-                      <span className="type-caption text-fg-soft">{piece.restockDays} j</span>
+                      <span className="type-caption w-10 text-right text-fg-soft" data-numeric>
+                        {piece.restockDays} j
+                      </span>
                     </Link>
                   </li>
                 );
@@ -243,7 +260,7 @@ export default async function TableauDeBord() {
           <Panneau
             titre="Demandes non lues"
             action={
-              <Link href="/atelier/demandes" className="type-mono lien-atelier link-underline text-accent">
+              <Link href="/atelier/demandes" className="type-ui lien-atelier link-underline text-accent">
                 Toutes les demandes
               </Link>
             }
@@ -253,7 +270,7 @@ export default async function TableauDeBord() {
                 <li key={demande.id} className="border-b border-rule last:border-0">
                   <Link
                     href={`/atelier/demandes/${demande.id}`}
-                    className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3"
+                    className={LIGNE_LISTE}
                   >
                     <span className="type-ui text-fg">{demande.name}</span>
                     <span className="type-caption flex-1 truncate text-fg-soft">
@@ -262,7 +279,7 @@ export default async function TableauDeBord() {
                     <Pill ton={demande.type === "SUR_MESURE" ? "accent" : "neutre"}>
                       {demande.type === "SUR_MESURE" ? "Sur-mesure" : "Contact"}
                     </Pill>
-                    <span className="type-mono text-fg-soft">{formatDate(demande.createdAt)}</span>
+                    <span className="type-caption text-fg-soft" data-numeric>{formatDate(demande.createdAt)}</span>
                   </Link>
                 </li>
               ))}
@@ -275,5 +292,7 @@ export default async function TableauDeBord() {
 }
 
 function cnDate(enRetard: boolean | null | undefined): string {
-  return enRetard ? "type-mono text-alert" : "type-mono text-fg-soft";
+  return enRetard
+    ? "type-caption shrink-0 font-medium text-alert"
+    : "type-caption shrink-0 text-fg-soft";
 }

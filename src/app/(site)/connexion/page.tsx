@@ -20,8 +20,7 @@ export default async function Connexion(props: PageProps<"/connexion">) {
   return (
     <Section fond="papier">
       <div className="mx-auto max-w-[34rem]">
-        <p className="type-mono text-fg-soft">Votre compte</p>
-        <h1 className="type-display-2 mt-4">Se connecter</h1>
+        <h1 className="type-display-2">Se connecter</h1>
         <p className="type-body mt-6 text-fg-soft">
           Pas de mot de passe à retenir : indiquez votre adresse, vous recevez un lien de connexion
           valable trente minutes. C&apos;est aussi ce lien qui crée votre compte la première fois.

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BandeauExemple } from "@/components/atelier/bandeau-exemple";
-import { Chiffre, Panneau } from "@/components/atelier/graphiques";
+import { Panneau, Synthese } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import {
@@ -13,6 +13,7 @@ import {
 import { getCatalogue, getModels } from "@/lib/data/queries";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import { formatPrice } from "@/lib/utils";
+import { EtatVide, Filtre, Filtres, LIGNE_TABLEAU, Tableau, Td, Th, TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Stock" };
 export const dynamic = "force-dynamic";
@@ -58,9 +59,9 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
 
   return (
     <div>
-      <header className="mb-8">
-        <h1 className="type-display-2">Stock</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Stock</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {pieces.length} référence(s). Les quantités sont recomposées depuis le journal des
           mouvements : pour corriger un chiffre, on ajoute un mouvement.
         </p>
@@ -71,27 +72,34 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
         quoi="références du stock"
       />
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Chiffre terme="Références" valeur={String(pieces.length)} />
-        <Chiffre
-          terme="Sous le seuil"
-          valeur={String(alertes.length)}
-          ton={alertes.length > 0 ? "alerte" : "positif"}
-          detail={alertes.length > 0 ? "À commander auprès des fournisseurs" : "Rien à commander"}
-        />
-        <Chiffre
-          terme="Réservé"
-          valeur={String(pieces.reduce((s, p) => s + p.quantityReserved, 0))}
-          detail="Pièces promises à une commande en cours"
-        />
-        <Chiffre
-          terme="Valeur en rayon"
-          valeur={formatPrice(immobilise)}
-          detail="Au prix d'achat, hors pièces déjà montées"
+      <div className="mb-6">
+        <Synthese
+          label="Synthèse du stock"
+          elements={[
+            { terme: "Références", valeur: String(pieces.length) },
+            {
+              terme: "Sous le seuil",
+              valeur: String(alertes.length),
+              ton: alertes.length > 0 ? "alerte" : "neutre",
+              detail:
+                alertes.length > 0 ? "À commander auprès des fournisseurs" : "Rien à commander",
+              href: alertes.length > 0 ? "/atelier/stock?filtre=alertes" : undefined,
+            },
+            {
+              terme: "Réservé",
+              valeur: String(pieces.reduce((s, p) => s + p.quantityReserved, 0)),
+              detail: "Pièces promises à une commande en cours",
+            },
+            {
+              terme: "Valeur en rayon",
+              valeur: formatPrice(immobilise),
+              detail: "Au prix d'achat, hors pièces déjà montées",
+            },
+          ]}
         />
       </div>
 
-      <nav aria-label="Filtrer le stock" className="mb-6 flex flex-wrap gap-2">
+      <Filtres label="Filtrer le stock">
         <Filtre href="/atelier/stock" actif={!categorieActive && filtre !== "alertes"}>
           Toutes
         </Filtre>
@@ -103,14 +111,13 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
             {LIBELLE_CATEGORIE[cle]}
           </Filtre>
         ))}
-      </nav>
+      </Filtres>
 
       {/* L'état et la quantité libre viennent avant le reste : sur une tablette
           étroite, ce sont les deux colonnes qu'on veut voir sans faire défiler. */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[58rem] border-collapse">
+      <Tableau largeurMin="min-w-[58rem]" cadre>
           <thead>
-            <tr className="border-b border-rule text-left">
+            <tr className="border-b border-rule">
               <Th>Référence</Th>
               <Th>Pièce</Th>
               <Th>État</Th>
@@ -124,11 +131,11 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
           </thead>
           <tbody>
             {affichees.map(({ piece, etat }) => (
-              <tr key={piece.id} className="border-b border-rule">
+              <tr key={piece.id} className={LIGNE_TABLEAU}>
                 <Td>
                   <Link
                     href={`/atelier/stock/${piece.reference}`}
-                    className="type-mono link-underline text-accent"
+                    className="type-mono lien-atelier link-underline text-accent"
                   >
                     {piece.reference}
                   </Link>
@@ -139,7 +146,7 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
                     {LIBELLE_CATEGORIE[piece.category]}
                   </span>
                 </Td>
-                <td className="whitespace-nowrap px-3 py-3">
+                <td className="h-12 whitespace-nowrap px-3 py-1.5">
                   <Pill ton={TON_ETAT[etat]}>{LIBELLE_ETAT[etat]}</Pill>
                 </td>
                 <Nombre fort>{piece.quantityOnHand - piece.quantityReserved}</Nombre>
@@ -147,7 +154,7 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
                 <Nombre>{piece.quantityReserved}</Nombre>
                 <Nombre>{piece.reorderThreshold}</Nombre>
                 <Td align="right">
-                  <span className="type-mono text-fg-soft" data-numeric>
+                  <span className="type-caption text-fg-soft" data-numeric>
                     {formatPrice(piece.purchasePriceCents)}
                   </span>
                 </Td>
@@ -166,22 +173,20 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </Tableau>
 
       {affichees.length === 0 && (
-        <p className="type-body mt-8 text-fg-soft">Aucune référence dans ce filtre.</p>
+        <EtatVide className="mt-4">Aucune référence dans ce filtre.</EtatVide>
       )}
 
       <Panneau
         titre="Marge par modèle"
         aide="Sur la configuration de base, prix de vente moins coût des pièces. Hors temps passé et frais fixes."
-        className="mt-10"
+        className="mt-8"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[34rem] border-collapse">
+        <Tableau largeurMin="min-w-[34rem]">
             <thead>
-              <tr className="border-b border-rule text-left">
+              <tr className="border-b border-rule">
                 <Th>Modèle</Th>
                 <Th align="right">Prix de vente</Th>
                 <Th align="right">Coût des pièces</Th>
@@ -191,7 +196,7 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
             </thead>
             <tbody>
               {marges.map((ligne) => (
-                <tr key={ligne.modele.slug} className="border-b border-rule">
+                <tr key={ligne.modele.slug} className={LIGNE_TABLEAU}>
                   <Td>
                     <Link
                       href={`/collection/${ligne.modele.slug}`}
@@ -206,7 +211,7 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
                     </span>
                   </Td>
                   <Td align="right">
-                    <span className="type-mono text-fg-soft" data-numeric>
+                    <span className="type-caption text-fg-soft" data-numeric>
                       {formatPrice(ligne.cout)}
                     </span>
                   </Td>
@@ -216,63 +221,23 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
                     </span>
                   </Td>
                   <Td align="right">
-                    <span className="type-mono text-fg-soft" data-numeric>
+                    <span className="type-caption text-fg-soft" data-numeric>
                       {Math.round((ligne.marge / ligne.vente) * 100)} %
                     </span>
                   </Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Tableau>
       </Panneau>
     </div>
   );
 }
 
-function Filtre({
-  href,
-  actif,
-  children,
-}: {
-  href: string;
-  actif: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={actif ? "page" : undefined}
-      className={
-        actif
-          ? "type-ui flex min-h-11 items-center rounded-field border border-accent bg-accent px-4 text-on-accent"
-          : "type-ui flex min-h-11 items-center rounded-field border border-rule px-4 text-fg hover:border-accent-decor hover:text-accent"
-      }
-    >
-      {children}
-    </Link>
-  );
-}
-
-function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return (
-    <th
-      scope="col"
-      className={`type-mono px-3 py-3 font-normal text-fg-soft ${align === "right" ? "text-right" : ""}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return <td className={`px-3 py-3 ${align === "right" ? "text-right" : ""}`}>{children}</td>;
-}
-
 function Nombre({ children, fort }: { children: React.ReactNode; fort?: boolean }) {
   return (
-    <td className="px-3 py-3 text-right">
-      <span className={fort ? "type-ui text-fg" : "type-mono text-fg-soft"} data-numeric>
+    <td className="h-12 px-3 py-1.5 text-right">
+      <span className={fort ? "type-ui text-fg" : "type-caption text-fg-soft"} data-numeric>
         {children}
       </span>
     </td>

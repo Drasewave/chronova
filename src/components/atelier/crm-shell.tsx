@@ -85,13 +85,18 @@ export function CrmShell({
                           onClick={() => setOuvert(false)}
                           aria-current={actif ? "page" : undefined}
                           className={cn(
-                            "flex min-h-11 flex-col justify-center border-l-2 px-5 py-2 transition-colors duration-200",
-                            actif
-                              ? "border-accent bg-bg text-accent"
-                              : "border-transparent text-fg hover:text-accent",
+                            "mx-2 flex min-h-11 flex-col justify-center rounded-field px-3 py-2 text-fg transition-colors duration-200",
+                            actif ? "bg-panel" : "hover:bg-panel/60",
                           )}
                         >
-                          <span className="type-ui">{entree.label}</span>
+                          {/* L'entrée active : un fond de panneau et un point d'or,
+                              pas de filet latéral épais. */}
+                          <span className="type-ui flex items-center justify-between gap-2">
+                            {entree.label}
+                            {actif && (
+                              <span aria-hidden="true" className="size-1.5 shrink-0 rounded-pill bg-gold" />
+                            )}
+                          </span>
                           <span className="type-caption text-fg-soft">{entree.aide}</span>
                         </Link>
                       </li>
@@ -133,7 +138,7 @@ export function CrmShell({
             <RechercheGlobale />
           </header>
 
-          <main id="contenu-atelier" className="px-4 py-8 sm:px-6 lg:px-10">
+          <main id="contenu-atelier" className="px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-8">
             {children}
           </main>
         </div>

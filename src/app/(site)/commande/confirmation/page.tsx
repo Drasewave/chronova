@@ -35,8 +35,7 @@ export default async function Confirmation(props: PageProps<"/commande/confirmat
       <ViderPanier />
 
       <div className="mx-auto max-w-[46rem]">
-        <p className="type-mono text-fg-soft">C&apos;est noté</p>
-        <h1 className="type-display-2 mt-4">Votre montre va être montée.</h1>
+        <h1 className="type-display-2">Votre montre va être montée.</h1>
 
         {demo === "1" && (
           <p className="mt-6 flex flex-wrap items-center gap-3">

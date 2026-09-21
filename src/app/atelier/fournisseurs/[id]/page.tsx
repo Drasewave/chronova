@@ -14,6 +14,7 @@ import { LIBELLE_CATEGORIE, LIBELLE_ETAT, TON_ETAT, etatPiece } from "@/lib/atel
 import { formatDate } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
 import type { PurchaseStatus } from "@/generated/prisma/enums";
+import { FilAriane, LIGNE_TABLEAU, Tableau, Td, Th, TitrePage } from "@/components/atelier/gabarit";
 
 export const dynamic = "force-dynamic";
 
@@ -69,18 +70,11 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
 
   return (
     <div className="mx-auto max-w-[84rem]">
-      <nav aria-label="Fil d'Ariane" className="mb-4">
-        <Link
-          href="/atelier/fournisseurs"
-          className="type-mono link-underline text-fg-soft hover:text-accent"
-        >
-          ← Fournisseurs
-        </Link>
-      </nav>
+      <FilAriane href="/atelier/fournisseurs">Fournisseurs</FilAriane>
 
-      <header className="mb-8">
-        <h1 className="type-display-2">{fournisseur.name}</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>{fournisseur.name}</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {fournisseur.parts.length} référence(s) · délai annoncé {fournisseur.leadTimeDays} jours
         </p>
       </header>
@@ -168,10 +162,9 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
               </p>
             ) : (
               <>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[34rem] border-collapse">
+                <Tableau largeurMin="min-w-[34rem]">
                     <thead>
-                      <tr className="border-b border-rule text-left">
+                      <tr className="border-b border-rule">
                         <Th>Référence</Th>
                         <Th>Pièce</Th>
                         <Th>État</Th>
@@ -181,11 +174,11 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
                     </thead>
                     <tbody>
                       {manquantes.map(({ piece, etat, aCommander }) => (
-                        <tr key={piece.id} className="border-b border-rule">
+                        <tr key={piece.id} className={LIGNE_TABLEAU}>
                           <Td>
                             <Link
                               href={`/atelier/stock/${piece.reference}`}
-                              className="type-mono link-underline text-accent"
+                              className="type-mono lien-atelier link-underline text-accent"
                             >
                               {piece.reference}
                             </Link>
@@ -205,18 +198,17 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
                             </span>
                           </Td>
                           <Td align="right">
-                            <span className="type-mono text-fg-soft" data-numeric>
+                            <span className="type-caption text-fg-soft" data-numeric>
                               {formatPrice(aCommander * piece.purchasePriceCents)}
                             </span>
                           </Td>
                         </tr>
                       ))}
                     </tbody>
-                  </table>
-                </div>
+                  </Tableau>
                 <p className="type-caption mt-4 text-fg-soft">
                   Total estimé au dernier prix d&apos;achat connu :{" "}
-                  <span className="type-mono text-fg" data-numeric>
+                  <span className="type-caption text-fg" data-numeric>
                     {formatPrice(coutEstime)}
                   </span>
                 </p>
@@ -249,10 +241,10 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
                         <li key={ligne.id} className="flex flex-wrap items-baseline gap-x-3">
                           <span className="type-mono text-fg-soft">{ligne.part.reference}</span>
                           <span className="type-caption flex-1 text-fg">{ligne.part.name}</span>
-                          <span className="type-mono text-fg" data-numeric>
+                          <span className="type-caption text-fg" data-numeric>
                             ×{ligne.quantity}
                           </span>
-                          <span className="type-mono text-fg-soft" data-numeric>
+                          <span className="type-caption text-fg-soft" data-numeric>
                             {formatPrice(ligne.quantity * ligne.unitCostCents)}
                           </span>
                         </li>
@@ -293,12 +285,12 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
                   <li key={piece.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <Link
                       href={`/atelier/stock/${piece.reference}`}
-                      className="type-mono link-underline text-accent"
+                      className="type-mono lien-atelier link-underline text-accent"
                     >
                       {piece.reference}
                     </Link>
                     <span className="type-caption flex-1 text-fg">{piece.name}</span>
-                    <span className="type-mono text-fg-soft" data-numeric>
+                    <span className="type-caption text-fg-soft" data-numeric>
                       {piece.quantityOnHand - piece.quantityReserved} libre(s)
                     </span>
                     <Pill ton={TON_ETAT[etat]}>{LIBELLE_ETAT[etat]}</Pill>
@@ -311,19 +303,4 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
       </div>
     </div>
   );
-}
-
-function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return (
-    <th
-      scope="col"
-      className={`type-mono px-3 py-3 font-normal text-fg-soft ${align === "right" ? "text-right" : ""}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return <td className={`px-3 py-3 ${align === "right" ? "text-right" : ""}`}>{children}</td>;
 }

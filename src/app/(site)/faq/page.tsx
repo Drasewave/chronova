@@ -39,7 +39,6 @@ export default async function Faq() {
 
       <SectionHeader
         niveau={1}
-        surtitre="Questions fréquentes"
         titre="Ce qu'on me demande le plus"
         intro="Si votre question n'est pas là, écrivez-moi : la réponse finira probablement sur cette page."
         action={<ButtonLink href="/contact" variant="contour">Poser une autre question</ButtonLink>}

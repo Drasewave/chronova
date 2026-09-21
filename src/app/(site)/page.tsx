@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClosingCta } from "@/components/home/closing-cta";
 import { ExplodedView } from "@/components/home/exploded-view";
+import { MacroBand } from "@/components/home/macro-band";
 import { FaqSection } from "@/components/home/faq-section";
 import { Hero } from "@/components/home/hero";
 import { ModelsSection } from "@/components/home/models-section";
@@ -53,6 +54,8 @@ export const revalidate = 300;
 export default async function Accueil() {
   const [catalogue, modeles] = await Promise.all([getCatalogue(), getModels()]);
   const vedette = modeles.find((modele) => modele.slug === "abysse-40") ?? modeles[0];
+  // Une pièce de caractère opposé pour la scène finale : l'habillée après la plongeuse.
+  const cloture = modeles.find((modele) => modele.slug === "soiree-37") ?? modeles[1] ?? vedette;
 
   return (
     <>
@@ -62,12 +65,13 @@ export default async function Accueil() {
       />
       {vedette && <Hero catalogue={catalogue} vedette={vedette} />}
       <ModelsSection catalogue={catalogue} modeles={modeles} />
+      {vedette && <MacroBand catalogue={catalogue} modele={vedette} />}
       <ExplodedView />
       <Process />
       <Watchmaker />
       <Testimonials />
       <FaqSection />
-      <ClosingCta />
+      {cloture && <ClosingCta catalogue={catalogue} modele={cloture} />}
     </>
   );
 }

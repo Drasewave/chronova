@@ -4,6 +4,7 @@ import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
+import { EtatVide, LIGNE_TABLEAU, Tableau, Td, Th, TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Clients" };
 export const dynamic = "force-dynamic";
@@ -40,9 +41,9 @@ export default async function Clients() {
 
   return (
     <div>
-      <header className="mb-8">
-        <h1 className="type-display-2">Clients</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Clients</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {clients.length} compte(s). Le chiffre est celui des commandes payées, hors annulations
           et remboursements.
         </p>
@@ -53,10 +54,9 @@ export default async function Clients() {
         quoi="fiches clients"
       />
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[52rem] border-collapse">
+      <Tableau largeurMin="min-w-[52rem]" cadre>
           <thead>
-            <tr className="border-b border-rule text-left">
+            <tr className="border-b border-rule">
               <Th>Client</Th>
               <Th>Poignet</Th>
               <Th>Étiquettes</Th>
@@ -68,7 +68,7 @@ export default async function Clients() {
           </thead>
           <tbody>
             {lignes.map(({ client, total, derniere }) => (
-              <tr key={client.id} className="border-b border-rule">
+              <tr key={client.id} className={LIGNE_TABLEAU}>
                 <Td>
                   <Link
                     href={`/atelier/clients/${client.id}`}
@@ -81,7 +81,7 @@ export default async function Clients() {
                   )}
                 </Td>
                 <Td>
-                  <span className="type-mono text-fg-soft" data-numeric>
+                  <span className="type-caption text-fg-soft" data-numeric>
                     {client.wristSizeMm ? `${client.wristSizeMm} mm` : "—"}
                   </span>
                 </Td>
@@ -93,7 +93,7 @@ export default async function Clients() {
                   </span>
                 </Td>
                 <Td align="right">
-                  <span className="type-mono text-fg-soft" data-numeric>
+                  <span className="type-caption text-fg-soft" data-numeric>
                     {client.orders.length}
                   </span>
                 </Td>
@@ -115,25 +115,9 @@ export default async function Clients() {
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </Tableau>
 
-      {clients.length === 0 && <p className="type-body mt-8 text-fg-soft">Aucun client.</p>}
+      {clients.length === 0 && <EtatVide className="mt-4">Aucun client.</EtatVide>}
     </div>
   );
-}
-
-function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return (
-    <th
-      scope="col"
-      className={`type-mono px-3 py-3 font-normal text-fg-soft ${align === "right" ? "text-right" : ""}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return <td className={`px-3 py-3 ${align === "right" ? "text-right" : ""}`}>{children}</td>;
 }

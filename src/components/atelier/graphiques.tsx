@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { SURFACE } from "@/components/atelier/gabarit";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,24 +35,35 @@ export function BarresHorizontales({
   if (donnees.length === 0) return <p className="type-caption text-fg-soft">{vide}</p>;
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-1">
       {donnees.map((donnee) => (
-        <li key={donnee.label} className="grid grid-cols-[minmax(5rem,7rem)_minmax(0,1fr)_3rem] items-center gap-2 sm:grid-cols-[minmax(7rem,11rem)_minmax(0,1fr)_3.5rem] sm:gap-3">
-          <span className="type-caption truncate text-fg-soft" title={donnee.label}>
+        <li
+          key={donnee.label}
+          className="grid min-h-8 grid-cols-[minmax(6rem,9rem)_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[minmax(8rem,11rem)_minmax(0,1fr)]"
+        >
+          <span className="type-caption truncate text-fg" title={donnee.label}>
             {donnee.label}
           </span>
 
-          {/* La barre part de zéro : une échelle tronquée mentirait sur les écarts. */}
-          <span className="relative block h-5 bg-bg-alt" title={donnee.detail ?? donnee.label}>
+          {/* La barre part de zéro : une échelle tronquée mentirait sur les écarts.
+              La valeur se lit au bout de la barre, là où l'œil s'arrête ; la
+              largeur utile lui réserve donc 3 rem. */}
+          <span className="flex items-center gap-2" title={donnee.detail ?? donnee.label}>
             <span
-              className="absolute inset-y-0 left-0 rounded-r-[4px] bg-accent"
-              style={{ width: `${Math.max(donnee.valeur === 0 ? 0 : 2, (donnee.valeur / max) * 100)}%` }}
+              className="block h-3.5 shrink-0 rounded-[3px] bg-accent"
+              style={{
+                width:
+                  donnee.valeur === 0 ? "2px" : `calc((100% - 3rem) * ${donnee.valeur / max})`,
+                minWidth: "2px",
+              }}
             />
-          </span>
-
-          <span className="type-mono text-right text-fg" data-numeric>
-            {donnee.valeur}
-            {unite}
+            <span
+              className={cn("type-caption font-medium", donnee.valeur === 0 ? "text-fg-soft" : "text-fg")}
+              data-numeric
+            >
+              {donnee.valeur}
+              {unite}
+            </span>
           </span>
         </li>
       ))}
@@ -73,7 +86,7 @@ export function HistogrammeMois({ donnees }: { donnees: BarreMois[] }) {
       {/* Positionnement absolu dans une colonne de hauteur définie : une hauteur
           en pourcentage posée sur un enfant de hauteur automatique vaudrait zéro. */}
       <div
-        className="flex h-40 items-end gap-2"
+        className="flex h-44 items-end gap-2 pt-7 sm:gap-3"
         role="img"
         aria-label="Chiffre d'affaires des six derniers mois"
       >
@@ -82,14 +95,17 @@ export function HistogrammeMois({ donnees }: { donnees: BarreMois[] }) {
           return (
             <div key={mois.label} className="relative h-full flex-1">
               <span
-                className="type-mono absolute inset-x-0 text-center text-fg-soft"
-                style={{ bottom: `calc(${hauteur}% + 6px)` }}
+                className={cn(
+                  "type-caption absolute inset-x-0 whitespace-nowrap text-center font-medium",
+                  mois.valeurCents > 0 ? "text-fg" : "text-fg-soft",
+                )}
+                style={{ bottom: `calc(${hauteur}% + 4px)` }}
                 data-numeric
               >
                 {mois.valeurCents > 0 ? format.format(mois.valeurCents / 100) : "—"}
               </span>
               <span
-                className="absolute inset-x-0 bottom-0 rounded-t-[4px] bg-accent"
+                className="absolute inset-x-0 bottom-0 mx-auto max-w-16 rounded-t-[4px] bg-accent"
                 style={{ height: `${hauteur}%` }}
                 title={`${mois.label} · ${new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(mois.valeurCents / 100)}`}
               />
@@ -98,9 +114,9 @@ export function HistogrammeMois({ donnees }: { donnees: BarreMois[] }) {
         })}
       </div>
 
-      <div className="mt-2 flex gap-2 border-t border-rule pt-2">
+      <div className="flex gap-2 border-t border-rule pt-2 sm:gap-3">
         {donnees.map((mois) => (
-          <span key={mois.label} className="type-mono flex-1 text-center text-fg-soft">
+          <span key={mois.label} className="type-caption flex-1 text-center text-fg-soft">
             {mois.label}
           </span>
         ))}
@@ -109,32 +125,65 @@ export function HistogrammeMois({ donnees }: { donnees: BarreMois[] }) {
   );
 }
 
-/** Nombre mis en avant. Quand l'histoire est un seul chiffre, ce n'est pas un graphique. */
-export function Chiffre({
-  terme,
-  valeur,
-  detail,
-  ton = "neutre",
-}: {
+export interface ElementSynthese {
   terme: string;
   valeur: string;
   detail?: string;
+  /** `alerte` seulement quand il y a vraiment quelque chose à traiter. */
   ton?: "neutre" | "alerte" | "positif";
-}) {
+  /** Où aller pour agir sur ce chiffre. */
+  href?: string;
+}
+
+/**
+ * Bande de synthèse : les chiffres du jour sur une seule surface, séparés par
+ * des filets, alignés sur les mêmes lignes de base. Chaque case mène à l'écran
+ * où l'on agit — un chiffre qu'on ne peut pas suivre n'aide pas à l'établi.
+ */
+export function Synthese({ label, elements }: { label: string; elements: ElementSynthese[] }) {
   return (
-    <div className="border border-rule bg-bg p-5">
-      <p className="type-mono text-fg-soft">{terme}</p>
-      <p
-        className={cn(
-          "type-display-2 mt-3",
-          ton === "alerte" ? "text-alert" : ton === "positif" ? "text-positive" : "text-fg",
-        )}
-        data-numeric
-      >
-        {valeur}
-      </p>
-      {detail && <p className="type-caption mt-2 text-fg-soft">{detail}</p>}
-    </div>
+    <ul
+      aria-label={label}
+      className="grid gap-px overflow-hidden rounded-card border border-rule bg-rule sm:grid-cols-2 xl:grid-cols-4"
+    >
+      {elements.map((element) => {
+        const contenu = (
+          <>
+            <span className="type-caption block text-fg-soft">{element.terme}</span>
+            <span
+              className={cn(
+                "mt-1 block font-title text-[1.75rem] font-normal leading-[1.2] tracking-[-0.01em]",
+                element.ton === "alerte"
+                  ? "text-alert"
+                  : element.ton === "positif"
+                    ? "text-positive"
+                    : "text-fg",
+              )}
+              data-numeric
+            >
+              {element.valeur}
+            </span>
+            {element.detail && (
+              <span className="type-caption mt-1 block text-fg-soft">{element.detail}</span>
+            )}
+          </>
+        );
+        return (
+          <li key={element.terme} className="flex bg-panel">
+            {element.href ? (
+              <Link
+                href={element.href}
+                className="block flex-1 px-5 py-4 transition-colors duration-200 hover:bg-bg-alt"
+              >
+                {contenu}
+              </Link>
+            ) : (
+              <div className="flex-1 px-5 py-4">{contenu}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -153,11 +202,11 @@ export function Panneau({
   className?: string;
 }) {
   return (
-    <section className={cn("border border-rule bg-bg p-5 sm:p-6", className)}>
-      <header className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h2 className="type-title-2">{titre}</h2>
-          {aide && <p className="type-caption mt-1 text-fg-soft">{aide}</p>}
+    <section className={cn(SURFACE, "p-5 sm:p-6", className)}>
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="min-w-0">
+          <h2 className="font-title text-[1.25rem] font-medium leading-[1.3] text-fg">{titre}</h2>
+          {aide && <p className="type-caption measure mt-1 text-fg-soft">{aide}</p>}
         </div>
         {action}
       </header>

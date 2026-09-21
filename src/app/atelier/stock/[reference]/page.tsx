@@ -16,6 +16,7 @@ import {
 } from "@/lib/atelier/stock";
 import { formatDate, libelleStatut } from "@/lib/commandes/etapes";
 import { formatPrice } from "@/lib/utils";
+import { FilAriane, LIGNE_TABLEAU, Tableau, Td, Th, TitrePage } from "@/components/atelier/gabarit";
 
 export const dynamic = "force-dynamic";
 
@@ -69,20 +70,16 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
 
   return (
     <div className="mx-auto max-w-[84rem]">
-      <nav aria-label="Fil d'Ariane" className="mb-4">
-        <Link href="/atelier/stock" className="type-mono link-underline text-fg-soft hover:text-accent">
-          ← Stock
-        </Link>
-      </nav>
+      <FilAriane href="/atelier/stock">Stock</FilAriane>
 
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="type-mono flex flex-wrap items-center gap-3 text-fg-soft">
             {piece.reference}
             {piece.isSample && <SamplePill />}
           </p>
-          <h1 className="type-display-2 mt-2">{piece.name}</h1>
-          <p className="type-body mt-2 text-fg-soft">
+          <TitrePage className="mt-1">{piece.name}</TitrePage>
+          <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {LIBELLE_CATEGORIE[piece.category]}
             {piece.supplier ? " · " : ""}
             {piece.supplier && (
@@ -193,10 +190,9 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
             titre="Journal"
             aide="Deux colonnes, parce qu'un mouvement peut vider le tiroir sans changer ce qui est libre — ou l'inverse. Chacune totalise le compteur correspondant."
           >
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[38rem] border-collapse">
+            <Tableau largeurMin="min-w-[38rem]">
                 <thead>
-                  <tr className="border-b border-rule text-left">
+                  <tr className="border-b border-rule">
                     <Th>Date</Th>
                     <Th>Mouvement</Th>
                     <Th align="right">Rayon</Th>
@@ -208,9 +204,9 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
                   {piece.movements.map((mouvement) => {
                     const effet = effetMouvement(mouvement);
                     return (
-                      <tr key={mouvement.id} className="border-b border-rule">
+                      <tr key={mouvement.id} className={LIGNE_TABLEAU}>
                         <Td>
-                          <span className="type-mono whitespace-nowrap text-fg-soft">
+                          <span className="type-caption whitespace-nowrap text-fg-soft" data-numeric>
                             {formatDate(mouvement.createdAt)}
                           </span>
                         </Td>
@@ -239,8 +235,7 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
+              </Tableau>
             {piece.movements.length === 0 && (
               <p className="type-caption text-fg-soft">Aucun mouvement enregistré.</p>
             )}
@@ -267,7 +262,7 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
                   >
                     <Link
                       href={`/atelier/commandes/${reservation.orderItem.order.number}`}
-                      className="type-mono link-underline text-accent"
+                      className="type-mono lien-atelier link-underline text-accent"
                     >
                       {reservation.orderItem.order.number}
                     </Link>
@@ -277,7 +272,7 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
                         ? ` · promis le ${formatDate(reservation.orderItem.order.promisedAt)}`
                         : ""}
                     </span>
-                    <span className="type-mono text-fg" data-numeric>
+                    <span className="type-caption text-fg" data-numeric>
                       ×{reservation.quantity}
                     </span>
                   </li>
@@ -338,19 +333,4 @@ function Delta({ valeur }: { valeur: number }) {
       </span>
     </td>
   );
-}
-
-function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return (
-    <th
-      scope="col"
-      className={`type-mono px-3 py-3 font-normal text-fg-soft ${align === "right" ? "text-right" : ""}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, align }: { children: React.ReactNode; align?: "right" }) {
-  return <td className={`px-3 py-3 ${align === "right" ? "text-right" : ""}`}>{children}</td>;
 }

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { enregistrerOption } from "@/app/actions/atelier-catalogue";
-import { Bouton, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
+import { Bouton, CASE, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
+import { BLOC, CODE } from "@/components/atelier/gabarit";
 import { WatchSvg } from "@/watch/watch-svg";
 import type { WatchRender } from "@/watch/types";
 
@@ -80,16 +81,16 @@ export function EditeurOption({
           {/* Deux champs, deux étiquettes : un <label> qui envelopperait le
               nuancier et la saisie ne nommerait que le premier des deux. */}
           <div className="w-48">
-            <label htmlFor={`hex-${option.id}`} className="type-caption text-fg-soft">
+            <label htmlFor={`hex-${option.id}`} className="type-caption block font-medium text-fg">
               Couleur
             </label>
-            <span className="mt-1 flex items-center gap-2">
+            <span className="mt-1.5 flex items-center gap-2">
               <input
                 type="color"
                 value={valide ? hex : "#888888"}
                 onChange={(evenement) => setHex(evenement.target.value)}
                 aria-label="Nuancier"
-                className="h-11 w-11 shrink-0 cursor-pointer rounded-field border border-rule bg-bg p-1"
+                className="h-11 w-11 shrink-0 cursor-pointer rounded-field border border-field bg-panel p-1"
               />
               <Saisie
                 id={`hex-${option.id}`}
@@ -98,7 +99,7 @@ export function EditeurOption({
                 onChange={(evenement) => setHex(evenement.target.value)}
                 placeholder="#000000"
                 spellCheck={false}
-                className="type-mono"
+                className={CODE}
               />
             </span>
           </div>
@@ -121,7 +122,7 @@ export function EditeurOption({
           type="checkbox"
           name="actif"
           defaultChecked={option.isActive}
-          className="size-6 accent-[var(--accent)]"
+          className={CASE}
         />
         <span className="type-ui text-fg">Proposée dans le configurateur</span>
       </label>
@@ -132,7 +133,7 @@ export function EditeurOption({
             Aperçu {valide && option.clesCouleur.length > 0 ? "avec la teinte essayée" : "du modèle"}{" "}
             — non enregistré tant que le bouton n&apos;est pas cliqué.
           </p>
-          <div className="max-w-64 border border-rule bg-bg-alt p-3">
+          <div className={`max-w-64 p-3 ${BLOC}`}>
             <WatchSvg
               id={`apercu-${option.id}`}
               render={rendu}

@@ -11,8 +11,7 @@ export default function Verification() {
   return (
     <Section fond="papier">
       <div className="mx-auto max-w-[34rem]">
-        <p className="type-mono text-fg-soft">Presque</p>
-        <h1 className="type-display-2 mt-4">Vérifiez votre boîte mail</h1>
+        <h1 className="type-display-2">Vérifiez votre boîte mail</h1>
         <p className="type-lead mt-6 text-fg-soft">
           Un lien de connexion vient de partir. Il est valable trente minutes et ne fonctionne
           qu&apos;une fois.

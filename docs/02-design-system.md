@@ -1,186 +1,297 @@
-# Chronova — Design system « Atelier nocturne »
+# Chronova — Design system « Vitrine »
+
+Référence interne du système visuel tel qu'il est dans le code. Source unique des valeurs : `src/app/globals.css`. Le format portable pour les outils (tokens en frontmatter, règles nommées) est `DESIGN.md` à la racine, avec son annexe `.impeccable/design.json`.
+
+Parti pris : le standard du secteur horloger, sans détour. La montre est photographiée, la page s'efface. Un papier neutre et clair pour la vitrine, une nuit bleu-noir pour les scènes où l'acier doit briller, un or champagne, rare, pour ce qui compte.
 
 ## 1. Couleurs
 
 ### Palette de marque
 
+Valeurs brutes, déclarées dans `@theme`. Les composants ne les utilisent pas directement : ils passent par les tokens sémantiques plus bas.
+
 | Token | Hex | Usage |
 |---|---|---|
-| `--marble` | `#EDEFF1` | Fond principal |
-| `--marble-alt` | `#E3E6EA` | Sections alternées, blocs `[PHOTO]` |
-| `--cloud` | `#F6F7F9` | Cartes, panneaux, champs |
-| `--graphite` | `#1E2226` | Texte principal |
-| `--graphite-soft` | `#565D65` | Texte secondaire |
-| `--chrome` | `#2E5570` | Accent : boutons, liens, sélection |
-| `--chrome-deep` | `#1F3D52` | Survol / actif du bouton plein et des liens |
-| `--chrome-light` | `#8FADC2` | Décor seul sur fond clair |
-| `--jade` | `#2C6B54` | Statuts positifs |
-| `--ember` | `#8C3346` | Alerte, rupture, erreur |
-| `--line` | `#D5D9DE` | Filets 1 px |
-| `--onyx` | `#15181B` | Sections sombres, mode sombre CRM |
-| `--onyx-ink` | `#E7EAED` | Texte sur `--onyx` |
-| `--onyx-soft` | `#A9AFB6` | Texte secondaire sur `--onyx` |
-| `--jade-light` | `#7FCBAA` | Statut positif sur `--onyx` |
-| `--ember-light` | `#E195A8` | Alerte sur `--onyx` |
+| `--color-papier` | `#f5f5f3` | Fond principal du site clair |
+| `--color-papier-alt` | `#ebebe8` | Sections alternées, petits blocs teintés du CRM |
+| `--color-panneau` | `#fdfdfc` | Champs, puces, panneaux ; texte du bouton marine |
+| `--color-encre` | `#111417` | Texte principal |
+| `--color-encre-douce` | `#555b63` | Texte secondaire |
+| `--color-filet` | `#dadad6` | Filets décoratifs de 1 px |
+| `--color-marine` | `#14263a` | Accent sur papier : bouton plein, sélection, focus |
+| `--color-marine-vive` | `#1f3b5a` | Survol de l'accent sur papier |
+| `--color-or` | `#7d5e27` | L'or lisible sur papier : prix, repères, filet d'or, lien actif |
+| `--color-or-clair` | `#d9bc7a` | Accent des scènes nuit ; décor seul sur papier |
+| `--color-or-pale` | `#ead7a6` | Survol de l'accent sur la nuit |
+| `--color-sapin` | `#1e6b4c` | Statuts positifs |
+| `--color-sapin-clair` | `#7fd0a8` | Statut positif sur la nuit |
+| `--color-grenat` | `#a12a3c` | Alerte, erreur, `À remplir`, pastille « Exemple » |
+| `--color-grenat-clair` | `#f09aaa` | Alerte sur la nuit |
+| `--color-nuit` | `#0b1118` | Scènes nuit, pied de page, thème nuit du CRM |
+| `--color-nuit-alt` | `#111923` | Fond alterné sur la nuit |
+| `--color-nuit-panneau` | `#16202c` | Panneaux sur la nuit |
+| `--color-nuit-encre` | `#eef0f2` | Texte sur la nuit |
+| `--color-nuit-douce` | `#a3abb5` | Texte secondaire sur la nuit |
+| `--color-nuit-filet` | `#263241` | Filets sur la nuit |
+
+Valeurs déclarées hors `@theme`, directement dans les tokens sémantiques : contour de champ `--field` (`#767c84` clair, `#78828e` nuit) et fond de studio `--stage-in` / `--stage-out` (`#ffffff` → `#e3e4e6` clair, `#223246` → `#0b1118` nuit).
+
+### Tokens sémantiques
+
+Le thème nuit s'active par `data-theme="night"` sur n'importe quel conteneur : sections nuit du site (héros, bande macro, clôture, pied de page, en-tête posé sur le héros) et thème nuit du CRM. Une variante Tailwind `night:` existe côté markup. Les utilitaires (`bg-bg`, `text-fg-soft`, `border-rule`, `bg-accent`, `text-gold`…) sont générés par `@theme inline` et pointent sur la variable : ils suivent le thème sans recompilation.
+
+| Token | Clair | Nuit |
+|---|---|---|
+| `--bg` | papier | nuit |
+| `--bg-alt` | papier-alt | nuit-alt |
+| `--panel` | panneau | nuit-panneau |
+| `--fg` | encre | nuit-encre |
+| `--fg-soft` | encre-douce | nuit-douce |
+| `--rule` | filet | nuit-filet |
+| `--field` | `#767c84` | `#78828e` |
+| `--accent` | marine | or-clair |
+| `--accent-hover` | marine-vive | or-pale |
+| `--accent-decor` | or-clair | or |
+| `--on-accent` | panneau | nuit |
+| `--gold` | or | or-clair |
+| `--positive` | sapin | sapin-clair |
+| `--alert` | grenat | grenat-clair |
+| `--focus` | marine | or-clair |
+| `--stage-in` → `--stage-out` | `#ffffff` → `#e3e4e6` | `#223246` → `#0b1118` |
+
+Principes :
+
+- La marine porte l'accent sur papier ; sur la nuit elle disparaît, c'est l'or clair qui prend le relais.
+- L'or est le seul ornement du site (`--gold`) : prix, repères numérotés, filet d'or (`.filet-or`), lien de navigation actif, soulignement du bouton discret, puces de liste, curseur de saisie. La sélection de texte est or clair sur nuit.
+- `--rule` est réservé aux séparateurs décoratifs. Un champ de saisie se délimite avec `--field`, qui tient 3:1 sur tous les fonds (WCAG 1.4.11).
 
 ### Règles de contraste vérifiées
 
-Ratios calculés (WCAG 2.1, texte normal ≥ 4,5:1), garantis par `src/design/tokens.test.ts` — un changement de teinte qui descend sous le seuil fait échouer `npm run test` :
+Ratios calculés (WCAG 2.1) à partir des hex de `globals.css`. Les couples marqués « testé » sont garantis par `src/design/tokens.test.ts`, qui lit les valeurs dans la feuille de style : un changement de teinte qui descend sous le seuil fait échouer `npm run test`. Seuil texte : 4,5:1 (11:1 exigé pour l'encre sur son fond principal).
 
 | Couple | Ratio | Verdict |
 |---|---|---|
-| `--graphite` sur `--marble` | 13,89:1 | ✅ |
-| `--graphite-soft` sur `--marble` | 5,78:1 | ✅ |
-| `--chrome` sur `--marble` | 6,88:1 | ✅ |
-| `--chrome-deep` sur `--marble` | 9,86:1 | ✅ |
-| `--jade` sur `--marble` | 5,46:1 | ✅ |
-| `--ember` sur `--marble` | 6,81:1 | ✅ |
-| `--chrome-light` sur `--marble` | **2,04:1** | ❌ décor uniquement, jamais de texte |
-| `--onyx-ink` sur `--onyx` | 14,76:1 | ✅ |
-| `--onyx-soft` sur `--onyx` | 8,06:1 | ✅ |
-| `--chrome` sur `--onyx` | **2,25:1** | ❌ → en mode sombre l'accent devient `--chrome-light` (7,57:1 ✅) |
-| `--jade` sur `--onyx` | **2,83:1** | ❌ → `--jade-light` |
+| `encre` sur `papier` / `papier-alt` | 16,93:1 / 15,47:1 | ✅ testé |
+| `encre-douce` sur `papier` / `papier-alt` | 6,28:1 / 5,74:1 | ✅ testé |
+| `marine` sur `papier` / `papier-alt` | 14,06:1 / 12,85:1 | ✅ testé |
+| `marine-vive` sur `papier` / `papier-alt` | 10,50:1 / 9,60:1 | ✅ testé |
+| `or` sur `papier` / `papier-alt` | 5,49:1 / 5,02:1 | ✅ testé |
+| `sapin` sur `papier` / `papier-alt` | 5,90:1 / 5,39:1 | ✅ testé |
+| `grenat` sur `papier` / `papier-alt` | 6,61:1 / 6,04:1 | ✅ testé |
+| `panneau` sur `marine` / `marine-vive` (bouton plein) | 15,08:1 / 11,27:1 | ✅ testé |
+| `or-clair` sur `papier` | **1,68:1** | ❌ testé < 3 : décor uniquement, jamais de texte |
+| `nuit-encre` sur `nuit` / `nuit-panneau` | 16,60:1 / 14,39:1 | ✅ testé |
+| `nuit-douce` sur `nuit` / `nuit-panneau` | 8,17:1 / 7,09:1 | ✅ testé |
+| `or-clair` sur `nuit` / `nuit-panneau` | 10,31:1 / 8,95:1 | ✅ testé |
+| `or-pale` sur `nuit` / `nuit-panneau` | 13,33:1 / 11,56:1 | ✅ testé |
+| `sapin-clair` sur `nuit` / `nuit-panneau` | 10,37:1 / 9,00:1 | ✅ testé |
+| `grenat-clair` sur `nuit` / `nuit-panneau` | 8,95:1 / 7,76:1 | ✅ testé |
+| `nuit` sur `or-clair` (bouton plein nuit) | 10,31:1 | ✅ testé |
+| `marine` sur `nuit` | **1,24:1** | ❌ testé < 3 → sur la nuit l'accent devient `or-clair` |
+| `sapin` sur `nuit` | **2,95:1** | ❌ testé < 3 → `sapin-clair` |
 
-**Conséquence** : `--chrome-light` est interdit en texte sur le fond clair mais **devient l'accent de texte du mode sombre**. Les tokens sémantiques (`--accent`, `--accent-hover`, `--positive`, `--alert`, `--focus`) basculent donc avec le thème ; les composants n'utilisent jamais une couleur brute.
+Couples calculés mais non couverts par la suite de tests :
+
+| Couple | Ratio | Remarque |
+|---|---|---|
+| `encre` / `encre-douce` sur `panneau` | 18,16:1 / 6,74:1 | ✅ |
+| `or` sur `panneau` | 5,89:1 | ✅ |
+| `encre` / `encre-douce` sur `--stage-out` clair (`#e3e4e6`) | 14,53:1 / 5,39:1 | ✅ bord le plus dense d'une tuile de montre |
+| `nuit-encre` / `nuit-douce` sur `nuit-alt` | 15,48:1 / 7,62:1 | ✅ |
+| `nuit-encre` / `nuit-douce` sur `--stage-in` nuit (`#223246`) | 11,40:1 / 5,61:1 | ✅ |
+| `--field` clair sur `papier` / `papier-alt` / `panneau` | 3,86:1 / 3,53:1 / 4,14:1 | ✅ contour de champ ≥ 3:1 |
+| `--field` nuit sur `nuit` / `nuit-panneau` | 4,86:1 / 4,21:1 | ✅ contour de champ ≥ 3:1 |
+| `filet` sur `papier` | 1,28:1 | décor : séparateur, jamais un contour porteur de sens |
+| `nuit-filet` sur `nuit` | 1,46:1 | décor |
+| `or` sur `nuit` (`--accent-decor` nuit) | 3,16:1 | décor uniquement |
+
+**Conséquence** : `or-clair` est interdit en texte sur le papier mais **devient l'accent du thème nuit** ; l'or du papier est une version assombrie (`or`). Les tokens sémantiques (`--accent`, `--accent-hover`, `--on-accent`, `--gold`, `--positive`, `--alert`, `--focus`) basculent donc avec le thème ; les composants n'utilisent pas de couleur brute.
 
 ```css
 :root {
-  --accent: var(--chrome);  --accent-hover: var(--chrome-deep);
-  --positive: var(--jade); --alert: var(--ember);
-  --focus: var(--chrome);
+  --accent: var(--color-marine);   --accent-hover: var(--color-marine-vive);
+  --on-accent: var(--color-panneau); --gold: var(--color-or);
+  --positive: var(--color-sapin);  --alert: var(--color-grenat);
+  --focus: var(--color-marine);
 }
 [data-theme="night"] {
-  --accent: var(--chrome-light); --accent-hover: #A9C4D6;
-  --positive: var(--jade-light); --alert: var(--ember-light);
-  --focus: var(--onyx-ink);
+  --accent: var(--color-or-clair); --accent-hover: var(--color-or-pale);
+  --on-accent: var(--color-nuit);  --gold: var(--color-or-clair);
+  --positive: var(--color-sapin-clair); --alert: var(--color-grenat-clair);
+  --focus: var(--color-or-clair);
 }
 ```
-
-Jamais de `#FFF` ni de `#000`, y compris dans les SVG et les e-mails.
 
 ## 2. Typographie
 
-Chargées via `next/font/google`, `display: swap`, sous-ensemble latin, en variables CSS `--font-title`, `--font-ui`, `--font-mono`.
+Trois familles chargées via `next/font/google` (`display: swap`, sous-ensemble latin) dans `src/app/layout.tsx`, exposées en `--font-title`, `--font-ui`, `--font-mono` :
 
-| Rôle | Police | Taille | Interligne | Interlettrage |
+- **Jost** (variable) — titrage. Le géométrique des cadrans : léger et grand en vitrine, plus ferme dans les intertitres. Replis : Futura, Century Gothic, Helvetica Neue, Arial.
+- **Hanken Grotesk** — tout ce qui se lit et se manipule, étiquettes comprises. Replis : Helvetica Neue, Helvetica, Arial.
+- **Geist Mono** — réservée aux vraies chaînes machine du CRM (identifiants, clés, journaux), via la constante `CODE` de `src/components/atelier/gabarit.tsx`. Elle n'a aucun rôle décoratif.
+
+| Rôle (classe `type-*`) | Police | Taille | Interligne | Interlettrage |
 |---|---|---|---|---|
-| `display-1` (héros) | Space Grotesk 500 | `clamp(2.75rem, 6vw, 4.5rem)` | 1,04 | −0,025em |
-| `display-2` (titres de section) | Space Grotesk 500 | `clamp(2rem, 4vw, 3rem)` | 1,10 | −0,02em |
-| `title-1` | Space Grotesk 700 | 1,75rem (28px) | 1,20 | −0,015em |
-| `title-2` | Space Grotesk 700 | 1,375rem (22px) | 1,30 | −0,01em |
-| `lead` (chapô) | Inter 400 | 1,25rem (20px) | 1,55 | 0 |
-| `body` | Inter 400 | 1,0625rem (17px) | 1,60 | 0 |
-| `body-lg` (pages éditoriales) | Inter 400 | 1,125rem (18px) | 1,65 | 0 |
-| `ui` (boutons, champs, CRM) | Inter 500 | 0,9375rem (15px) | 1,40 | 0 |
-| `caption` | Inter 400 | 0,8125rem (13px) | 1,45 | 0 |
-| `mono` (réf. technique) | IBM Plex Mono 400/500 | 0,8125rem (13px) | 1,40 | +0,14em, capitales |
+| `display-1` (héros, clôture) | Jost 300 | `clamp(2.6rem, 6.4vw, 5.5rem)` | 1,02 | −0,025em |
+| `display-2` (titres de section et de page) | Jost 300 | `clamp(2rem, 4.2vw, 3.5rem)` | 1,08 | −0,02em |
+| `title-1` | Jost 400 | 1,875rem (30 px) | 1,18 | −0,012em |
+| `title-2` | Jost 500 | 1,375rem (22 px) | 1,28 | −0,005em |
+| `lead` (chapô) | Hanken Grotesk 400 | `clamp(1.0625rem, 0.95rem + 0.55vw, 1.25rem)` | 1,55 | 0 |
+| `body` | Hanken Grotesk 400 | 1,0625rem (17 px) | 1,60 | 0 |
+| `body-lg` (éditorial) | Hanken Grotesk 400 | 1,125rem (18 px) | 1,65 | 0 |
+| `ui` (boutons, champs, navigation) | Hanken Grotesk 500 | 0,9375rem (15 px) | 1,40 | 0 |
+| `caption` | Hanken Grotesk 400 | 0,8125rem (13 px) | 1,45 | 0 |
+| `mono` (étiquette technique) | Hanken Grotesk 500 | 0,8125rem (13 px) | 1,40 | +0,14em, capitales, chiffres tabulaires |
 
-Règles : 13 px plancher absolu, aucune graisse < 400, mesure de lecture 68 caractères (`--measure: 68ch`), chiffres tabulaires (`font-variant-numeric: tabular-nums`) dans tous les tableaux et prix.
+Règles :
 
-Le monospace est **réservé** aux références techniques : calibre, diamètre, étanchéité, référence de pièce, numéro de commande, légendes de la vue éclatée. Il ne sert jamais de style décoratif pour un titre.
+- 13 px est le plancher absolu. Quand la place manque, le conteneur grandit (la pastille de quantité du panier, par exemple), le texte ne rétrécit pas.
+- `.type-mono` n'est plus une police à chasse fixe : ce sont des petites capitales espacées en Hanken Grotesk, comme une gravure de fond de boîte. Elle sert aux références techniques — calibre, diamètre, étanchéité, référence, numéro de commande, légendes de la vue éclatée — aux pastilles et aux intertitres du pied de page.
+- Pas de surtitre (kicker) au-dessus des titres sur le site public : le titre ouvre la section, le chapô suit. `SectionHeader` ne propose que `titre`, `intro` et `action`.
+- Titres `h1`–`h4` en Jost 400 par défaut, `text-wrap: balance`.
+- Mesure de lecture : 68 caractères (`--measure`, classe `.measure`). Contenu long (pages légales, garantie) : `.prose-atelier`, interligne 1,7, liens soulignés d'or, puces en or.
+- Chiffres tabulaires et alignés (`tabular-nums lining-nums`) dans les tableaux et sur tout élément `[data-numeric]` : prix, quantités, mesures.
+- Corps de page : 17 px, interligne 1,6, `font-synthesis-weight: none`.
 
 ## 3. Espacements, grille, formes
 
-```
---space-1: 4px    --space-5: 24px   --space-9:  96px
---space-2: 8px    --space-6: 32px   --space-10: 128px
---space-3: 12px   --space-7: 48px   --space-11: 160px
---space-4: 16px   --space-8: 64px
-```
+Pas d'échelle d'espacement propre : les espacements courants sont ceux de Tailwind (pas de 4 px). Les tokens du projet portent sur le cadre.
 
-- Gouttière : `clamp(20px, 4vw, 48px)` — jamais moins de 20 px sur les bords.
-- Rythme vertical des sections : `clamp(64px, 9vw, 128px)`.
-- Conteneurs : `--w-prose: 68ch`, `--w-content: 1280px`, `--w-wide: 1440px`.
-- Grille : 12 colonnes en ≥ 1024 px, 6 en 768 px, 4 en 375 px.
-- Rayons : `--r-field: 2px`, `--r-card: 3px`, `--r-pill: 999px` (pastilles de couleur uniquement).
-- Séparation : filet 1 px `--line`. **Aucune ombre** par défaut.
-- Ombre unique, réservée aux éléments flottants (panneau panier, boîte de dialogue, bottom sheet, palette `Cmd+K`) : `--shadow-lift: 0 2px 32px -12px rgba(21, 24, 27, .32)` — teintée graphite, jamais grise.
-- Pas de grain ni d'autre texture de surface : l'« atelier nocturne » est net, sans filtre décoratif posé sur les fonds.
-- Mise en scène des montres : un dégradé radial `--panel` → `--bg-alt` derrière la pièce (`.cadre-montre` pour les vignettes, `.scene-montre` + couronne graduée pour le héros). C'est une lumière, pas une texture.
-- Surtitres (`.surtitre`) : filet d'accent de 28 px avant le texte monospace.
-- En-tête collant : voile translucide flouté (`.entete-voile`) une fois la page défilée.
-- Focus : `outline: 2px solid var(--focus); outline-offset: 2px` — visible sur tous les fonds, jamais supprimé.
+- Gouttière : `--gutter: clamp(20px, 4vw, 56px)` — jamais moins de 20 px sur les bords. Elle est posée une seule fois, par `Section` (ou par la bande elle-même) ; aucun composant enfant ne gère ses marges de bord d'écran.
+- Rythme vertical des sections : `--section-y: clamp(72px, 9vw, 136px)` ; variante `compact` : `clamp(40px, 5vw, 72px)`.
+- Conteneurs : `--container-prose: 68ch`, `--container-content: 80rem` (1280 px, contenu des `Section`), `--container-wide: 90rem` (1440 px : en-tête, héros, bande macro, clôture, pied de page).
+- Grilles : définies section par section en utilitaires Tailwind. Modèles : 1 → 2 colonnes (640 px) → 3 (1024 px). Frise du parcours : 1 → 2 (768 px) → 4 (1280 px). Gros plans macro : 3 colonnes dès 768 px. Héros : deux colonnes dès 1024 px, la montre sur deux rangées à droite, sans `order` (l'ordre du DOM reste l'ordre de lecture).
+- Rayons : `--radius-field: 8px` (champs, petits blocs), `--radius-card: 14px` (tuiles de montre, cartes d'option, panneaux, boîte de zoom), `--radius-pill: 999px` (boutons, puces, pastilles, sélecteur de vue, boutons d'icône, repères). Anneau de focus : 4 px.
+- Séparation : filet de 1 px `--rule` (`Rule`, `hr`). **Une bordure ou une ombre, jamais les deux.**
+- Ombres : deux seulement, teintées nuit, réservées aux éléments flottants. `--shadow-lift: 0 18px 48px -20px rgb(11 17 24 / 0.38)` (tiroir du panier, palette de recherche du CRM en thème clair — en thème nuit elle échange son ombre contre un filet) ; `--shadow-sheet: 0 -12px 40px -18px rgb(11 17 24 / 0.36)` (barre de total collée en bas du configurateur mobile).
+- Aucune texture de surface, aucun grain.
+- Mise en scène des montres : `.cadre-montre` est un fond de studio — dégradé radial `--stage-in` → `--stage-out` (ellipse 78 % × 70 % centrée à 50 % / 42 %), rayon 14 px, **sans bordure ni ombre**. `.scene-nuit` est le cyclorama du héros et de la clôture : fond nuit, halo froid elliptique derrière la montre, lueur d'or très faible au sol, dégradé vertical ; sous 1024 px le halo se recentre. Derrière la montre du héros, une couronne graduée de soixante traits en or.
+- `.filet-or` : trait de 1 px en `--gold`, fondu aux deux extrémités, opacité 0,55. Le seul ornement du site.
+- Pointillés : réservés à ce qui manque (emplacement photo, avis à venir, `À remplir`).
+- En-tête collant : transparent et en thème nuit sur le héros de l'accueil ; une fois la page défilée (12 px), voile translucide flouté (`.entete-voile` : fond à 82 %, `saturate(1.6) blur(18px)`) et filet bas.
+- Focus : `outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px` — marine sur papier, or clair sur la nuit, jamais supprimé. Lien d'évitement `.skip-link` en premier élément focusable.
+- Cibles : 44 px au moins pour les commandes isolées (`.lien-atelier`, boutons d'icône, puces, boutons du CRM). Bouton `md` : 48 px ; `sm` : 40 px.
+- Ancres : `scroll-margin-top: 6rem` pour ne pas passer sous l'en-tête.
+- Zones à défilement horizontal du CRM (`.defilement-atelier`) : barre fine toujours visible, pouce en or sur piste filet.
 
 ## 4. Points de rupture
 
-`375` (référence mobile) · `640` · `768` (tablette, CRM à l'établi) · `1024` · `1280` (référence bureau) · `1440`.
-Conception mobile d'abord ; toute maquette est vérifiée à 375 / 768 / 1280 / 1440.
+Points de rupture Tailwind par défaut — `640` (`sm`) · `768` (`md`, tablette, CRM à l'établi) · `1024` (`lg`, navigation principale visible, héros en deux colonnes) · `1280` (`xl`) · `1536` (`2xl`) — plus un point propre au projet : `--breakpoint-3xl: 90rem` (1440 px), la référence large.
+
+Conception mobile d'abord. En dessous de 1024 px, la navigation passe dans un tiroir plein écran à un seul niveau. Sur téléphone, la montre du configurateur est bornée en hauteur (27 vh) pour laisser la place aux options.
 
 ## 5. Iconographie
 
-Jeu dessiné sur mesure, grille 24 px, trait 1,5 px, extrémités droites, `currentColor`, aucun remplissage. ~26 pictos : loupe, panier, compte, flèches, chevrons, croix, coche, alerte, filtre, vue face/profil/dos, zoom, lien de partage, annuler, réinitialiser, colis, calendrier, tournevis, loupe d'horloger, goutte (étanchéité), ressort (mouvement), maillon, aiguille, gravure, imprimer.
+Jeu dessiné sur mesure dans `src/components/ui/icons.tsx` : grille 24 px, affichage 20 px par défaut, trait 1,5 px, extrémités droites (`square` / `miter`), `currentColor`, aucun remplissage, `aria-hidden`. Onze pictos existent : `IconFleche`, `IconChevron`, `IconCroix`, `IconMenu`, `IconZoom`, `IconPanier`, `IconCompte`, `IconEtancheite`, `IconMouvement`, `IconTournevis`, `IconColis`.
 
-Aucun picto dans un cercle coloré, aucun emoji, aucune icône multicolore.
+Aucun picto dans un cercle coloré, aucun emoji, aucune icône multicolore. La frise du parcours n'emploie aucun pictogramme : seul le numéro d'ordre la ponctue.
 
 ## 6. Inventaire des composants
 
-**Primitives** — `Button` (plein / contour / discret), `IconButton`, `TextLink`, `Field` (label + aide + erreur), `Input`, `Textarea`, `Select`, `RadioGroup`, `OptionCard`, `ColorSwatch`, `Checkbox`, `Switch`, `Pill`, `Badge` (statuts), `Tooltip`, `Rule`, `Accordion`, `Tabs`, `Dialog`, `Drawer`, `BottomSheet`, `Toast`, `Table`, `Pagination`, `Breadcrumb`, `EmptyState`, `Skeleton`, `CommandPalette`.
+Seuls les composants présents dans `src/components` et `src/watch` sont listés.
 
-**Mise en page** — `Header`, `NavDrawer`, `Footer`, `Section`, `SectionHeader`, `Container`, `Prose`, `CookieBanner`.
+**Primitives** (`ui/`) — `Button` et `ButtonLink` (variantes `primaire` / `contour` / `discret`, tailles `md` / `sm`, toujours en pilule, appui enfoncé de 1 px), `Pill` (tons `neutre` / `accent` / `positif` / `alerte`, en `type-mono`), `SamplePill` (pastille « Exemple », ton alerte, sur toute donnée fictive), `Section` (fonds `papier` / `alterne` / `nuit`, option `compact`), `SectionHeader` (titre, chapô, action — pas de surtitre), `Rule`, `PhotoPlaceholder` (fond de studio en pointillés qui décrit la photo attendue), `FillMe` (bloc grenat en pointillés « À remplir · … »), `LegalPage` (gabarit des pages longues, date de mise à jour obligatoire), icônes.
 
-**Montre** — `WatchCanvas` (moteur SVG en calques), `WatchViewSwitch` (face / profil / dos), `WatchZoom`, `WatchExploded` (vue éclatée au défilement), `WatchThumb` (miniature de configuration, panier et CRM).
+**Mise en page** (`layout/`) — `Header` (collant, thème nuit sur le héros, tiroir mobile, exclu des transitions de page), `Footer` (toujours en thème nuit, identité légale commune aux mentions), `Wordmark` (« CHRONOVA » en Jost interlettré à 0,22em, aucun fichier logo), `SmoothScroll` (Lenis, site public seulement).
 
-**Commerce** — `ModelCard`, `PriceLine` (total + détail des suppléments), `LeadTime`, `ConfiguratorStep`, `OptionGrid`, `EngravingPreview`, `ConfigSummary`, `CartPanel`, `CartLine`, `OrderTimeline` (frise d'assemblage), `AssemblyPhotos`.
+**Accueil** (`home/`) — `Hero` (scène nuit, fiche de la pièce et prix en pied de scène), `ExplodedView` (vue éclatée en sept plans au défilement, servie dépliée sans JavaScript), `MacroBand` (trois gros plans recadrés du même SVG), `ModelsSection` et `ModelCard` (tuile de studio, second coloris au survol, élément partagé vers la fiche), `Process` (frise en quatre temps, repères bordés d'or), `Watchmaker` (emplacements photo et blocs `À remplir`), `Testimonials` (emplacement « Avis à venir » tant qu'aucun avis réel n'existe), `FaqSection` (accordéon `<details>`), `ClosingCta` (seconde scène nuit, montre à demi hors champ).
 
-**Éditorial** — `Hero`, `ProcessStep`, `SpecList`, `FaqItem`, `HorlogerBlock`, `PhotoPlaceholder` (bloc `--marble-alt` avec la description attendue en monospace), `FillMe` (rendu visible des `[À REMPLIR : …]`).
+**Collection et configurateur** — `CollectionBrowser` (puces de filtre en pilule, `aria-pressed`, filtres recopiés dans l'adresse), `Configurator`, `StepSection` (étape repliable), `OptionGrid` (radios natifs : cartes d'option de 14 px bordées, pastilles de couleur rondes de 44 px avec double anneau et nom de teinte toujours écrit), `WatchStage` (tuile de studio, sélecteur face / profil / dos, zoom en `<dialog>`).
 
-**CRM** — `CrmShell` (barre latérale + fil d'Ariane), `KanbanBoard`, `KanbanCard`, `DataTable` (tri, filtres, sélection), `StatBlock`, `BarChart`, `SparkLine`, `StockBar` (disponible / réservé / seuil), `BomTable` (nomenclature), `ChecklistPanel`, `QcForm`, `NoteThread`, `PhotoUploader`, `StatusSelect`, `EmailTemplateEditor`, `AuditTrail`.
+**Panier et compte** — `CartDrawer` (panneau latéral, miniature de la configuration réelle), `PanierComplet`, `BoutonPaiement`, `ViderPanier`, `CompteNav`, `OrderTimeline` (frise d'assemblage verticale), `FormulaireConnexion`, `FormulaireProfil`, `FormulaireAdresse`, `SuppressionCompte`, `FormulaireDemande` (contact et sur-mesure).
+
+**Montre** (`src/watch`) — `WatchSvg` (moteur SVG, vues face / profil / dos, niveaux `full` / `compact`, prop `crop`), `InteractiveWatch` (reflet du saphir piloté par le pointeur ou l'inclinaison).
+
+**Mouvement et entrée** — `Reveal` (apparition au défilement), `IntroCurtain` (rideau d'entrée) et son script d'amorçage `INTRO_BOOT`.
+
+**CRM** (`atelier/`) — `CrmShell`, `BasculeTheme` (clair / nuit, deux boutons), `RechercheGlobale` (palette `Cmd/Ctrl + K` en `<dialog>`), gabarit (`TitrePage`, `FilAriane`, `Filtres`, `Filtre`, `Tableau`, `Th`, `Td`, `EtatVide`, constantes `SURFACE`, `BLOC`, `CODE`, `CHIFFRE_FORT`, `LIGNE_LISTE`, `LIGNE_TABLEAU`), formulaire (`Champ`, `Saisie`, `Liste`, `Zone`, `Bouton`, `BoutonLeger`, constantes `SAISIE`, `CASE`), graphiques (`BarresHorizontales`, `HistogrammeMois`, `Synthese`, `Panneau` — une série, une couleur : `--accent`), `TableauDefilant`, `EditeurOption` (aperçu de la teinte sur la montre), `BandeauExemple`, `MarquerLu`. Une surface du CRM porte une bordure, jamais une ombre en plus ; les cibles font 44 px.
+
+Champs de saisie (`SAISIE`) : fond `--panel`, contour `--field` de 1 px, rayon 8 px, hauteur 44 px, corps `ui` ; survol en bordure encre, focus en bordure d'accent, erreur (`aria-invalid`) en bordure d'alerte, désactivé sur fond alterné.
 
 ## 7. Moteur de rendu de la montre
 
-Un seul SVG inline, `viewBox="0 0 1000 1000"`, jamais démonté : un changement d'option ne modifie que des attributs `fill` / `transform`, donc le rendu est instantané.
+Un seul SVG inline, `viewBox="0 0 1000 1000"`, montre centrée en (500, 500), jamais démonté : `WatchSvg` est un composant sans état ni effet, rendu côté serveur (cartes, e-mails, CRM) comme côté client (configurateur). Changer une option ne modifie que des attributs. Tous les identifiants internes sont préfixés par la prop `id`, pour que plusieurs montres cohabitent sur une page. `detail="compact"` allège la trame (moins de secteurs, de crans, de cannelures) pour les cartes et miniatures. L'heure figée est 10 h 10 min 32 s.
 
-Ordre des calques en vue **face** (du fond vers l'avant) :
+**Gros plans.** La prop `crop` (« x y largeur hauteur » dans le repère 1000 × 1000) remplace le `viewBox` et passe en `preserveAspectRatio="xMidYMid slice"` : le rendu étant vectoriel, un index ou la couronne agrandis restent nets. C'est la photographie macro du site (`MacroBand`, fiche modèle).
+
+**Cadrage.** `FRAME_SCALE` (0,9) en face et de dos : la tête de montre n'occupe pas tout le cadre, on voit la pièce de bout et les premiers maillons. `SIZE_SCALE` : un boîtier de 37 à 41 mm est un 40 mis à l'échelle (0,915 à 1,028).
+
+### Matières (`palette.ts`)
+
+Les métaux ne sont pas des couleurs d'interface mais des matières photographiées en studio, à dynamique large. `METALS` définit quatre tons — `acier`, `dore`, `noir`, `bleui` — chacun en cinq paliers : `hi` (éclat spéculaire de la boîte à lumière), `light` (arête la plus éclairée), `mid`, `dark` (creux), `edge` (filet de contour, reflet du fond noir du studio). `rampAt(ramp, t)` renvoie la couleur d'un métal pour une luminance reçue de 0 à 1, en interpolant entre les cinq paliers plutôt qu'en mélangeant deux teintes. `INK` (`#0E1013`) et `PAPER` (`#F6F8FA`) sont l'ombre et la lumière neutres du rendu ; `shade` / `tint` mélangent vers l'un ou l'autre ; `glow` éclaircit sans délaver (canaux multipliés) pour qu'un bleu soleillé reste bleu dans ses rayons clairs. Luminova au repos : `LUME_FILL` `#E4E9D2`, `LUME_EDGE` `#A4AB8C`. `isLight` décide si un cadran reçoit des impressions sombres ou claires ; `contrastRatio` sert aussi aux tests de tokens.
+
+### Reflets angulaires (`parts/conic.tsx`)
+
+Un métal poli renvoie le studio ; autour d'une pièce circulaire, cela se lit comme une suite de secteurs clairs et sombres. SVG n'ayant pas de dégradé conique, il est construit en éventail : `ConicDisk` dessine un disque de secteurs fins (60 à 240, avec un léger recouvrement contre l'anticrénelage), défini une fois dans `<defs>`, puis repris par `<use>` sous un masque annulaire (`Ring`, `clipPath` en `evenodd`) pour chaque bague — carrure, chanfreins, lunette, insert, réhaut. Une pente tournée vers l'intérieur reprend l'éventail tourné de 180° : elle reflète le côté opposé.
+
+`studioLum(angle, sheen)` donne la luminance reçue par une facette dont la normale pointe vers `angle` (0° = midi, sens horaire). Le studio compte quatre boîtes à lumière : boîte principale en haut à gauche (318°), bande de débouchage en bas à droite (138°), liseré en haut à droite (48°), rappel en bas à gauche (226°). Quatre finitions : `poli` (transitions dures, jamais noir), `brosse` (étalé, avec un grain de stries par `jitter`), `mat` (écrasé, pour le microbillé et l'aluminium), `ceramique` (très contrasté). `jitter(i)` est un bruit entier déterministe, identique sur le serveur et dans le navigateur.
+
+`defs.tsx` regroupe les éventails (carrure selon sa finition, poli, insert, demi-insert de jour, soleillage du cadran), les dégradés (cornes, cylindre poli des petites pièces, cadran, vignette et ombre du réhaut, nappe d'émail, reflet et voile antireflet du saphir, point chaud, ombres au sol), les motifs de brossage droit et de microbillage, et les filtres d'ombre.
+
+### Empilement en vue de face
+
+Ordre réel de dessin dans `watch-svg.tsx`, du fond vers l'avant :
 
 ```
-ombre · boitier-flancs · boitier-finition · lunette · lunette-insert ·
-cadran-fond · cadran-texture · cadran-ouverture (GMT / cœur ouvert) ·
-index · guichet-date · signature · aiguille-heure · aiguille-minute ·
-aiguille-gmt · aiguille-seconde · axe · verre (dôme + antireflet) ·
-reflet · couronne · attaches-bracelet
+ombre au sol (nappe + occlusion de contact) · bracelet · couronne ·
+poussoirs (VK64) · boîtier (cornes, plat de carrure, chanfrein poli) ·
+protège-couronne (lunette de plongée) · lunette (+ insert, chanfrein intérieur) ·
+cadran (fond, soleillage ou émail, vignette, réhaut, minuterie, échelle 24 h /
+cœur ouvert / compteurs, guichet de date, signature) · index (ombre de contact) ·
+aiguilles (GMT, heures, minutes, trotteuse, canon) · verre (antireflet, chant,
+point chaud, reflet mobile)
 ```
 
-**Cornes et bracelet.** Les cornes prolongent la carrure (flanc extérieur tangent
-au boîtier, flancs intérieurs parallèles) ; elles ne rayonnent pas du centre. Le
-bracelet se dessine en distance au centre (`d`) et non par rotation, pour que
-les deux brins gardent la lumière du haut-gauche. Acier : pièce de bout pleine
-qui comble l'entrecorne, maillons bombés en quinconce. Cuir et caoutchouc : brin
-roulé autour de la barrette, croissant d'ombre contre la carrure. NATO : ruban
-continu qui franchit la barrette et plonge sous le boîtier. Les brins s'éteignent
-en fondu au bord du cadre ; `FRAME_SCALE` (0,9) laisse voir la pièce de bout et
-les premiers maillons.
+La couronne et les poussoirs sont dessinés avant le boîtier pour que leur pied disparaisse sous le flanc. `types.ts` exporte `FACE_LAYERS`, la liste des calques qui sert de clés au registre.
 
-Vue **profil** : silhouette du boîtier, hauteur du verre (plat vs bombé change réellement le profil), couronne, bracelet.
-Vue **dos** : fond plein gravé ou fond transparent laissant voir le mouvement (dessin propre à NH35 / NH34 / NH38), gravure en aperçu direct.
+- **Boîtier et cornes** (`case.tsx`). Les cornes prolongent la carrure (flanc extérieur tangent, flancs intérieurs parallèles) et sont placées par symétrie de coordonnées, sans `rotate` ni `scale(-1)`, pour ne pas retourner la lumière. Chaque corne porte un plat (brossé, microbillé ou poli), un chanfrein poli fermé en vraie facette, une arête vive et une ombre de tombée vers le poignet. La lunette porte son ombre sur le plat de carrure.
+- **Lunette** (`bezel.tsx`). Quatre styles : `lisse` (suit la finition du boîtier, miroir annulaire en poli, galbée), `cannelee` (72 dents — 48 en compact — à deux facettes, chacune colorée selon la direction qu'elle regarde), `plongee` (pourtour de 120 crans, insert gravé 60 minutes avec minuterie détaillée sur le premier quart d'heure, chiffres qui suivent la courbure, triangle de midi et perle luminescente sertie), `gmt` (échelle 24 heures, heures paires chiffrées, et demi-insert de jour bicolore de 6 h à 18 h via `insertColor2`). Insert en céramique (reflets durs) ou aluminium (mat). Le chanfrein intérieur poli retombe vers le verre.
+- **Cadran** (`dial.tsx`). Trois textures : `soleille` (éventail conique en papillon — deux secteurs clairs dans l'axe de la boîte à lumière, deux sombres en travers — avec grain), `emaille` (nappe de lumière), `mat`. Réhaut poli en pente, qui reflète le côté opposé et porte son ombre sur le pourtour. Guichet de date encadré : cadre appliqué poli, disque de quantième en retrait, ombre du cadre. Selon le calibre : échelle 24 h (NH34), cœur ouvert (NH38), deux compteurs décoratifs (VK64). Signature « CHRONOVA » en Jost, ligne technique en Hanken Grotesk.
+- **Index** (`indices.tsx`). `batons` : blocs de métal biseautés sur quatre côtés, chaque biseau coloré selon ce qu'il regarde, luminova dans la cuvette, double bâton à midi. `arabes` : chiffres en Hanken Grotesk 600 avec un plot luminescent serti à chaque heure. `plongee` : triangle à midi, bâtons aux quarts, ronds ailleurs, sertissage éclairé d'un côté et ombré de l'autre. Les index suivent le métal du boîtier ; ils reçoivent une ombre de contact.
+- **Aiguilles** (`hands.tsx`). Formes `glaive`, `mercedes` (cercle sur l'aiguille des heures seulement), `crayon`, plus trotteuse à contrepoids et flèche GMT. Chaque aiguille est pliée en deux facettes le long de son axe : un dégradé à rupture franche dont les deux couleurs dépendent de l'angle réel de l'aiguille dans le studio. Les ombres portées sont appliquées hors rotation, donc toutes du même côté, et s'allongent avec la hauteur sur le canon (heures et GMT en bas, minutes et trotteuse plus haut).
+- **Verre** (`crystal.tsx`). Un saphir ne voile pas le cadran : il se trahit par son chant (un arc vif face à la boîte principale, un arc faible à l'opposé), un point chaud fixe et le reflet d'une boîte à lumière — un simple dégradé translaté (±120 px), sans filtre. Saphir bombé : liseré de courbure sur le pourtour. Antireflet : voile bleu-violet au bord, reflets atténués.
+- **Couronne et poussoirs** (`crown.tsx`, `pushers.tsx`). Cylindre couché : cannelures serrées vers les bords, larges au sommet ; couronne signée ou lisse ; protège-couronne sur les plongeuses.
+- **Bracelet** (`strap.tsx`). Dessiné en distance au centre et non par rotation, pour que les deux brins gardent la lumière du haut-gauche. Acier trois maillons ou jubilé (pièce de bout qui affleure les cornes), cuir et caoutchouc (brin roulé autour de la barrette), NATO (ruban qui passe sous la carrure). Les brins s'affinent puis sortent du cadre.
 
-**Frontière code / base** : la *géométrie* vit dans le code (`src/watch/parts/<calque>/<cle>.tsx`, registre typé). L'*apparence* vit dans la base : une option porte `svgPartKey` + `colorHex` + `renderMeta`. Conséquence concrète pour l'horloger : ajouter un nouveau coloris de cadran, d'insert ou de cuir, en changer le prix, le nom, le stock ou la disponibilité se fait **entièrement depuis le CRM**. Dessiner une forme d'aiguille inédite demande une nouvelle pièce dans le registre, donc du code. C'est assumé et documenté dans le README.
+**Vue de profil** (`profile.tsx`), prise côté couronne : épaisseur de la carrure (cylindre debout, lumière de gauche à droite), galbe du verre — plat ou bombé change réellement la silhouette —, courbe des cornes, couronne vue de bout, bracelet par la tranche. Pas d'ombre au sol : la montre est au poignet.
 
-Reflet du verre : `gradientTransform` piloté par `pointermove` (ou `deviceorientation` sur mobile), lissé en `requestAnimationFrame`, coupé sous `prefers-reduced-motion`.
+**Vue de dos** (`back.tsx`) : fond plein vissé à six encoches, gravure en aperçu direct, ou fond transparent laissant voir le mouvement, dessiné selon le calibre (NH35 / NH34 / NH38 : ponts côtelés, balancier, masse oscillante ; VK64 méca-quartz : pile, bobine, pont de chronographe).
+
+**Frontière code / base** : la *géométrie* vit dans le code (`src/watch/parts/*.tsx`, registre typé `PART_REGISTRY` dans `registry.ts`, que le CRM propose en menu déroulant). L'*apparence* vit dans la base : une option porte `svgPartKey` + `colorHex` + `renderMeta`, résolus en `WatchRender` (`types.ts`). Le moteur ne connaît ni Prisma, ni les prix, ni le stock. Ajouter un coloris de cadran, d'insert ou de cuir, en changer le prix, le nom, le stock ou la disponibilité se fait entièrement depuis le CRM ; dessiner une forme d'aiguille inédite demande une nouvelle pièce dans le registre, donc du code.
+
+**Reflet interactif** (`interactive-watch.tsx`) : le décalage du reflet est piloté par `pointermove` (ou `deviceorientation` sur mobile), lissé en `requestAnimationFrame`, non monté sous `prefers-reduced-motion`.
 
 ## 8. Mouvement
 
 ```
---ease: cubic-bezier(.22, 1, .36, 1);
---d-fast: 200ms;  --d-base: 250ms;  --d-slow: 350ms;
---d-reveal: 450ms; --d-long: 600ms;
+--ease / --ease-atelier: cubic-bezier(0.16, 1, 0.3, 1);
+--d-fast: 200ms;  --d-base: 280ms;  --d-slow: 400ms;
+--d-reveal: 700ms; --d-long: 900ms;
 ```
 
-- Transition de page : fondu 250 ms + translation verticale de 8 px (View Transitions quand disponible, sinon Motion).
-- Carte produit → fiche : l'image de la montre est un élément partagé (`view-transition-name`).
-- Apparition au défilement : opacité + translation de 16 px, décalage 60 ms, **une seule fois** (`IntersectionObserver`, puis désinscription).
-- Survol de carte : rotation 3°, reflet traversant, second coloris en fondu.
-- Bouton : soulignement laiton tracé de gauche à droite (`background-size`), état actif enfoncé de 1 px.
+- États (boutons, liens, puces, champs) : 200 ms sur la courbe d'atelier. Bouton : état actif enfoncé de 1 px.
+- Liens : soulignement tracé de gauche à droite en 280 ms (`.link-underline`, `background-size`) ; variante `.link-underline-out` qui s'efface au survol. Flèche des boutons et des cartes (`.fleche-glisse`) : avance de 4 px.
+- Héros — le seul moment chorégraphié du site : la montre se pose depuis un léger flou (`.entree-montre`, 1400 ms, délai 120 ms : opacité, 28 px de montée, échelle 0,965, flou 14 px), pendant que titre, chapô, boutons et fiche montent par paliers (`.entree-texte`, 900 ms, délai `rang × 110 ms + 250 ms`, 18 px).
+- Apparition au défilement (`Reveal`) : opacité + 16 px de montée en 450 ms, **une seule fois** (`IntersectionObserver`, puis désinscription). L'état masqué est rendu dès le serveur ; une règle `<noscript>` du gabarit du site le neutralise sans JavaScript.
+- Carte de modèle : la montre grossit de 4,5 % et pivote de 2° (900 ms), le second coloris apparaît en fondu (600 ms), un reflet traverse le verre (`reflet-balayage`, 1100 ms, au survol et au focus). Gros plans macro : zoom de 6 % en 1200 ms.
+- Reflet du saphir : suit le pointeur (transition de 120 ms linéaire).
+- Vue éclatée : séparation des sept plans pilotée par le défilement ; servie entièrement dépliée sans JavaScript ou sous mouvement réduit.
+- Transitions de page (View Transitions) : sortie en fondu 160 ms, entrée en fondu 250 ms (délai 80 ms) avec une montée de 10 px en 300 ms. L'en-tête (`entete-site`) est ancré : ni fondu ni déplacement. Carte → fiche : la montre est un élément partagé (`ViewTransition`, classe `morph`, 420 ms, flou de 3 px à 30 % du parcours).
+- En-tête : passage du transparent au voile en 500 ms.
+- Défilement doux : Lenis sur le site public uniquement, jamais dans le CRM.
 - Curseur natif. Aucun son.
-- `prefers-reduced-motion: reduce` → toutes les transitions à 0,01 ms, l'animation d'entrée est sautée, Lenis n'est pas monté.
+- `prefers-reduced-motion: reduce` coupe tout : animations et transitions à 0,01 ms (pseudo-éléments de transition de vue compris), `scroll-behavior: auto`, reflet de carte désactivé, reflet du saphir figé, `Reveal` affiché d'emblée, rideau d'entrée sauté, Lenis non monté.
 
-### Animation d'entrée (≤ 2,5 s, première visite seulement)
+### Rideau d'entrée (2,4 s, une fois par session)
+
+Sur fond nuit, tracé en or clair. Mémorisé en `sessionStorage` (`chronova:intro`) ; le script `INTRO_BOOT`, en tête de `<body>`, décide avant le premier affichage si le rideau est sauté.
 
 | Temps | Étape |
 |---|---|
-| 0 → 600 ms | Tracé du cercle du cadran (`stroke-dashoffset`), trait `--graphite` sur fond `--marble` |
-| 600 → 1000 ms | Les 12 index apparaissent un par un dans le sens horaire (33 ms d'écart) |
-| 900 → 1700 ms | Les aiguilles tournent et se posent sur **10 h 10**, léger amorti |
-| 1400 → 2000 ms | « CHRONOVA » en Newsreader, interlettrage de 0,4em → 0,08em |
-| 2000 → 2500 ms | Le cadran s'agrandit, son cercle devient un `clip-path: circle()` qui s'ouvre sur l'accueil |
+| 0 → 600 ms | Tracé du cercle du cadran (`stroke-dashoffset`) |
+| 550 → ~1150 ms | Les 12 index apparaissent un par un dans le sens horaire (32 ms d'écart) |
+| 820 → ~1800 ms | Les aiguilles tournent et se posent sur **10 h 10**, léger amorti ; la trotteuse suit |
+| 1340 → 1960 ms | « CHRONOVA » en Jost, interlettrage de 0,4em → 0,08em |
+| 1900 → 2440 ms | Le cadran s'agrandit et s'efface ; un masque circulaire s'ouvre sur l'accueil, déjà monté derrière |
 
-Mémorisée en `sessionStorage` (`chronova:intro`). Bouton « Passer » discret en bas à droite, focusable au clavier dès la première image. Le héros est préchargé pendant l'animation. Aucune barre de chargement, aucun son.
+Bouton « Passer » en bas à droite, cible de 44 px, focusable au clavier dès la première image. Aucune barre de chargement, aucun son.

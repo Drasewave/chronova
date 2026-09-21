@@ -23,6 +23,12 @@ export interface WatchSvgProps {
   detail?: "full" | "compact";
   /** Décalage du reflet, -1 à 1. Piloté par le pointeur dans `InteractiveWatch`. */
   sheen?: { x: number; y: number };
+  /**
+   * Recadrage en gros plan, dans le repère 1000 × 1000 : « x y largeur hauteur ».
+   * Le rendu est vectoriel, donc un détail agrandi reste net — c'est la photo
+   * macro du site.
+   */
+  crop?: string;
   className?: string;
   /** Description lue par les lecteurs d'écran. */
   label: string;
@@ -34,7 +40,7 @@ export interface WatchSvgProps {
  * client (configurateur). Changer une option ne remonte jamais l'arbre : seuls
  * des attributs `fill` et `transform` changent.
  */
-export function WatchSvg({ id, render, view = "face", detail = "full", sheen, className, label }: WatchSvgProps) {
+export function WatchSvg({ id, render, view = "face", detail = "full", sheen, crop, className, label }: WatchSvgProps) {
   const scale = (SIZE_SCALE[render.caseSize] ?? 1) * (view === "profil" ? 1 : FRAME_SCALE);
   const time = render.time ?? DEFAULT_TIME;
   const guards = render.bezelStyle === "plongee";
@@ -44,7 +50,8 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cl
 
   return (
     <svg
-      viewBox="0 0 1000 1000"
+      viewBox={crop ?? "0 0 1000 1000"}
+      preserveAspectRatio={crop ? "xMidYMid slice" : undefined}
       className={className}
       // Un rendu sans intitulé est décoratif — le second coloris d'une carte,
       // par exemple : on le retire de l'arbre d'accessibilité plutôt que de
@@ -55,13 +62,17 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cl
       focusable="false"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <Defs uid={id} render={render} />
+      <Defs uid={id} render={render} detail={detail} />
 
-      {/* Ombre portée : large sous une montre vue de face, rasante de profil. */}
-      {view === "profil" ? (
-        <ellipse cx="500" cy="640" rx="330" ry="120" fill={`url(#${id}-shadow)`} />
-      ) : (
-        <ellipse cx="500" cy="514" rx={430 * scale} ry={418 * scale} fill={`url(#${id}-shadow)`} />
+      {/* Ombre portée sous une montre posée à plat. De profil la montre est
+          au poignet, en l'air : aucune ombre au sol. */}
+      {view === "profil" ? null : (
+        <>
+          {/* La lumière vient du haut-gauche : la nappe d'ombre glisse en bas à
+              droite, l'occlusion de contact reste sous la carrure. */}
+          <ellipse cx="518" cy="534" rx={440 * scale} ry={430 * scale} fill={`url(#${id}-shadow)`} />
+          <circle cx="506" cy="510" r={392 * scale} fill={`url(#${id}-shadow-contact)`} />
+        </>
       )}
 
       <g transform={`translate(500 500) scale(${scale}) translate(-500 -500)`}>
@@ -144,7 +155,9 @@ function FaceView({
           uid={id}
           style={render.bezelStyle}
           metal={render.caseMetal}
+          finish={render.caseFinish}
           insertColor={render.insertColor}
+          insertColor2={render.insertColor2}
           insertMaterial={render.insertMaterial}
           lume={render.lume}
           detail={detail}
@@ -172,16 +185,15 @@ function FaceView({
           />
         </g>
 
-        <g filter={`url(#${id}-hand-shadow)`}>
-          <Hands
-            uid={id}
-            shape={render.handShape}
-            metal={render.handMetal}
-            lume={render.lume}
-            movement={render.movement}
-            time={time}
-          />
-        </g>
+        <Hands
+          uid={id}
+          shape={render.handShape}
+          metal={render.handMetal}
+          lume={render.lume}
+          movement={render.movement}
+          time={time}
+          detail={detail}
+        />
 
         <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} />
     </>

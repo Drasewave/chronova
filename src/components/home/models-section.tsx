@@ -15,7 +15,6 @@ export function ModelsSection({
   return (
     <Section fond="papier" id="modeles">
       <SectionHeader
-        surtitre="Les bases"
         titre="Quatre boîtiers, quatre caractères"
         intro="Chaque modèle fixe le boîtier, le diamètre et l'étanchéité. Tout le reste — cadran, aiguilles, lunette, couronne, bracelet, verre, fond — se compose ensuite."
         action={
@@ -25,9 +24,9 @@ export function ModelsSection({
         }
       />
 
-      <div className="mt-16 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-10">
+      <div className="mt-16 grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3 xl:gap-x-8">
         {modeles.map((modele, index) => (
-          <Reveal key={modele.slug} delay={index * 60}>
+          <Reveal key={modele.slug} delay={(index % 3) * 90}>
             <ModelCard catalogue={catalogue} modele={modele} priorite={index === 0} />
           </Reveal>
         ))}

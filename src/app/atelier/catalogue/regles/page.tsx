@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { enregistrerRegle, supprimerRegle } from "@/app/actions/atelier-catalogue";
-import { Bouton, BoutonLeger, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
+import { Bouton, BoutonLeger, CASE, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
+import { BLOC, FilAriane, TitrePage } from "@/components/atelier/gabarit";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Règles de compatibilité" };
 export const dynamic = "force-dynamic";
@@ -56,18 +58,11 @@ export default async function Regles() {
 
   return (
     <div className="mx-auto max-w-[76rem]">
-      <nav aria-label="Fil d'Ariane" className="mb-4">
-        <Link
-          href="/atelier/catalogue"
-          className="type-mono link-underline text-fg-soft hover:text-accent"
-        >
-          ← Catalogue
-        </Link>
-      </nav>
+      <FilAriane href="/atelier/catalogue">Catalogue</FilAriane>
 
-      <header className="mb-8">
-        <h1 className="type-display-2">Règles de compatibilité</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Règles de compatibilité</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           {regles.length} règle(s). Une option dont la règle n&apos;est pas satisfaite reste
           visible mais non sélectionnable, avec sa raison.
         </p>
@@ -118,7 +113,7 @@ export default async function Regles() {
                 type="checkbox"
                 name="actif"
                 defaultChecked
-                className="size-6 accent-[var(--accent)]"
+                className={CASE}
               />
               <span className="type-ui text-fg">Règle appliquée</span>
             </label>
@@ -157,7 +152,7 @@ export default async function Regles() {
 
                   {/* Le message aussi en clair : lu dans un champ de saisie, il
                       ne se laisse pas parcourir du regard. */}
-                  <p className="type-body mt-2 border-l-2 border-accent-decor pl-3 text-fg">
+                  <p className={cn(BLOC, "type-ui mt-3 px-4 py-3 font-normal text-fg")}>
                     « {regle.message} »
                   </p>
 
@@ -175,11 +170,11 @@ export default async function Regles() {
                         type="checkbox"
                         name="actif"
                         defaultChecked={regle.isActive}
-                        className="size-6 accent-[var(--accent)]"
+                        className={CASE}
                       />
                       <span className="type-ui text-fg">Appliquée</span>
                     </label>
-                    <BoutonLeger>Enregistrer</BoutonLeger>
+                    <BoutonLeger className="self-end">Enregistrer</BoutonLeger>
                   </form>
                 </li>
               ))}

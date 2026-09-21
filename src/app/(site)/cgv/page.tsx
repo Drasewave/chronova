@@ -27,7 +27,6 @@ export default async function Cgv() {
 
   return (
     <LegalPage
-      surtitre="Conditions de vente"
       titre="Conditions générales de vente"
       chapo="Ce document décrit ce qui est vendu, comment, à quel prix et dans quelles conditions. Il est volontairement écrit en français courant. Il s'applique aux ventes conclues sur ce site avec des consommateurs."
       miseAJour={`[à dater lors de la mise en ligne] · version ${VERSION_CGV}`}

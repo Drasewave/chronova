@@ -8,14 +8,12 @@ import { Section } from "@/components/ui/section";
  * permet pas de savoir quelle version s'applique à une commande donnée.
  */
 export function LegalPage({
-  surtitre,
   titre,
   chapo,
   miseAJour,
   niveau = 1,
   children,
 }: {
-  surtitre: string;
   titre: string;
   chapo?: string;
   miseAJour: string;
@@ -26,11 +24,10 @@ export function LegalPage({
   return (
     <Section fond="papier">
       <header className="measure">
-        <p className="type-mono text-fg-soft">{surtitre}</p>
         {niveau === 1 ? (
-          <h1 className="type-display-2 mt-4">{titre}</h1>
+          <h1 className="type-display-2">{titre}</h1>
         ) : (
-          <h2 className="type-display-2 mt-4">{titre}</h2>
+          <h2 className="type-display-2">{titre}</h2>
         )}
         {chapo && <p className="type-lead mt-6 text-fg-soft">{chapo}</p>}
         <p className="type-mono mt-8 text-fg-soft">Mise à jour · {miseAJour}</p>

@@ -9,7 +9,8 @@ import { prisma } from "@/lib/db";
 import { getCatalogue, getModels } from "@/lib/data/queries";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import { etatPiece } from "@/lib/atelier/stock";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
+import { CODE, Filtre, Filtres, TitrePage } from "@/components/atelier/gabarit";
 
 export const metadata = { title: "Catalogue" };
 export const dynamic = "force-dynamic";
@@ -68,10 +69,10 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
 
   return (
     <div className="mx-auto max-w-[84rem]">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="type-display-2">Catalogue</h1>
-          <p className="type-body mt-2 text-fg-soft">
+          <TitrePage>Catalogue</TitrePage>
+          <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {etapes.length} étapes, {totalOptions} options
             {coupees > 0 ? `, dont ${coupees} coupée(s)` : ""}. Toute modification est visible
             aussitôt sur le site.
@@ -102,22 +103,13 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
         quoi="options du configurateur"
       />
 
-      <nav aria-label="Étapes du configurateur" className="mb-6 flex flex-wrap gap-2">
+      <Filtres label="Étapes du configurateur">
         {etapes.map((etape) => (
-          <Link
-            key={etape.id}
-            href={`/atelier/catalogue?etape=${etape.key}`}
-            aria-current={etape.id === active?.id ? "page" : undefined}
-            className={
-              etape.id === active?.id
-                ? "type-ui flex min-h-11 items-center rounded-field border border-accent bg-accent px-4 text-on-accent"
-                : "type-ui flex min-h-11 items-center rounded-field border border-rule px-4 text-fg hover:border-accent-decor hover:text-accent"
-            }
-          >
+          <Filtre key={etape.id} href={`/atelier/catalogue?etape=${etape.key}`} actif={etape.id === active?.id}>
             {etape.label}
-          </Link>
+          </Filtre>
         ))}
-      </nav>
+      </Filtres>
 
       {active && (
         <div className="flex flex-col gap-4">
@@ -129,7 +121,7 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
                   <Saisie name="label" defaultValue={active.label} />
                 </Champ>
                 <Champ label="Clé" aide="Non modifiable : elle voyage dans les liens partagés." className="w-44">
-                  <Saisie value={active.key} readOnly disabled className="type-mono" />
+                  <Saisie value={active.key} readOnly disabled className={CODE} />
                 </Champ>
               </div>
               <Champ label="Introduction">
@@ -145,8 +137,8 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
               titre={groupe.label}
               aide={groupe.help ?? undefined}
               action={
-                <span className="type-mono text-fg-soft">
-                  {groupe.key} · {groupe.options.length} option(s)
+                <span className="type-caption text-fg-soft">
+                  <span className={CODE}>{groupe.key}</span> · {groupe.options.length} option(s)
                 </span>
               }
             >
@@ -158,7 +150,7 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
                 <Champ label="Aide" className="min-w-[16rem] flex-[2]">
                   <Saisie name="aide" defaultValue={groupe.help ?? ""} />
                 </Champ>
-                <BoutonLeger>Renommer</BoutonLeger>
+                <BoutonLeger className="self-end">Renommer</BoutonLeger>
               </form>
 
               <ul className="flex flex-col gap-8">
@@ -191,16 +183,16 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
                           {option.colorHex && (
                             <span
                               aria-hidden
-                              className="size-6 shrink-0 rounded-pill border border-rule"
+                              className="size-6 shrink-0 rounded-pill border border-field"
                               style={{ background: option.colorHex }}
                             />
                           )}
-                          <span className="type-mono text-fg-soft">
+                          <span className={cn(CODE, "text-fg-soft")}>
                             {groupe.key}:{option.key}
                           </span>
                           <span className="type-ui text-fg">{option.label}</span>
                           {option.priceDeltaCents !== 0 && (
-                            <span className="type-mono text-fg-soft" data-numeric>
+                            <span className="type-caption text-fg-soft" data-numeric>
                               {option.priceDeltaCents > 0 ? "+" : ""}
                               {formatPrice(option.priceDeltaCents)}
                             </span>

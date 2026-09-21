@@ -130,6 +130,13 @@ export const STEPS: Step[] = [
             priceDeltaCents: 0,
             render: { indexStyle: "arabes" },
           },
+          {
+            key: "plongee",
+            label: "Ronds et triangle",
+            description: "Triangle à midi, bâtons aux quarts, ronds ailleurs : le code des montres de plongée.",
+            priceDeltaCents: 2000,
+            render: { indexStyle: "plongee" },
+          },
         ],
       },
       {
@@ -198,6 +205,7 @@ export const STEPS: Step[] = [
           { key: "lisse", label: "Lisse", description: "Fine, sans relief. Elle s'efface.", priceDeltaCents: 0, partRef: "LUN-LIS", render: { bezelStyle: "lisse" } },
           { key: "cannelee", label: "Cannelée", description: "Soixante-douze crans, reflets en étoile.", priceDeltaCents: 6000, partRef: "LUN-CAN", render: { bezelStyle: "cannelee" } },
           { key: "plongee", label: "Plongée, 120 clics", description: "Unidirectionnelle, graduée soixante minutes.", priceDeltaCents: 12000, partRef: "LUN-PLO", render: { bezelStyle: "plongee" } },
+          { key: "gmt", label: "GMT, 24 heures", description: "Bidirectionnelle, graduée vingt-quatre heures : un second fuseau se lit sur la lunette.", priceDeltaCents: 14000, partRef: "LUN-GMT", render: { bezelStyle: "gmt" } },
         ],
       },
       {
@@ -220,6 +228,17 @@ export const STEPS: Step[] = [
           { key: "bleu-nuit", label: "Bleu nuit", colorName: "Bleu nuit", colorHex: "#1B2E42", priceDeltaCents: 0, partRef: "INS-BLE", render: { insertColor: "#1B2E42" } },
           { key: "vert-foret", label: "Vert forêt", colorName: "Vert forêt", colorHex: "#2C3B2C", priceDeltaCents: 0, partRef: "INS-VER", render: { insertColor: "#2C3B2C" } },
           { key: "gris-ardoise", label: "Gris ardoise", colorName: "Gris ardoise", colorHex: "#4A4E52", priceDeltaCents: 0, partRef: "INS-GRI", render: { insertColor: "#4A4E52" } },
+        ],
+      },
+      {
+        key: "insert-bicolore",
+        label: "Demi-lunette de jour",
+        help: "Sur une lunette GMT, la moitié basse (6 h – 18 h) peut prendre une seconde teinte : le jour et la nuit du second fuseau se lisent d'un coup d'œil.",
+        selection: "unique",
+        optional: true,
+        options: [
+          { key: "rouge", label: "Rouge", colorName: "Rouge", colorHex: "#8C1D2B", priceDeltaCents: 4000, render: { insertColor2: "#8C1D2B" } },
+          { key: "bleu-roi", label: "Bleu roi", colorName: "Bleu roi", colorHex: "#1F4E8C", priceDeltaCents: 4000, render: { insertColor2: "#1F4E8C" } },
         ],
       },
     ],
@@ -466,17 +485,29 @@ export const RULES: CompatibilityRule[] = [
     message: "Une lunette de plongée suppose une couronne vissée.",
   },
   {
+    subject: "lunette-style:gmt",
+    kind: "exige-une-de",
+    targets: ["mouvement:nh34"],
+    message: "Une lunette 24 heures n'a de sens qu'avec le calibre GMT NH34.",
+  },
+  {
     subject: "insert-matiere:ceramique",
     kind: "exige-une-de",
-    targets: ["lunette-style:plongee"],
-    message: "Un insert ne se pose que sur une lunette de plongée.",
+    targets: ["lunette-style:plongee", "lunette-style:gmt"],
+    message: "Un insert ne se pose que sur une lunette de plongée ou GMT.",
   },
   {
     subject: "insert-matiere:aluminium",
     kind: "exige-une-de",
-    targets: ["lunette-style:plongee"],
-    message: "Un insert ne se pose que sur une lunette de plongée.",
+    targets: ["lunette-style:plongee", "lunette-style:gmt"],
+    message: "Un insert ne se pose que sur une lunette de plongée ou GMT.",
   },
+  ...["rouge", "bleu-roi"].map((teinte) => ({
+    subject: `insert-bicolore:${teinte}`,
+    kind: "exige-une-de" as const,
+    targets: ["lunette-style:gmt"],
+    message: "L'insert bicolore n'existe que sur la lunette GMT.",
+  })),
   {
     subject: "cadran-finition:emaille",
     kind: "exige-une-de",
@@ -529,8 +560,8 @@ export const RULES: CompatibilityRule[] = [
   ...["noir", "bleu-nuit", "vert-foret", "gris-ardoise"].map((teinte) => ({
     subject: `insert-teinte:${teinte}`,
     kind: "exige-une-de" as const,
-    targets: ["lunette-style:plongee"],
-    message: "Un insert ne se pose que sur une lunette de plongée.",
+    targets: ["lunette-style:plongee", "lunette-style:gmt"],
+    message: "Un insert ne se pose que sur une lunette de plongée ou GMT.",
   })),
   // Les teintes de brin suivent la matière du bracelet.
   ...(
@@ -580,6 +611,7 @@ export const PARTS: Part[] = [
   { ref: "LUN-LIS", name: "Lunette lisse", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 2600, quantityOnHand: 8, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
   { ref: "LUN-CAN", name: "Lunette cannelée", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 3900, quantityOnHand: 5, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
   { ref: "LUN-PLO", name: "Lunette plongée 120 clics", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5200, quantityOnHand: 7, quantityReserved: 2, reorderThreshold: 3, restockDays: 24 },
+  { ref: "LUN-GMT", name: "Lunette GMT 24 heures", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5600, quantityOnHand: 4, quantityReserved: 0, reorderThreshold: 2, restockDays: 24 },
   { ref: "INS-NOI", name: "Insert céramique noir", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3100, quantityOnHand: 9, quantityReserved: 2, reorderThreshold: 3, restockDays: 38 },
   { ref: "INS-BLE", name: "Insert céramique bleu nuit", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3100, quantityOnHand: 6, quantityReserved: 2, reorderThreshold: 3, restockDays: 38 },
   { ref: "INS-VER", name: "Insert céramique vert forêt", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3300, quantityOnHand: 0, quantityReserved: 0, reorderThreshold: 2, restockDays: 38 },

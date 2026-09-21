@@ -18,7 +18,6 @@ export default async function Confidentialite() {
 
   return (
     <LegalPage
-      surtitre="Données personnelles"
       titre="Politique de confidentialité"
       chapo="Quelles données sont collectées, pourquoi, combien de temps elles sont conservées, qui y a accès, et comment en reprendre la main."
       miseAJour="[à dater lors de la mise en ligne]"

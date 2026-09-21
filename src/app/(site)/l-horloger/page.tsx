@@ -40,8 +40,7 @@ export default function Horloger() {
       <Section fond="papier">
         <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <div>
-            <p className="type-mono text-fg-soft">L&apos;atelier</p>
-            <h1 className="type-display-1 mt-6 text-balance">Une paire de mains, un établi.</h1>
+            <h1 className="type-display-1 text-balance">Une paire de mains, un établi.</h1>
             <p className="type-lead measure mt-8 text-fg-soft">
               Chronova n&apos;est pas une marque qui fait assembler ses montres ailleurs. Les pièces
               arrivent à l&apos;atelier, elles y sont contrôlées, montées, réglées, testées, puis
@@ -57,7 +56,7 @@ export default function Horloger() {
       </Section>
 
       <Section fond="alterne">
-        <SectionHeader surtitre="Le parcours" titre="D'où vient l'atelier" />
+        <SectionHeader titre="D'où vient l'atelier" />
         <div className="measure mt-10 flex flex-col gap-6">
           <FillMe>
             parcours de l&apos;horloger : formation, écoles, années de métier, maisons traversées
@@ -74,7 +73,6 @@ export default function Horloger() {
 
       <Section fond="papier">
         <SectionHeader
-          surtitre="Le parti pris"
           titre="Des calibres qu'on peut réparer"
           intro="Le choix des mouvements n'est pas un choix de prix : c'est un choix d'entretien."
         />
@@ -110,7 +108,6 @@ export default function Horloger() {
 
       <Section fond="alterne">
         <SectionHeader
-          surtitre="Sur l'établi"
           titre="Quatre outils qui font le travail"
           intro="Rien d'exceptionnel : ce sont les outils de n'importe quel horloger. Ce qui change, c'est le temps qu'on passe dessus."
         />
@@ -134,10 +131,10 @@ export default function Horloger() {
       <Section fond="nuit">
         <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="type-display-2 max-w-[18ch] text-onyx-ink">
+            <h2 className="type-display-2 max-w-[18ch] text-fg">
               Une question avant de vous lancer ?
             </h2>
-            <p className="type-lead measure mt-6 text-onyx-soft">
+            <p className="type-lead measure mt-6 text-fg-soft">
               Le plus simple est d&apos;écrire. Je réponds moi-même, et il n&apos;y a pas de
               mauvaise question sur une montre qu&apos;on va porter dix ans.
             </p>

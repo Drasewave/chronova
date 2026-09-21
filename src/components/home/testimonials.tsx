@@ -10,7 +10,7 @@ export function Testimonials() {
   if (AVIS_PUBLIES.length === 0) {
     return (
       <Section fond="papier" compact id="avis">
-        <div className="border border-dashed border-rule p-8 text-center md:p-12">
+        <div className="rounded-card border border-dashed border-field/60 p-8 text-center md:p-12">
           <p className="type-mono text-fg-soft">Avis à venir</p>
           <p className="type-body measure mx-auto mt-4 text-fg-soft">
             Aucun avis n&apos;est affiché tant qu&apos;aucun client n&apos;en a écrit. Les
@@ -24,11 +24,11 @@ export function Testimonials() {
 
   return (
     <Section fond="papier" id="avis">
-      <SectionHeader surtitre="Après réception" titre="Ce qu'en disent les clients" />
-      <ul className="mt-14 grid gap-px bg-rule md:grid-cols-3">
+      <SectionHeader titre="Ce qu'en disent les clients" />
+      <ul className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
         {AVIS_PUBLIES.map((avis) => (
-          <li key={avis.auteur} className="bg-bg p-7">
-            <blockquote className="type-body text-fg">{avis.texte}</blockquote>
+          <li key={avis.auteur} className="border-t border-gold pt-6">
+            <blockquote className="type-body-lg text-fg">{avis.texte}</blockquote>
             <p className="type-mono mt-5 text-fg-soft">
               {avis.auteur}
               {avis.ville ? ` · ${avis.ville}` : ""}

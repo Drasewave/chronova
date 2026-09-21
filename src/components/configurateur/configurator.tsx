@@ -121,10 +121,10 @@ export function Configurator({
         </ol>
       </nav>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-12">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,30rem)] lg:gap-14">
         {/* Scène : collée en haut sur mobile, colonne fixe en grand écran. */}
         <div className="sticky top-16 z-20 -mx-[var(--gutter)] border-b border-rule bg-bg px-[var(--gutter)] pb-4 pt-2 md:top-20 lg:top-24 lg:z-0 lg:mx-0 lg:self-start lg:border-0 lg:px-0">
-          <WatchStage render={configuration.render} label={label} className="mx-auto w-[min(100%,25rem)]" />
+          <WatchStage render={configuration.render} label={label} className="mx-auto w-[min(100%,25rem)] lg:w-[min(100%,36rem)]" />
 
           <div className="mt-5 hidden lg:block">
             <Resume configuration={configuration} model={model} onAjouter={() => ajouterAuPanier()} />

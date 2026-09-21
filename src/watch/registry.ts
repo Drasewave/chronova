@@ -28,6 +28,7 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
     { key: "lisse", label: "Lisse" },
     { key: "cannelee", label: "Cannelée" },
     { key: "plongee", label: "Plongée, 120 clics" },
+    { key: "gmt", label: "GMT, 24 heures" },
   ],
   insert: [
     { key: "ceramique", label: "Céramique" },
@@ -42,6 +43,7 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
   index: [
     { key: "batons", label: "Index bâtons" },
     { key: "arabes", label: "Chiffres arabes" },
+    { key: "plongee", label: "Ronds et triangle, plongée" },
   ],
   signature: [],
   "guichet-date": [],

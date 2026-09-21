@@ -38,8 +38,7 @@ export default function EntretienGarantie() {
     <>
       <Section fond="papier" compact>
         <header className="measure">
-          <p className="type-mono text-fg-soft">Après l&apos;achat</p>
-          <h1 className="type-display-2 mt-4">Entretien &amp; garantie</h1>
+          <h1 className="type-display-2">Entretien &amp; garantie</h1>
           <p className="type-lead mt-6 text-fg-soft">
             Une montre mécanique est un objet qui s&apos;entretient. Bien traitée, elle passera
             plusieurs générations ; négligée, elle s&apos;arrête au bout de quelques années. Voici
@@ -49,7 +48,7 @@ export default function EntretienGarantie() {
       </Section>
 
       <Section fond="alterne">
-        <SectionHeader surtitre="Au quotidien" titre="Trois gestes qui changent tout" />
+        <SectionHeader titre="Trois gestes qui changent tout" />
         <div className="mt-12 grid gap-px bg-rule lg:grid-cols-3">
           {GESTES.map((geste) => (
             <div key={geste.titre} className="bg-bg-alt p-7">
@@ -63,7 +62,6 @@ export default function EntretienGarantie() {
 
       <LegalPage
         niveau={2}
-        surtitre="Garantie"
         titre="Ce que couvre la garantie"
         miseAJour="[à dater lors de la mise en ligne]"
       >
@@ -114,7 +112,7 @@ export default function EntretienGarantie() {
 
       <Section fond="nuit" compact>
         <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <p className="type-lead measure text-onyx-soft">
+          <p className="type-lead measure text-fg-soft">
             Une montre qui prend ou perd quelques secondes par jour est normale. Une montre qui
             s&apos;arrête, non.
           </p>

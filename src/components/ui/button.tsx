@@ -6,17 +6,17 @@ type Variant = "primaire" | "contour" | "discret";
 type Size = "md" | "sm";
 
 const BASE =
-  "type-ui inline-flex items-center justify-center gap-2.5 rounded-field transition-[background-color,color,border-color,transform] duration-200 ease-atelier active:translate-y-px disabled:pointer-events-none disabled:opacity-45";
+  "type-ui inline-flex items-center justify-center gap-2.5 rounded-pill transition-[background-color,color,border-color,transform] duration-200 ease-atelier active:translate-y-px disabled:pointer-events-none disabled:opacity-45";
 
 const VARIANTS: Record<Variant, string> = {
   primaire: "bg-accent text-on-accent hover:bg-accent-hover",
-  contour: "border border-accent text-accent hover:bg-accent hover:text-on-accent",
-  discret: "text-fg link-underline hover:text-accent",
+  contour: "border border-fg/70 text-fg hover:border-accent hover:bg-accent hover:text-on-accent",
+  discret: "text-fg underline decoration-gold decoration-1 underline-offset-[6px] hover:text-gold",
 };
 
 const SIZES: Record<Size, string> = {
-  md: "min-h-11 px-6 py-3",
-  sm: "min-h-9 px-4 py-2",
+  md: "min-h-12 px-7 py-3",
+  sm: "min-h-10 px-5 py-2",
 };
 
 /** Le variant `discret` n'a pas de boîte : il ne prend pas les paddings. */

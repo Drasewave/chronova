@@ -23,7 +23,6 @@ export default async function ChoixDuModele() {
   return (
     <Section fond="papier">
       <SectionHeader
-        surtitre="Étape zéro"
         titre="Par quelle base commencer ?"
         intro="Le modèle fixe le boîtier, le diamètre et l'étanchéité — tout ce qui ne se change plus ensuite. Le reste se compose à l'étape suivante, et rien n'est définitif tant que la commande n'est pas passée."
       />

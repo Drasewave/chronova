@@ -18,7 +18,7 @@ export function BasculeTheme({
   onChange: (theme: ThemeAtelier) => void;
 }) {
   return (
-    <div className="flex items-center gap-1" role="group" aria-label="Thème de l'interface">
+    <div className="flex items-center gap-1 rounded-pill border border-rule p-1" role="group" aria-label="Thème de l'interface">
       {(
         [
           ["light", "Clair"],
@@ -31,8 +31,8 @@ export function BasculeTheme({
           onClick={() => onChange(valeur)}
           aria-pressed={theme === valeur}
           className={cn(
-            "type-mono min-h-9 rounded-field px-3 transition-colors duration-200",
-            theme === valeur ? "bg-accent text-on-accent" : "text-fg-soft hover:text-accent",
+            "type-caption min-h-11 flex-1 rounded-pill px-4 font-medium transition-colors duration-200",
+            theme === valeur ? "bg-accent text-on-accent" : "text-fg-soft hover:text-fg",
           )}
         >
           {label}

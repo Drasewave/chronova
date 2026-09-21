@@ -16,6 +16,10 @@ export function Header() {
   const chemin = usePathname();
   const panier = useCart();
 
+  // Sur l'accueil, l'en-tête flotte sur la scène nuit du héros tant que la page
+  // n'a pas défilé : il en prend le thème, sans fond.
+  const surScene = chemin === "/" && !defile && !ouvert;
+
   useEffect(() => setOuvert(false), [chemin]);
 
   useEffect(() => {
@@ -37,11 +41,16 @@ export function Header() {
       // L'en-tête ne bouge pas pendant une transition de page : c'est le seul
       // point fixe qui dit au lecteur que le contenu a changé, pas l'écran.
       style={{ viewTransitionName: "entete-site" }}
+      data-theme={surScene ? "night" : undefined}
       className={cn(
-        "sticky top-0 z-40 transition-[border-color,background-color] duration-300",
+        "sticky top-0 z-40 text-fg transition-[border-color,background-color,color] duration-500 ease-atelier",
         // Le voile ne vaut que menu fermé : ouvert, le panneau mobile doit
         // reposer sur un fond plein.
-        defile && !ouvert ? "entete-voile border-b border-rule" : "border-b border-transparent bg-bg",
+        surScene
+          ? "border-b border-transparent bg-transparent"
+          : defile && !ouvert
+            ? "entete-voile border-b border-rule"
+            : "border-b border-transparent bg-bg",
       )}
     >
       <div
@@ -51,7 +60,7 @@ export function Header() {
         <Wordmark />
 
         <nav aria-label="Navigation principale" className="hidden lg:block">
-          <ul className="flex items-center gap-8">
+          <ul className="flex items-center gap-10">
             {NAV_PRINCIPALE.map((lien) => (
               <li key={lien.href}>
                 <Link
@@ -59,7 +68,7 @@ export function Header() {
                   aria-current={chemin.startsWith(lien.href) ? "page" : undefined}
                   className={cn(
                     "type-ui link-underline py-2 transition-colors duration-200",
-                    chemin.startsWith(lien.href) ? "text-accent" : "text-fg hover:text-accent",
+                    chemin.startsWith(lien.href) ? "text-gold" : "text-fg hover:text-gold",
                   )}
                 >
                   {lien.label}
@@ -72,7 +81,7 @@ export function Header() {
         <div className="flex items-center gap-1 md:gap-2">
           <Link
             href="/compte"
-            className="inline-flex size-11 items-center justify-center text-fg transition-colors duration-200 hover:text-accent"
+            className="inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-200 hover:text-gold"
             aria-label="Mon compte"
           >
             <IconCompte />
@@ -80,7 +89,7 @@ export function Header() {
           <button
             type="button"
             onClick={panier.open}
-            className="relative inline-flex size-11 items-center justify-center text-fg transition-colors duration-200 hover:text-accent"
+            className="relative inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-200 hover:text-gold"
             aria-label={
               panier.count === 0
                 ? "Panier, vide"

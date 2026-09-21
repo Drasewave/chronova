@@ -1,10 +1,12 @@
 import { enregistrerGabarit, enregistrerParametres } from "@/app/actions/atelier-relation";
-import { Bouton, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
+import { Bouton, CASE, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
 import { CLE_IDENTITE, IDENTITE_VIDE } from "@/lib/content/legal";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/commandes/etapes";
+import { BLOC, CODE, TitrePage } from "@/components/atelier/gabarit";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Paramètres" };
 export const dynamic = "force-dynamic";
@@ -50,9 +52,9 @@ export default async function Parametres() {
 
   return (
     <div className="mx-auto max-w-[76rem]">
-      <header className="mb-8">
-        <h1 className="type-display-2">Paramètres</h1>
-        <p className="type-body mt-2 text-fg-soft">
+      <header className="mb-6">
+        <TitrePage>Paramètres</TitrePage>
+        <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
           Délais, frais de port, informations légales et e-mails automatiques. Rien ici n&apos;a été
           inventé : ce qui manque est signalé.
         </p>
@@ -135,7 +137,7 @@ export default async function Parametres() {
           <p className="type-caption mb-6 text-fg-soft">
             Variables disponibles :{" "}
             {VARIABLES.map((variable) => (
-              <span key={variable} className="type-mono mr-2 text-fg">
+              <span key={variable} className={cn(CODE, BLOC, "mb-1 mr-2 inline-block px-1.5 py-0.5 text-fg")}>
                 {variable}
               </span>
             ))}
@@ -148,7 +150,7 @@ export default async function Parametres() {
                   <input type="hidden" name="gabarit" value={gabarit.key} />
 
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
-                    <span className="type-mono text-fg-soft">{gabarit.key}</span>
+                    <span className={cn(CODE, "text-fg-soft")}>{gabarit.key}</span>
                     <span className="type-caption text-fg-soft">
                       modifié le {formatDate(gabarit.updatedAt)}
                     </span>
@@ -166,7 +168,7 @@ export default async function Parametres() {
                       type="checkbox"
                       name="actif"
                       defaultChecked={gabarit.isActive}
-                      className="size-6 accent-[var(--accent)]"
+                      className={CASE}
                     />
                     <span className="type-ui text-fg">Envoyer cet e-mail</span>
                   </label>

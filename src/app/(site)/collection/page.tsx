@@ -35,7 +35,6 @@ export default async function Collection() {
     <Section fond="papier">
       <SectionHeader
         niveau={1}
-        surtitre="Quatre bases"
         titre="La collection"
         intro="Le modèle décide du boîtier, du diamètre et de l'étanchéité. Cadran, aiguilles, lunette, couronne, bracelet, verre, mouvement et fond se composent ensuite — c'est là que deux Chronova cessent de se ressembler."
       />

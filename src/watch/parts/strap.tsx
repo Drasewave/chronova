@@ -1,6 +1,6 @@
 import type { MetalTone, StrapKind } from "../types";
 import { Fragment } from "react";
-import { METALS, shade, tint } from "../palette";
+import { INK, METALS, PAPER, shade, tint } from "../palette";
 import { C, R_LUG_TIP as LUG_TIP, n } from "../geometry";
 
 /**
@@ -24,8 +24,6 @@ const D_LOOP = 366;
 /** La pièce de bout affleure la pointe des cornes. */
 const D_END_LINK = LUG_TIP + 8;
 
-const INK = "#211E1B";
-const PAPER = "#F5F0E8";
 
 interface StrapProps {
   uid: string;
@@ -174,10 +172,11 @@ function StrapDefs({ uid, kind, metal, detail, frame }: StrapProps) {
 
       {/* Maillon bombé, éclairé par le haut de l'image sur les deux brins. */}
       <linearGradient id={`${uid}-link-round`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor={PAPER} stopOpacity="0.5" />
-        <stop offset="0.22" stopColor={PAPER} stopOpacity="0.06" />
-        <stop offset="0.68" stopColor={INK} stopOpacity="0.04" />
-        <stop offset="1" stopColor={INK} stopOpacity="0.46" />
+        <stop offset="0" stopColor={INK} stopOpacity="0.28" />
+        <stop offset="0.1" stopColor={PAPER} stopOpacity="0.75" />
+        <stop offset="0.3" stopColor={PAPER} stopOpacity="0.08" />
+        <stop offset="0.7" stopColor={INK} stopOpacity="0.06" />
+        <stop offset="1" stopColor={INK} stopOpacity="0.58" />
       </linearGradient>
       {/* Maillon poli : le même galbe, avec un reflet franc. */}
       <linearGradient id={`${uid}-link-polished`} x1="0" y1="0" x2="0" y2="1">

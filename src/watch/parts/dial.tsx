@@ -1,4 +1,5 @@
-import { isLight, shade, tint } from "../palette";
+import { INK, isLight, shade, tint } from "../palette";
+import { Ring } from "./conic";
 import { C, R_DIAL, R_MINUTE_TRACK, n, polar } from "../geometry";
 import type { DialTexture, Movement } from "../types";
 
@@ -22,14 +23,34 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
       <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial)`} />
 
       <g clipPath={`url(#${uid}-dial-clip)`}>
-        {texture === "soleille" && <Sunburst color={color} detail={detail} />}
-        {texture === "emaille" && <Enamel color={color} />}
+        {texture === "soleille" && (
+          <>
+            <use href={`#${uid}-conic-dial`} />
+            {/* La tombée de lumière du studio reste lisible sous le soleillage. */}
+            <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial)`} opacity="0.18" />
+          </>
+        )}
+        {texture === "emaille" && (
+          <ellipse
+            cx={C - 84}
+            cy={C - 104}
+            rx="250"
+            ry="180"
+            fill={`url(#${uid}-gloss)`}
+            opacity="0.6"
+            transform={`rotate(-24 ${C - 84} ${C - 104})`}
+          />
+        )}
       </g>
 
       <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial-vignette)`} />
+      <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-rehaut-cast)`} />
 
-      {/* Rehaut : l'arête où le cadran plonge sous l'ouverture de la lunette. */}
-      <circle cx={C} cy={C} r={R_DIAL - 3} fill="none" stroke={shade(color, 0.5)} strokeOpacity="0.35" strokeWidth="2" />
+      {/* Réhaut : la bague polie, en pente, entre le cadran et le verre. Tournée
+          vers le centre, elle renvoie le côté opposé du studio, assombri. */}
+      <Ring id={`${uid}-clip-rehaut`} disk={`${uid}-conic-poli`} rOut={R_DIAL} rIn={R_DIAL - 10} rotate={180} />
+      <circle cx={C} cy={C} r={R_DIAL - 5} fill="none" stroke={INK} strokeOpacity="0.4" strokeWidth="10" />
+      <circle cx={C} cy={C} r={R_DIAL - 10} fill="none" stroke={INK} strokeOpacity="0.55" strokeWidth="1.2" />
 
       <MinuteTrack color={printed} detail={detail} />
       {movement === "NH34" && <GmtRing color={printed} detail={detail} />}
@@ -37,18 +58,17 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
       {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} printed={printed} />}
       {hasDate && (
         <g filter={`url(#${uid}-contact-shadow)`}>
-          <DateWindow color={color} printed={printed} />
+          <DateWindow uid={uid} color={color} />
         </g>
       )}
 
-      {/* Signature. Le nom en serif, la ligne technique en monospace : la même
-          hiérarchie que sur le site. */}
+      {/* Signature : le nom, puis la ligne technique, comme une tampographie. */}
       <text
         x={C}
         y={C - 128}
         textAnchor="middle"
         fill={printed}
-        style={{ fontFamily: "var(--font-title)", fontSize: 34, letterSpacing: "0.2em" }}
+        style={{ fontFamily: "var(--font-title)", fontSize: 33, fontWeight: 500, letterSpacing: "0.24em" }}
       >
         CHRONOVA
       </text>
@@ -58,9 +78,9 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
         textAnchor="middle"
         fill={printed}
         fillOpacity="0.82"
-        style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.24em" }}
+        style={{ fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 500, letterSpacing: "0.3em" }}
       >
-        AUTOMATIQUE
+        {movement === "VK64" ? "CHRONOGRAPHE" : "AUTOMATIQUE"}
       </text>
       <text
         x={C}
@@ -68,48 +88,11 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
         textAnchor="middle"
         fill={printed}
         fillOpacity="0.6"
-        style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.22em" }}
+        style={{ fontFamily: "var(--font-ui)", fontSize: 13, letterSpacing: "0.3em" }}
       >
         {movement}
       </text>
     </g>
-  );
-}
-
-/** Soleillé : des rayons très fins depuis le centre, jamais un dégradé lisse. */
-function Sunburst({ color, detail }: { color: string; detail: "full" | "compact" }) {
-  const rays = detail === "full" ? 90 : 36;
-  const step = 360 / rays;
-  return (
-    <g opacity="0.5">
-      {Array.from({ length: rays }, (_, i) => {
-        const a = polar(R_DIAL + 10, step * i);
-        const b = polar(R_DIAL + 10, step * i + step * 0.5);
-        return (
-          <path
-            key={i}
-            d={`M ${C} ${C} L ${n(a.x)} ${n(a.y)} L ${n(b.x)} ${n(b.y)} Z`}
-            fill={i % 2 === 0 ? tint(color, 0.3) : shade(color, 0.2)}
-            opacity="0.55"
-          />
-        );
-      })}
-    </g>
-  );
-}
-
-/** Émail : une nappe de lumière large et douce, en haut à gauche. */
-function Enamel({ color }: { color: string }) {
-  return (
-    <ellipse
-      cx={C - 74}
-      cy={C - 96}
-      rx="230"
-      ry="176"
-      fill={tint(color, 0.5)}
-      opacity="0.34"
-      transform={`rotate(-22 ${C - 74} ${C - 96})`}
-    />
   );
 }
 
@@ -180,7 +163,7 @@ function GmtRing({ color, detail }: { color: string; detail: "full" | "compact" 
               textAnchor="middle"
               fill={color}
               fillOpacity="0.8"
-              style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.04em" }}
+              style={{ fontFamily: "var(--font-ui)", fontWeight: 500, fontSize: 16, letterSpacing: "0.04em" }}
             >
               {label}
             </text>
@@ -276,7 +259,7 @@ function ChronoSubdials({ color, printed }: { color: string; printed: string }) 
         transform={`rotate(${angleDeg})`}
       />
       <circle r="4" fill={ink} />
-      <text y={radius + 26} textAnchor="middle" fill={ink} fillOpacity="0.7" style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.06em" }}>
+      <text y={radius + 26} textAnchor="middle" fill={ink} fillOpacity="0.7" style={{ fontFamily: "var(--font-ui)", fontWeight: 500, fontSize: 13, letterSpacing: "0.06em" }}>
         {label}
       </text>
     </g>
@@ -290,30 +273,23 @@ function ChronoSubdials({ color, printed }: { color: string; printed: string }) 
   );
 }
 
-function DateWindow({ color, printed }: { color: string; printed: string }) {
-  const x = C + 166;
-  const y = C - 23;
+function DateWindow({ uid, color }: { uid: string; color: string }) {
+  const x = C + 164;
+  const y = C - 25;
   const light = isLight(color);
   return (
     <g data-layer="guichet-date">
-      <rect x={x} y={y} width="64" height="46" rx="2" fill={light ? "#FBF8F3" : "#2A2622"} />
-      <rect
-        x={x}
-        y={y}
-        width="64"
-        height="46"
-        rx="2"
-        fill="none"
-        stroke={printed}
-        strokeOpacity="0.55"
-        strokeWidth="2.5"
-      />
+      {/* Cadre appliqué, poli, puis le disque de quantième en retrait. */}
+      <rect x={x} y={y} width="68" height="50" rx="3" fill={`url(#${uid}-case)`} stroke={INK} strokeOpacity="0.6" strokeWidth="0.9" />
+      <rect x={x + 5} y={y + 5} width="58" height="40" rx="1.5" fill={light ? "#F7F5EF" : "#15171A"} />
+      {/* Le cadre porte son ombre sur le disque, du côté de la lumière. */}
+      <path d={`M ${x + 5} ${y + 45} L ${x + 5} ${y + 5} L ${x + 63} ${y + 5}`} fill="none" stroke={INK} strokeOpacity={light ? 0.3 : 0.7} strokeWidth="3" />
       <text
-        x={x + 32}
-        y={y + 33}
+        x={x + 34}
+        y={y + 36}
         textAnchor="middle"
-        fill={light ? "#34302A" : "#E9E2D6"}
-        style={{ fontFamily: "var(--font-ui)", fontSize: 30, fontWeight: 500 }}
+        fill={light ? "#15171A" : "#F1F2F4"}
+        style={{ fontFamily: "var(--font-ui)", fontSize: 30, fontWeight: 600 }}
       >
         11
       </text>

@@ -19,8 +19,7 @@ export function Watchmaker() {
         </Reveal>
 
         <Reveal delay={60}>
-          <p className="type-mono text-fg-soft">L&apos;horloger</p>
-          <h2 className="type-display-2 mt-3 max-w-[20ch]">Une paire de mains, un établi.</h2>
+          <h2 className="type-display-2 max-w-[20ch]">Une paire de mains, un établi.</h2>
 
           <div className="measure mt-8 flex flex-col gap-5">
             <FillMe>
@@ -38,7 +37,7 @@ export function Watchmaker() {
             </p>
           </div>
 
-          <dl className="mt-10 grid gap-px border border-rule bg-rule sm:grid-cols-3">
+          <dl className="mt-12 grid gap-y-8 border-t border-rule pt-8 sm:grid-cols-3 sm:gap-x-8">
             <Chiffre terme="Assemblage" valeur="À la main" detail="Pièce par pièce, à l'unité" />
             <Chiffre terme="Contrôle" valeur="72 h" detail="Marche mesurée en s/jour" />
             <Chiffre terme="Étanchéité" valeur="Testée" detail="Sous pression, avant envoi" />
@@ -55,10 +54,10 @@ export function Watchmaker() {
 
 function Chiffre({ terme, valeur, detail }: { terme: string; valeur: string; detail: string }) {
   return (
-    <div className="bg-bg-alt p-5">
+    <div>
       <dt className="type-mono text-fg-soft">{terme}</dt>
       <dd className="mt-3">
-        <span className="type-title-2 block text-fg">{valeur}</span>
+        <span className="type-title-1 block text-fg">{valeur}</span>
         <span className="type-caption mt-1 block text-fg-soft">{detail}</span>
       </dd>
     </div>
