@@ -125,7 +125,7 @@ export function CollectionBrowser({
           <button
             type="button"
             onClick={() => setFiltres({ style: TOUS, taille: TOUS, mouvement: TOUS, prix: TOUS })}
-            className="link-underline text-accent"
+            className="link-underline text-gold"
           >
             Tout afficher
           </button>
@@ -134,8 +134,8 @@ export function CollectionBrowser({
 
       {visibles.length === 0 ? (
         <p className="type-body measure mt-12 text-fg-soft">
-          Aucun modèle ne réunit ces critères. La collection compte quatre bases ; l&apos;essentiel
-          des variations se joue ensuite dans le configurateur.
+          Aucun modèle ne réunit ces critères. Élargissez un filtre : vous choisissez la plupart
+          des variantes ensuite, dans le configurateur.
         </p>
       ) : (
         <div className="mt-12 grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
@@ -195,7 +195,7 @@ function Puce({
       className={cn(
         "type-ui min-h-11 rounded-pill border px-5 transition-colors duration-200 ease-atelier",
         actif
-          ? "border-accent bg-accent text-on-accent"
+          ? "border-gold bg-accent text-on-accent"
           : "border-rule bg-panel text-fg hover:border-fg",
       )}
     >

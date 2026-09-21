@@ -103,7 +103,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     styleLabel: "Pilote",
     tagline: "Chiffres arabes, cadran mat, cuir fauve.",
     summary:
-      "Une montre de terrain lisible dans toutes les lumières : chiffres arabes pleins, cadran mat sans reflet, aiguilles crayon largement luminescentes. Boîtier microbillé pour ne pas accrocher le soleil.",
+      "Une montre de terrain lisible en plein soleil comme dans la pénombre : chiffres arabes pleins, cadran mat sans reflet, aiguilles crayon à large surface luminescente. Le boîtier est microbillé pour ne pas accrocher le soleil.",
     diameterMm: 38,
     availableSizes: ["38", "39"],
     lugToLugMm: 45.2,
@@ -181,7 +181,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     styleLabel: "Habillée",
     tagline: "Cadran émail crème, sans date, cuir chocolat.",
     summary:
-      "Le cadran est volontairement nu : pas de guichet, pas de texte superflu, des index appliqués et une minuterie fine. Le boîtier poli reste sous la manchette.",
+      "Le cadran reste nu : aucun guichet de date, peu de texte, des index appliqués et une minuterie fine. Le boîtier poli passe sous une manchette de chemise.",
     diameterMm: 37,
     availableSizes: ["37", "38"],
     lugToLugMm: 43.8,
@@ -260,7 +260,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     styleLabel: "Pilote",
     tagline: "Chiffres arabes, cadran noir mat, NATO marine.",
     summary:
-      "La version d'entrée de la ligne terrain : mêmes chiffres pleins et mêmes aiguilles crayon largement luminescentes que la Sentier, sur un boîtier légèrement plus compact et une sangle NATO qui passe sous le boîtier.",
+      "La version d'entrée de la ligne terrain : mêmes chiffres pleins et mêmes aiguilles crayon à large surface luminescente que la Sentier, sur un boîtier un peu plus compact, avec une sangle NATO qui passe sous le boîtier.",
     diameterMm: 39,
     availableSizes: ["38", "39"],
     lugToLugMm: 45.8,
@@ -296,7 +296,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     styleLabel: "Plongée",
     tagline: "Insert céramique vert forêt, boîtier compact, 200 mètres.",
     summary:
-      "Le même cahier des charges que l'Abysse dans un boîtier plus discret : lunette unidirectionnelle 120 clics, insert céramique, bracelet caoutchouc vulcanisé. Pensée pour les petits poignets qui veulent une vraie montre de plongée.",
+      "Le même cahier des charges que l'Abysse dans un boîtier plus discret : lunette unidirectionnelle 120 clics, insert céramique, bracelet caoutchouc vulcanisé. Je l'ai conçue pour les petits poignets, avec le même équipement de plongée.",
     diameterMm: 39,
     availableSizes: ["39"],
     lugToLugMm: 46.0,

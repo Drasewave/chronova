@@ -4,9 +4,11 @@
 @custom-variant night (&:where([data-theme="night"], [data-theme="night"] *));
 
 /* ─────────────────────────── Palette de marque ───────────────────────────
-   « Vitrine » : le standard des grandes maisons, joué sans détour. Un papier
-   neutre et clair où la montre est photographiée ; une nuit bleu-noir pour les
-   scènes où l'acier doit briller ; un or champagne, rare, pour ce qui compte.
+   « Vitrine » : le standard des grandes maisons, joué sans détour. Deux
+   familles seulement, partout : l'encre (du papier clair à la nuit bleu-noir,
+   une seule teinte à 212°) et l'or. L'or est l'unique accent du site — boutons,
+   liens, repères — sur papier comme sur nuit ; seule sa clarté change pour
+   garder le contraste.
    Valeurs brutes. Les composants ne les utilisent JAMAIS directement :
    ils passent par les tokens sémantiques plus bas, qui basculent avec le thème.
    Contrastes vérifiés par `src/design/tokens.test.ts`. */
@@ -17,9 +19,10 @@
   --color-encre: #111417;
   --color-encre-douce: #555b63;
   --color-filet: #dadad6;
-  --color-marine: #14263a;
-  --color-marine-vive: #1f3b5a;
-  --color-or: #7d5e27;
+  /* L'or, du plus profond (texte sur papier) au plus pâle (survol sur nuit). */
+  --color-or-profond: #7d5e27;
+  --color-or: #a47f32;
+  --color-or-vif: #9a762c;
   --color-or-clair: #d9bc7a;
   --color-or-pale: #ead7a6;
   --color-sapin: #1e6b4c;
@@ -27,6 +30,8 @@
   --color-grenat: #a12a3c;
   --color-grenat-clair: #f09aaa;
   --color-nuit: #0b1118;
+  --color-nuit-profonde: #070b10;
+  --color-nuit-scene: #223246;
   --color-nuit-alt: #111923;
   --color-nuit-panneau: #16202c;
   --color-nuit-encre: #eef0f2;
@@ -67,19 +72,21 @@
   /* Contour des champs de saisie : 3:1 au moins sur tous les fonds (WCAG
      1.4.11). Le filet `--rule` reste réservé aux séparateurs décoratifs. */
   --field: #767c84;
-  --accent: var(--color-marine);
-  --accent-hover: var(--color-marine-vive);
+  /* `--accent` est un APLAT (bouton, puce active, barre de graphique) : l'or,
+     avec un texte nuit dessus. `--gold` est l'or qui s'écrit : liens, survols,
+     repères, filets — plus profond sur papier pour tenir 4,5:1. */
+  --accent: var(--color-or);
+  --accent-hover: var(--color-or-vif);
   --accent-decor: var(--color-or-clair);
-  --on-accent: var(--color-panneau);
-  /* L'or : ce qui est précieux sur la page — prix, mention d'atelier, filet. */
-  --gold: var(--color-or);
+  --on-accent: var(--color-nuit);
+  --gold: var(--color-or-profond);
   --positive: var(--color-sapin);
   --alert: var(--color-grenat);
-  --focus: var(--color-marine);
+  --focus: var(--color-encre);
 
   /* La scène d'une montre : le dégradé d'un fond de studio. */
-  --stage-in: #ffffff;
-  --stage-out: #e3e4e6;
+  --stage-in: var(--color-panneau);
+  --stage-out: #e2e3e5;
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --d-fast: 200ms;
@@ -93,7 +100,7 @@
   --measure: 68ch;
 }
 
-/* Sur la nuit, la marine disparaît : c'est l'or clair qui porte l'accent. */
+/* Sur la nuit, le même or, éclairci : l'aplat comme le texte passent à l'or clair. */
 [data-theme="night"] {
   color-scheme: dark;
 
@@ -113,8 +120,8 @@
   --alert: var(--color-grenat-clair);
   --focus: var(--color-or-clair);
 
-  --stage-in: #223246;
-  --stage-out: #0b1118;
+  --stage-in: var(--color-nuit-scene);
+  --stage-out: var(--color-nuit);
 }
 
 /* `inline` : les utilitaires générés pointent sur la variable, pas sur sa
@@ -446,16 +453,16 @@
   .scene-nuit {
     background-color: var(--color-nuit);
     background-image:
-      radial-gradient(ellipse 46% 58% at 70% 46%, rgb(60 88 122 / 0.5) 0%, transparent 70%),
-      radial-gradient(ellipse 90% 60% at 50% 118%, rgb(217 188 122 / 0.1) 0%, transparent 60%),
-      linear-gradient(180deg, #080d13 0%, #0b1118 46%, #0e1620 100%);
+      radial-gradient(ellipse 46% 58% at 70% 46%, color-mix(in srgb, var(--color-nuit-scene) 85%, transparent) 0%, transparent 70%),
+      radial-gradient(ellipse 90% 60% at 50% 118%, color-mix(in srgb, var(--color-or-clair) 10%, transparent) 0%, transparent 60%),
+      linear-gradient(180deg, var(--color-nuit-profonde) 0%, var(--color-nuit) 46%, var(--color-nuit-alt) 100%);
   }
 
   @media (max-width: 1023px) {
     .scene-nuit {
       background-image:
-        radial-gradient(ellipse 90% 40% at 50% 50%, rgb(60 88 122 / 0.5) 0%, transparent 70%),
-        linear-gradient(180deg, #080d13 0%, #0b1118 46%, #0e1620 100%);
+        radial-gradient(ellipse 90% 40% at 50% 50%, color-mix(in srgb, var(--color-nuit-scene) 85%, transparent) 0%, transparent 70%),
+        linear-gradient(180deg, var(--color-nuit-profonde) 0%, var(--color-nuit) 46%, var(--color-nuit-alt) 100%);
     }
   }
 

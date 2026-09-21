@@ -15,8 +15,8 @@ export function ModelsSection({
   return (
     <Section fond="papier" id="modeles">
       <SectionHeader
-        titre="Quatre boîtiers, quatre caractères"
-        intro="Chaque modèle fixe le boîtier, le diamètre et l'étanchéité. Tout le reste — cadran, aiguilles, lunette, couronne, bracelet, verre, fond — se compose ensuite."
+        titre="Les modèles de départ"
+        intro="Chaque modèle fixe le boîtier, le diamètre et l'étanchéité. Vous composez ensuite le reste : cadran, aiguilles, lunette, couronne, bracelet, verre et fond."
         action={
           <ButtonLink href="/collection" variant="contour">
             Toute la collection

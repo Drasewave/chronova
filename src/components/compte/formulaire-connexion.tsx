@@ -60,7 +60,7 @@ export function FormulaireConnexion({ suite }: { suite: string }) {
           />
           <label htmlFor={`${id}-cgu`} className="type-caption text-fg">
             J&apos;ai lu et j&apos;accepte les{" "}
-            <Link href="/cgu" target="_blank" className="link-underline text-accent">
+            <Link href="/cgu" target="_blank" className="link-underline text-gold">
               conditions générales d&apos;utilisation
               <span className="sr-only"> (nouvel onglet)</span>
             </Link>{" "}

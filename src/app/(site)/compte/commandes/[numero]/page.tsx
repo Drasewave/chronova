@@ -52,7 +52,7 @@ export default async function Commande(props: PageProps<"/compte/commandes/[nume
       <nav aria-label="Fil d'Ariane">
         <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
           <li>
-            <Link href="/compte/commandes" className="link-underline hover:text-accent">
+            <Link href="/compte/commandes" className="link-underline hover:text-gold">
               Mes commandes
             </Link>
           </li>
@@ -145,7 +145,7 @@ export default async function Commande(props: PageProps<"/compte/commandes/[nume
                     commande.qc.waterTestPassed === null
                       ? "En attente"
                       : commande.qc.waterTestPassed
-                        ? `Testée à ${commande.qc.waterTestBar ?? "—"} bar`
+                        ? `Testée à ${commande.qc.waterTestBar ?? "n. c."} bar`
                         : "Non conforme"
                   }
                 />
@@ -159,7 +159,7 @@ export default async function Commande(props: PageProps<"/compte/commandes/[nume
                 />
                 <Mesure
                   terme="Amplitude"
-                  valeur={commande.qc.amplitudeDegrees ? `${commande.qc.amplitudeDegrees}°` : "—"}
+                  valeur={commande.qc.amplitudeDegrees ? `${commande.qc.amplitudeDegrees}°` : "Non mesurée"}
                 />
               </dl>
               {commande.qc.notes && (

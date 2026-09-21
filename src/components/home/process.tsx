@@ -12,7 +12,7 @@ export function Process() {
     <Section fond="papier" id="comment-ca-marche">
       <SectionHeader
         titre="Comment ça se passe"
-        intro="Quatre étapes, sans intermédiaire. Vous savez à tout moment où en est votre montre : chaque changement d'étape vous est notifié et reste consultable depuis votre compte."
+        intro="Votre commande passe par quatre étapes, et je m'occupe de chacune. Je vous préviens à chaque changement d'étape, et vous retrouvez l'avancement de votre montre dans votre compte."
       />
 
       <ol className="mt-16 grid gap-y-12 md:grid-cols-2 md:gap-x-10 lg:mt-24 xl:grid-cols-4 xl:gap-x-0">

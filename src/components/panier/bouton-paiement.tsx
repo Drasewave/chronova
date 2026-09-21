@@ -78,7 +78,7 @@ export function BoutonPaiement({ className }: { className?: string }) {
         />
         <label htmlFor={`${id}-cgv`} className="type-caption text-fg">
           J&apos;ai lu et j&apos;accepte les{" "}
-          <Link href="/cgv" target="_blank" className="link-underline text-accent">
+          <Link href="/cgv" target="_blank" className="link-underline text-gold">
             conditions générales de vente
             <span className="sr-only"> (nouvel onglet)</span>
           </Link>{" "}

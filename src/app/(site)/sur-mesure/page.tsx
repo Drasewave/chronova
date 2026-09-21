@@ -5,7 +5,7 @@ import { Section } from "@/components/ui/section";
 export const metadata: Metadata = {
   title: "Demander une pièce unique",
   description:
-    "Une montre qui sort du configurateur : cadran particulier, gravure, pièce fournie, projet à deux. Décrivez, l'atelier répond avec un devis.",
+    "Une montre qui sort du configurateur : cadran particulier, gravure, pièce fournie, projet à deux. Décrivez votre projet, l'horloger vous répond avec un devis.",
   alternates: { canonical: "/sur-mesure" },
 };
 
@@ -14,19 +14,19 @@ const ETAPES = [
     numero: "01",
     titre: "Vous décrivez",
     texte:
-      "L'usage, le style, ce qui vous plaît et ce que vous ne voulez surtout pas. Une photo d'inspiration vaut souvent trois paragraphes.",
+      "Dites-moi l'usage, le style, ce qui vous plaît et ce dont vous ne voulez pas. Une photo d'inspiration m'en apprend souvent plus qu'un long texte.",
   },
   {
     numero: "02",
     titre: "Je cherche ce qui existe",
     texte:
-      "Beaucoup de demandes se résolvent avec des pièces de catalogue que je n'ai pas encore référencées. C'est plus rapide et bien moins cher qu'une fabrication.",
+      "Je réponds à beaucoup de demandes avec des pièces de catalogue que je n'ai pas encore référencées. C'est plus rapide et moins cher qu'une fabrication.",
   },
   {
     numero: "03",
     titre: "Devis, puis décision",
     texte:
-      "Vous recevez un devis chiffré avec les pièces, le délai et ce qui reste incertain. Rien n'est engagé tant que vous ne l'acceptez pas.",
+      "Je vous envoie un devis chiffré avec les pièces, le délai et ce qui reste incertain. Vous ne vous engagez à rien tant que vous ne l'avez pas accepté.",
   },
 ];
 
@@ -37,9 +37,9 @@ export default function SurMesure() {
         <header className="measure">
           <h1 className="type-display-2">Demander une pièce unique</h1>
           <p className="type-lead mt-6 text-fg-soft">
-            Le configurateur couvre ce que l&apos;atelier sait monter à coup sûr. Pour le reste — un
-            cadran particulier, une gravure ambitieuse, une pièce que vous fournissez, une montre
-            faite pour une occasion — il faut en parler.
+            Le configurateur propose ce que je sais monter à coup sûr. Pour le reste (un cadran
+            particulier, une gravure ambitieuse, une pièce que vous fournissez, une montre faite
+            pour une occasion), écrivez-moi et nous en parlons.
           </p>
         </header>
       </Section>
@@ -48,7 +48,7 @@ export default function SurMesure() {
         <ol className="grid gap-px bg-rule lg:grid-cols-3">
           {ETAPES.map((etape) => (
             <li key={etape.numero} className="bg-bg-alt p-7">
-              <span className="type-mono text-accent">{etape.numero}</span>
+              <span className="type-mono text-gold">{etape.numero}</span>
               <h2 className="type-title-2 mt-5">{etape.titre}</h2>
               <p className="type-body mt-3 text-fg-soft">{etape.texte}</p>
             </li>
@@ -56,9 +56,9 @@ export default function SurMesure() {
         </ol>
 
         <p className="type-body measure mt-10 text-fg-soft">
-          Une précision utile : une montre sur mesure prend plus de temps qu&apos;une montre
-          composée, et son prix dépend entièrement des pièces trouvées. Le devis le dit clairement,
-          et il n&apos;y a pas de mauvaise surprise après.
+          Une montre sur mesure prend plus de temps qu&apos;une montre composée, et son prix dépend
+          des pièces que je trouve. Le devis indique l&apos;un et l&apos;autre avant que vous ne
+          décidiez.
         </p>
       </Section>
 
@@ -66,8 +66,7 @@ export default function SurMesure() {
         <div className="mx-auto max-w-[46rem] rounded-card border border-rule bg-panel p-7 sm:p-10">
           <h2 className="type-title-1">Votre projet</h2>
           <p className="type-body mt-3 text-fg-soft">
-            Tout ce que vous savez déjà est utile ; tout ce que vous ignorez encore se décidera
-            ensemble.
+            Indiquez ce que vous savez déjà. Nous déciderons du reste ensemble.
           </p>
           <div className="mt-8">
             <FormulaireDemande type="SUR_MESURE" avecBudget configurationInitiale="" />

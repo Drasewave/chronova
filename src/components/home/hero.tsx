@@ -59,9 +59,10 @@ export function Hero({ catalogue, vedette }: { catalogue: Catalogue; vedette: Wa
 
         <div className="lg:col-start-1 lg:row-start-2 lg:self-start lg:pb-16">
           <p className="type-lead measure entree-texte max-w-[44ch] text-fg-soft" style={rang(1)}>
-            Quatre bases mécaniques. Vous choisissez le cadran, les aiguilles, la lunette, le
-            bracelet ; je commande les pièces, je monte, je règle, et je laisse la montre tourner
-            soixante-douze heures avant de l&apos;expédier.
+            Vous partez de l&apos;un des modèles de la collection, puis vous choisissez le cadran,
+            les aiguilles, la lunette et le bracelet. Je commande les pièces, j&apos;assemble et je
+            règle la montre, puis je la laisse tourner soixante-douze heures avant de
+            l&apos;expédier.
           </p>
 
           <div className="entree-texte mt-9 flex flex-wrap items-center gap-x-7 gap-y-4" style={rang(2)}>
@@ -70,7 +71,7 @@ export function Hero({ catalogue, vedette }: { catalogue: Catalogue; vedette: Wa
               <IconFleche className="fleche-glisse" />
             </ButtonLink>
             <ButtonLink href="/collection" variant="discret">
-              Voir les quatre modèles
+              Voir la collection
             </ButtonLink>
           </div>
         </div>

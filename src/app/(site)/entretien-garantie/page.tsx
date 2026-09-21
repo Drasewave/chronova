@@ -29,7 +29,7 @@ const GESTES = [
     icone: IconTournevis,
     titre: "Bracelets",
     texte:
-      "Le cuir n'aime ni l'eau ni la transpiration prolongée : alternez avec un brin caoutchouc ou NATO l'été. L'acier se nettoie à l'eau tiède savonneuse et à la brosse douce, en insistant entre les maillons où le sel s'accumule.",
+      "Le cuir supporte mal l'eau et la transpiration prolongée : alternez avec un brin caoutchouc ou NATO l'été. L'acier se nettoie à l'eau tiède savonneuse et à la brosse douce, en insistant entre les maillons où le sel s'accumule.",
   },
 ];
 
@@ -40,15 +40,15 @@ export default function EntretienGarantie() {
         <header className="measure">
           <h1 className="type-display-2">Entretien &amp; garantie</h1>
           <p className="type-lead mt-6 text-fg-soft">
-            Une montre mécanique est un objet qui s&apos;entretient. Bien traitée, elle passera
-            plusieurs générations ; négligée, elle s&apos;arrête au bout de quelques années. Voici
-            ce qu&apos;il faut savoir.
+            Une montre mécanique demande de l&apos;entretien. Bien traitée, elle passera plusieurs
+            générations ; négligée, elle s&apos;arrête au bout de quelques années. Vous trouverez
+            ici les gestes courants, ce que couvre la garantie et le rythme des révisions.
           </p>
         </header>
       </Section>
 
       <Section fond="alterne">
-        <SectionHeader titre="Trois gestes qui changent tout" />
+        <SectionHeader titre="Trois gestes d'entretien courant" />
         <div className="mt-12 grid gap-px bg-rule lg:grid-cols-3">
           {GESTES.map((geste) => (
             <div key={geste.titre} className="bg-bg-alt p-7">
@@ -85,17 +85,18 @@ export default function EntretienGarantie() {
         <h2>Durée et modalités</h2>
         <FillMe>durée exacte de la garantie, point de départ, et conditions complètes</FillMe>
         <p>
-          La garantie est rattachée à la commande, pas à une carte papier : elle est visible depuis
-          votre compte, avec sa date de fin. En cas de revente, transmettez simplement le numéro de
-          commande.
+          La garantie est rattachée à la commande : elle est visible depuis votre compte, avec sa
+          date de fin. Il n&apos;y a pas de carte papier. En cas de revente, transmettez le numéro
+          de commande.
         </p>
 
         <h2>Révision</h2>
         <p>
           Un mouvement mécanique se révise généralement <strong>tous les cinq à sept ans</strong> :
-          démontage complet, nettoyage, huilage, remplacement des joints, remontage et réglage. Ce
-          n&apos;est pas une réparation, c&apos;est de l&apos;entretien — comme une vidange. Une
-          montre jamais révisée finit par user ses pivots, et la facture devient alors tout autre.
+          démontage complet, nettoyage, huilage, remplacement des joints, remontage et réglage.
+          C&apos;est de l&apos;entretien courant, comme une vidange sur une voiture. Une montre
+          jamais révisée finit par user ses pivots, et la réparation coûte alors plus cher
+          qu&apos;une révision.
         </p>
         <p>
           L&apos;atelier assure les révisions des montres qu&apos;il a montées.{" "}
@@ -113,8 +114,8 @@ export default function EntretienGarantie() {
       <Section fond="nuit" compact>
         <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
           <p className="type-lead measure text-fg-soft">
-            Une montre qui prend ou perd quelques secondes par jour est normale. Une montre qui
-            s&apos;arrête, non.
+            Une montre mécanique prend ou perd quelques secondes par jour, c&apos;est normal. Si la
+            vôtre s&apos;arrête, écrivez-moi.
           </p>
           <ButtonLink href="/contact">Décrire mon problème</ButtonLink>
         </div>

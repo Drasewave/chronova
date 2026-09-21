@@ -115,7 +115,7 @@ export default async function MentionsLegales() {
           </p>
           <p>
             {identite.mediateurNom}
-            {identite.mediateurAdresse ? ` — ${identite.mediateurAdresse}` : ""} —{" "}
+            {identite.mediateurAdresse ? `, ${identite.mediateurAdresse}` : ""},{" "}
             <a href={identite.mediateurSite} rel="noopener noreferrer">
               {identite.mediateurSite}
             </a>

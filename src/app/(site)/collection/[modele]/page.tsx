@@ -74,7 +74,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
         <nav aria-label="Fil d'Ariane">
           <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
             <li>
-              <Link href="/collection" className="link-underline hover:text-accent">
+              <Link href="/collection" className="link-underline hover:text-gold">
                 Collection
               </Link>
             </li>
@@ -130,7 +130,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
       >
         <div className="mx-auto max-w-wide">
           <h2 id="titre-vues" className="type-display-2 max-w-[18ch]">
-            Sous tous les angles.
+            Cadran, profil et fond
           </h2>
           <ul className="mt-12 grid gap-6 md:grid-cols-3 lg:gap-8">
             {(
@@ -142,7 +142,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
             ).map((plan) => (
               <li key={plan.cle}>
                 <figure>
-                  <div className="overflow-hidden rounded-card bg-[#05080c]">
+                  <div className="overflow-hidden rounded-card bg-[var(--color-nuit-profonde)]">
                     <WatchSvg
                       id={`vue-${plan.cle}`}
                       render={base.render}
@@ -162,13 +162,13 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
 
       <Section fond="alterne">
         <SectionHeader
-          titre="Ce que le boîtier fixe"
-          intro="Ces valeurs ne se configurent pas : elles définissent le modèle. Tout le reste se choisit."
+          titre="Fiche technique du modèle"
+          intro="Ces valeurs sont propres au modèle et ne se configurent pas. Vous choisissez tout le reste."
         />
 
         <dl className="mt-12 grid gap-px border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-4">
           <Spec terme="Diamètre" valeur={`${model.diameterMm} mm`} detail={`Aussi en ${model.availableSizes.filter((t) => Number(t) !== model.diameterMm).join(" et ") || "une seule taille"}`} />
-          <Spec terme="Corne à corne" valeur={`${model.lugToLugMm} mm`} detail="Ce qui décide du port au poignet" />
+          <Spec terme="Corne à corne" valeur={`${model.lugToLugMm} mm`} detail="La cote à comparer à votre poignet" />
           <Spec terme="Épaisseur" valeur={`${model.thicknessMm} mm`} detail="Verre compris" />
           <Spec terme="Entrecorne" valeur={`${model.lugWidthMm} mm`} detail="Largeur du bracelet" />
           <Spec terme="Étanchéité" valeur={`${model.waterResistM} m`} detail="Pression statique, norme ISO 22810" />
@@ -180,8 +180,8 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
 
       <Section fond="papier">
         <SectionHeader
-          titre="Le même boîtier, deux caractères"
-          intro="Ces deux montres sortent du même boîtier. Seules changent des pièces que vous choisissez."
+          titre="Deux montres sur le même boîtier"
+          intro="Ces deux montres partent du même boîtier. Les pièces qui changent de l'une à l'autre sont celles que vous choisissez."
           action={<ButtonLink href={`/composer/${model.slug}`}>Composer la mienne</ButtonLink>}
         />
 

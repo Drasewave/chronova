@@ -23,9 +23,7 @@ describe("palette sur fond clair (papier)", () => {
   it.each([
     ["encre", 11],
     ["encre-douce", AA],
-    ["marine", AA],
-    ["marine-vive", AA],
-    ["or", AA],
+    ["or-profond", AA],
     ["sapin", AA],
     ["grenat", AA],
   ])("%s atteint le niveau AA sur le papier et sur son alterné", (nom, minimum) => {
@@ -33,9 +31,13 @@ describe("palette sur fond clair (papier)", () => {
     expect(contrastRatio(token(nom), token("papier-alt"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("un bouton plein reste lisible : panneau sur marine", () => {
-    expect(contrastRatio(token("panneau"), token("marine"))).toBeGreaterThanOrEqual(AA);
-    expect(contrastRatio(token("panneau"), token("marine-vive"))).toBeGreaterThanOrEqual(AA);
+  it("un bouton plein reste lisible : nuit sur or, au repos comme au survol", () => {
+    expect(contrastRatio(token("nuit"), token("or"))).toBeGreaterThanOrEqual(AA);
+    expect(contrastRatio(token("nuit"), token("or-vif"))).toBeGreaterThanOrEqual(AA);
+  });
+
+  it("l'or d'aplat est trop clair pour s'écrire sur papier : le texte prend l'or profond", () => {
+    expect(contrastRatio(token("or"), token("papier"))).toBeLessThan(AA);
   });
 
   it("l'or clair est bien trop faible pour du texte sur papier : décor uniquement", () => {
@@ -60,8 +62,8 @@ describe("palette sur fond sombre (nuit)", () => {
     expect(contrastRatio(token("nuit"), token("or-clair"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("la marine disparaît sur la nuit : c'est pourquoi l'accent bascule sur l'or", () => {
-    expect(contrastRatio(token("marine"), token("nuit"))).toBeLessThan(3);
+  it("l'or profond disparaît sur la nuit : c'est pourquoi le texte d'accent y passe à l'or clair", () => {
+    expect(contrastRatio(token("or-profond"), token("nuit"))).toBeLessThan(AA);
   });
 
   it("le vert sapin normal chute aussi", () => {

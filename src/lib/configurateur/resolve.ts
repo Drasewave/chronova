@@ -21,7 +21,7 @@ export const BASE_RENDER: WatchRender = {
   crownStyle: "signee",
   crownMetal: "acier",
   strapKind: "acier-3-maillons",
-  strapColor: "#B0A899",
+  strapColor: "#A9AFB6",
   crystal: "plat",
   antiGlare: true,
   movement: "NH35",

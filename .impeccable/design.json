@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-21T18:50:22.713Z",
+  "generatedAt": "2026-09-21T19:05:57.538Z",
   "title": "Design System: Chronova",
   "extensions": {
     "colorMeta": {
@@ -116,41 +116,9 @@
           "oklch(95% 0.009 256)"
         ]
       },
-      "marine": {
+      "or-profond": {
         "role": "primary",
-        "displayName": "Marine d'horloger",
-        "canonical": "#14263a",
-        "oklch": "oklch(26.4% 0.045 252)",
-        "tonalRamp": [
-          "oklch(15% 0.027 252)",
-          "oklch(27% 0.045 252)",
-          "oklch(38% 0.045 252)",
-          "oklch(50% 0.045 252)",
-          "oklch(61% 0.045 252)",
-          "oklch(73% 0.045 252)",
-          "oklch(84% 0.045 252)",
-          "oklch(95% 0.027 252)"
-        ]
-      },
-      "marine-vive": {
-        "role": "primary",
-        "displayName": "Marine vive",
-        "canonical": "#1f3b5a",
-        "oklch": "oklch(34.6% 0.064 252)",
-        "tonalRamp": [
-          "oklch(15% 0.039 252)",
-          "oklch(27% 0.064 252)",
-          "oklch(38% 0.064 252)",
-          "oklch(50% 0.064 252)",
-          "oklch(61% 0.064 252)",
-          "oklch(73% 0.064 252)",
-          "oklch(84% 0.064 252)",
-          "oklch(95% 0.039 252)"
-        ]
-      },
-      "or": {
-        "role": "secondary",
-        "displayName": "Or champagne profond",
+        "displayName": "Or profond",
         "canonical": "#7d5e27",
         "oklch": "oklch(50.3% 0.082 79)",
         "tonalRamp": [
@@ -164,8 +132,40 @@
           "oklch(95% 0.049 79)"
         ]
       },
+      "or": {
+        "role": "primary",
+        "displayName": "Or champagne",
+        "canonical": "#a47f32",
+        "oklch": "oklch(68.0% 0.110 84)",
+        "tonalRamp": [
+          "oklch(15% 0.066 84)",
+          "oklch(27% 0.110 84)",
+          "oklch(38% 0.110 84)",
+          "oklch(50% 0.110 84)",
+          "oklch(61% 0.110 84)",
+          "oklch(73% 0.110 84)",
+          "oklch(84% 0.110 84)",
+          "oklch(95% 0.066 84)"
+        ]
+      },
+      "or-vif": {
+        "role": "primary",
+        "displayName": "Or vif",
+        "canonical": "#9a762c",
+        "oklch": "oklch(62.8% 0.106 82)",
+        "tonalRamp": [
+          "oklch(15% 0.063 82)",
+          "oklch(27% 0.106 82)",
+          "oklch(38% 0.106 82)",
+          "oklch(50% 0.106 82)",
+          "oklch(61% 0.106 82)",
+          "oklch(73% 0.106 82)",
+          "oklch(84% 0.106 82)",
+          "oklch(95% 0.063 82)"
+        ]
+      },
       "or-clair": {
-        "role": "secondary",
+        "role": "primary",
         "displayName": "Or champagne clair",
         "canonical": "#d9bc7a",
         "oklch": "oklch(80.5% 0.091 87)",
@@ -181,7 +181,7 @@
         ]
       },
       "or-pale": {
-        "role": "secondary",
+        "role": "primary",
         "displayName": "Or pâle",
         "canonical": "#ead7a6",
         "oklch": "oklch(88.3% 0.067 89)",
@@ -197,7 +197,7 @@
         ]
       },
       "sapin": {
-        "role": "tertiary",
+        "role": "secondary",
         "displayName": "Vert sapin",
         "canonical": "#1e6b4c",
         "oklch": "oklch(47.3% 0.090 162)",
@@ -213,7 +213,7 @@
         ]
       },
       "sapin-clair": {
-        "role": "tertiary",
+        "role": "secondary",
         "displayName": "Vert sapin clair",
         "canonical": "#7fd0a8",
         "oklch": "oklch(79.4% 0.099 162)",
@@ -229,7 +229,7 @@
         ]
       },
       "grenat": {
-        "role": "tertiary",
+        "role": "secondary",
         "displayName": "Grenat",
         "canonical": "#a12a3c",
         "oklch": "oklch(47.7% 0.154 17)",
@@ -245,7 +245,7 @@
         ]
       },
       "grenat-clair": {
-        "role": "tertiary",
+        "role": "secondary",
         "displayName": "Grenat clair",
         "canonical": "#f09aaa",
         "oklch": "oklch(77.7% 0.104 8)",
@@ -274,6 +274,38 @@
           "oklch(73% 0.017 253)",
           "oklch(84% 0.017 253)",
           "oklch(95% 0.010 253)"
+        ]
+      },
+      "nuit-profonde": {
+        "role": "neutral",
+        "displayName": "Nuit profonde",
+        "canonical": "#070b10",
+        "oklch": "oklch(14.7% 0.013 252)",
+        "tonalRamp": [
+          "oklch(15% 0.008 252)",
+          "oklch(27% 0.013 252)",
+          "oklch(38% 0.013 252)",
+          "oklch(50% 0.013 252)",
+          "oklch(61% 0.013 252)",
+          "oklch(73% 0.013 252)",
+          "oklch(84% 0.013 252)",
+          "oklch(95% 0.008 252)"
+        ]
+      },
+      "nuit-scene": {
+        "role": "neutral",
+        "displayName": "Nuit de scène",
+        "canonical": "#223246",
+        "oklch": "oklch(31.3% 0.042 254)",
+        "tonalRamp": [
+          "oklch(15% 0.025 254)",
+          "oklch(27% 0.042 254)",
+          "oklch(38% 0.042 254)",
+          "oklch(50% 0.042 254)",
+          "oklch(61% 0.042 254)",
+          "oklch(73% 0.042 254)",
+          "oklch(84% 0.042 254)",
+          "oklch(95% 0.025 254)"
         ]
       },
       "nuit-alt": {
@@ -372,27 +404,11 @@
           "oklch(95% 0.013 253)"
         ]
       },
-      "studio-centre": {
-        "role": "neutral",
-        "displayName": "Fond de studio, centre",
-        "canonical": "#ffffff",
-        "oklch": "oklch(100.0% 0.000 90)",
-        "tonalRamp": [
-          "oklch(15% 0.000 90)",
-          "oklch(27% 0.000 90)",
-          "oklch(38% 0.000 90)",
-          "oklch(50% 0.000 90)",
-          "oklch(61% 0.000 90)",
-          "oklch(73% 0.000 90)",
-          "oklch(84% 0.000 90)",
-          "oklch(95% 0.000 90)"
-        ]
-      },
       "studio-bord": {
         "role": "neutral",
         "displayName": "Fond de studio, bord",
-        "canonical": "#e3e4e6",
-        "oklch": "oklch(91.9% 0.003 265)",
+        "canonical": "#e2e3e5",
+        "oklch": "oklch(91.6% 0.003 265)",
         "tonalRamp": [
           "oklch(15% 0.002 265)",
           "oklch(27% 0.003 265)",
@@ -402,22 +418,6 @@
           "oklch(73% 0.003 265)",
           "oklch(84% 0.003 265)",
           "oklch(95% 0.002 265)"
-        ]
-      },
-      "studio-nuit-centre": {
-        "role": "neutral",
-        "displayName": "Fond de studio nuit, centre",
-        "canonical": "#223246",
-        "oklch": "oklch(31.3% 0.042 254)",
-        "tonalRamp": [
-          "oklch(15% 0.025 254)",
-          "oklch(27% 0.042 254)",
-          "oklch(38% 0.042 254)",
-          "oklch(50% 0.042 254)",
-          "oklch(61% 0.042 254)",
-          "oklch(73% 0.042 254)",
-          "oklch(84% 0.042 254)",
-          "oklch(95% 0.025 254)"
         ]
       }
     },
@@ -593,7 +593,7 @@
       "sectionY": "clamp(72px, 9vw, 136px)",
       "sectionYCompact": "clamp(40px, 5vw, 72px)",
       "measure": "68ch",
-      "containerContent": "80rem",
+      "containerContent": "80rem (token conservé ; le site public s'aligne sur containerWide)",
       "containerWide": "90rem",
       "focusRing": "2px solid var(--focus), offset 3px, radius 4px",
       "minTarget": "44px"
@@ -641,7 +641,7 @@
       "name": "Bouton primaire",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Action principale : pilule pleine en accent (marine sur papier, or clair sur la nuit), flèche qui avance au survol.",
+      "description": "Action principale : pilule pleine en or, texte nuit (or sur papier, or clair sur la nuit), flèche qui avance au survol.",
       "html": "<button class=\"ds-btn-primaire\">Composer ma montre <svg class=\"ds-fleche\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"square\" stroke-linejoin=\"miter\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></button>",
       "css": ".ds-btn-primaire { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 28px; border: 0; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); cursor: pointer; transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primaire:hover { background: var(--accent-hover); } .ds-btn-primaire:active { transform: translateY(1px); } .ds-btn-primaire:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; } .ds-btn-primaire .ds-fleche { transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primaire:hover .ds-fleche { transform: translateX(4px); }"
     },
@@ -649,9 +649,9 @@
       "name": "Bouton contour",
       "kind": "button",
       "refersTo": "button-contour",
-      "description": "Action secondaire : bordure d'encre à 70 %, se remplit de l'accent au survol.",
+      "description": "Action secondaire : bordure d'encre à 70 %, se remplit de l'or d'aplat au survol.",
       "html": "<button class=\"ds-btn-contour\">Toute la collection</button>",
-      "css": ".ds-btn-contour { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 28px; border: 1px solid color-mix(in srgb, var(--fg) 70%, transparent); border-radius: var(--radius-pill); background: transparent; color: var(--fg); cursor: pointer; transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-contour:hover { border-color: var(--accent); background: var(--accent); color: var(--on-accent); } .ds-btn-contour:active { transform: translateY(1px); } .ds-btn-contour:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }"
+      "css": ".ds-btn-contour { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 28px; border: 1px solid color-mix(in srgb, var(--fg) 70%, transparent); border-radius: var(--radius-pill); background: transparent; color: var(--fg); cursor: pointer; transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-contour:hover { border-color: var(--gold); background: var(--accent); color: var(--on-accent); } .ds-btn-contour:active { transform: translateY(1px); } .ds-btn-contour:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }"
     },
     {
       "name": "Bouton discret",
@@ -673,9 +673,9 @@
       "name": "Puce de filtre",
       "kind": "chip",
       "refersTo": "chip-filter",
-      "description": "Filtre de la collection : panneau et filet au repos, accent plein quand il est actif (aria-pressed).",
+      "description": "Filtre de la collection : panneau et filet au repos, aplat d'or et texte nuit quand il est actif (aria-pressed).",
       "html": "<button class=\"ds-puce\" aria-pressed=\"true\">Tous</button> <button class=\"ds-puce\" aria-pressed=\"false\">Plongée</button>",
-      "css": ".ds-puce { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; min-height: 44px; padding: 0 20px; border: 1px solid var(--rule); border-radius: var(--radius-pill); background: var(--panel); color: var(--fg); cursor: pointer; transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-puce:hover { border-color: var(--fg); } .ds-puce[aria-pressed=\"true\"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); } .ds-puce:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }"
+      "css": ".ds-puce { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; min-height: 44px; padding: 0 20px; border: 1px solid var(--rule); border-radius: var(--radius-pill); background: var(--panel); color: var(--fg); cursor: pointer; transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-puce:hover { border-color: var(--fg); } .ds-puce[aria-pressed=\"true\"] { border-color: var(--gold); background: var(--accent); color: var(--on-accent); } .ds-puce:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }"
     },
     {
       "name": "Champ de saisie",
@@ -683,7 +683,7 @@
       "refersTo": "input",
       "description": "Champ du CRM et des formulaires : contour à 3:1 au moins, rayon 8 px, 44 px de haut.",
       "html": "<label class=\"ds-champ\"><span class=\"ds-champ-label\">Adresse e-mail</span><input class=\"ds-saisie\" type=\"email\" placeholder=\"vous@exemple.fr\"></label>",
-      "css": ".ds-champ { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-ui); } .ds-champ-label { font-size: 0.8125rem; line-height: 1.45; font-weight: 500; color: var(--fg); } .ds-saisie { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; font-weight: 400; width: 100%; height: 44px; padding: 0 12px; border: 1px solid var(--field); border-radius: var(--radius-field); background: var(--panel); color: var(--fg); transition: border-color 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-saisie::placeholder { color: var(--fg-soft); } .ds-saisie:hover { border-color: var(--fg); } .ds-saisie:focus-visible { border-color: var(--accent); outline: 2px solid var(--focus); outline-offset: 1px; } .ds-saisie[aria-invalid=\"true\"] { border-color: var(--alert); }"
+      "css": ".ds-champ { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-ui); } .ds-champ-label { font-size: 0.8125rem; line-height: 1.45; font-weight: 500; color: var(--fg); } .ds-saisie { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; font-weight: 400; width: 100%; height: 44px; padding: 0 12px; border: 1px solid var(--field); border-radius: var(--radius-field); background: var(--panel); color: var(--fg); transition: border-color 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-saisie::placeholder { color: var(--fg-soft); } .ds-saisie:hover { border-color: var(--fg); } .ds-saisie:focus-visible { border-color: var(--gold); outline: 2px solid var(--focus); outline-offset: 1px; } .ds-saisie[aria-invalid=\"true\"] { border-color: var(--alert); }"
     },
     {
       "name": "Navigation principale",
@@ -691,7 +691,7 @@
       "refersTo": "nav-link",
       "description": "Nom composé en Jost interlettré et liens dont le soulignement se trace de gauche à droite ; lien actif en or.",
       "html": "<nav class=\"ds-nav\"><a class=\"ds-wordmark\" href=\"#\">CHRONOVA</a><a class=\"ds-nav-lien\" href=\"#\" aria-current=\"page\">Collection</a><a class=\"ds-nav-lien\" href=\"#\">L'horloger</a><a class=\"ds-nav-lien\" href=\"#\">Entretien</a></nav>",
-      "css": ".ds-nav { display: flex; align-items: center; gap: 40px; } .ds-wordmark { font-family: var(--font-title); font-size: 1.25rem; line-height: 1; letter-spacing: 0.22em; text-indent: 0.22em; color: var(--fg); text-decoration: none; margin-right: auto; transition: color 200ms; } .ds-wordmark:hover { color: var(--accent); } .ds-nav-lien { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; padding: 8px 0 10px; color: var(--fg); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 1px; transition: background-size 280ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms; } .ds-nav-lien:hover, .ds-nav-lien:focus-visible { background-size: 100% 1px; color: var(--gold); } .ds-nav-lien[aria-current=\"page\"] { color: var(--gold); } .ds-nav-lien:focus-visible, .ds-wordmark:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }"
+      "css": ".ds-nav { display: flex; align-items: center; gap: 40px; } .ds-wordmark { font-family: var(--font-title); font-size: 1.25rem; line-height: 1; letter-spacing: 0.22em; text-indent: 0.22em; color: var(--fg); text-decoration: none; margin-right: auto; transition: color 200ms; } .ds-wordmark:hover { color: var(--gold); } .ds-nav-lien { font-family: var(--font-ui); font-weight: 500; font-size: 0.9375rem; line-height: 1.4; padding: 8px 0 10px; color: var(--fg); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 1px; transition: background-size 280ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms; } .ds-nav-lien:hover, .ds-nav-lien:focus-visible { background-size: 100% 1px; color: var(--gold); } .ds-nav-lien[aria-current=\"page\"] { color: var(--gold); } .ds-nav-lien:focus-visible, .ds-wordmark:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }"
     },
     {
       "name": "Tuile de montre",
@@ -705,7 +705,7 @@
       "name": "Sélecteur de vue",
       "kind": "custom",
       "refersTo": "chip-filter",
-      "description": "Face, profil, dos : une capsule bordée, trois pilules en petites capitales, la vue active en accent.",
+      "description": "Face, profil, dos : une capsule bordée, trois pilules en petites capitales, la vue active en aplat d'or.",
       "html": "<div class=\"ds-vues\" role=\"group\" aria-label=\"Vue de la montre\"><button class=\"ds-vue\" aria-pressed=\"true\">Face</button><button class=\"ds-vue\" aria-pressed=\"false\">Profil</button><button class=\"ds-vue\" aria-pressed=\"false\">Dos</button></div>",
       "css": ".ds-vues { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--rule); border-radius: var(--radius-pill); background: var(--panel); } .ds-vue { font-family: var(--font-ui); font-weight: 500; font-size: 0.8125rem; line-height: 1; letter-spacing: 0.14em; text-transform: uppercase; font-variant-numeric: tabular-nums lining-nums; min-height: 44px; padding: 0 20px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--fg-soft); cursor: pointer; transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-vue:hover { color: var(--fg); } .ds-vue[aria-pressed=\"true\"] { background: var(--accent); color: var(--on-accent); } .ds-vue:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }"
     },
@@ -719,11 +719,11 @@
   ],
   "narrative": {
     "northStar": "La Vitrine",
-    "overview": "La montre est photographiée, la page s'efface. Le système reprend sans détour le standard des grandes maisons horlogères : une vitrine de papier neutre et clair où la pièce est posée sur un fond de studio, une nuit bleu-noir pour les scènes où l'acier doit briller, et un or champagne, rare, pour ce qui compte. Rien ne passe devant le produit : ni texture, ni illustration, ni effet de carte. Le seul visuel de la marque est le rendu SVG paramétrique de la montre, exactement celle que le client a composée.\n\nLa densité est celle d'une vitrine : grands titres légers en Jost, beaucoup d'air (rythme de section de 72 à 136 px), texte de lecture en Hanken Grotesk, étiquettes techniques en petites capitales espacées comme une gravure de fond de boîte. Le CRM de l'atelier hérite du même monde en mode outil : titres à échelle réduite, cibles de 44 px, thème clair ou nuit au choix.\n\nLe système ne montre que ce qui existe. Aucune photographie inventée : un emplacement photo décrit la prise de vue attendue. Aucun avis inventé : la section reste un emplacement explicite tant qu'aucun client n'a écrit. Toute donnée fictive porte la pastille « Exemple ».",
+    "overview": "La montre est photographiée, la page s'efface. Le système reprend sans détour le standard des grandes maisons horlogères : une vitrine de papier neutre et clair où la pièce est posée sur un fond de studio, une nuit bleu-noir pour les scènes où l'acier doit briller, et un or champagne, unique accent du site, pour ce qui compte. Rien ne passe devant le produit : ni texture, ni illustration, ni effet de carte. Le seul visuel de la marque est le rendu SVG paramétrique de la montre, exactement celle que le client a composée.\n\nLa densité est celle d'une vitrine : grands titres légers en Jost, beaucoup d'air (rythme de section de 72 à 136 px), texte de lecture en Hanken Grotesk, étiquettes techniques en petites capitales espacées comme une gravure de fond de boîte. Le CRM de l'atelier hérite du même monde en mode outil : titres à échelle réduite, cibles de 44 px, thème clair ou nuit au choix.\n\nLe système ne montre que ce qui existe. Aucune photographie inventée : un emplacement photo décrit la prise de vue attendue. Aucun avis inventé : la section reste un emplacement explicite tant qu'aucun client n'a écrit. Toute donnée fictive porte la pastille « Exemple ».",
     "keyCharacteristics": [
       "Deux scènes : papier clair (`papier`) et nuit bleu-noir (`nuit`), basculées par `data-theme=\"night\"` ; les composants ne consomment que des tokens sémantiques.",
-      "Deux accents, jamais ensemble : la marine sur papier, l'or clair sur la nuit.",
-      "L'or est le seul ornement : filet d'or, prix, repères numérotés, liens actifs.",
+      "Deux familles de couleur seulement : l'encre (du papier clair à la nuit bleu-noir, une même teinte) et l'or.",
+      "L'or est l'unique accent et le seul ornement, sur papier comme sur la nuit ; seule sa clarté change selon le fond.",
       "Boutons en pilule, champs à 8 px, cartes à 14 px.",
       "Tuiles de montre : un dégradé radial de studio, sans bordure ni ombre.",
       "Une bordure ou une ombre, jamais les deux ; l'ombre est réservée aux éléments flottants.",
@@ -732,13 +732,18 @@
     ],
     "rules": [
       {
-        "name": "Règle de l'or seul",
-        "body": "L'or est le seul ornement du site. Il marque ce qui est précieux sur la page — un prix, un repère, un filet, un lien actif — et rien d'autre ne décore.",
+        "name": "Règle des deux familles",
+        "body": "Deux familles de couleur seulement : l'encre, du papier clair à la nuit bleu-noir, et l'or. Le sapin et le grenat ne sont que des statuts. Aucune autre teinte n'entre dans l'interface.",
         "section": "colors"
       },
       {
-        "name": "Règle des deux accents",
-        "body": "La marine porte l'accent sur papier, l'or clair sur la nuit. Le basculement est fait par les tokens sémantiques (`--accent`, `--accent-hover`, `--on-accent`, `--gold`, `--positive`, `--alert`, `--focus`) ; un composant n'écrit jamais une couleur de palette en dur.",
+        "name": "Règle de l'or seul",
+        "body": "L'or est l'unique accent et le seul ornement du site, sur papier comme sur la nuit ; seule sa clarté change selon le fond. Il marque ce qui s'actionne et ce qui est précieux — un bouton, un prix, un repère, un filet, un lien actif — et rien d'autre ne décore.",
+        "section": "colors"
+      },
+      {
+        "name": "Règle de l'aplat et du trait",
+        "body": "`--accent` est un aplat (bouton, puce active, barre de graphique) et porte toujours un texte `--on-accent`, la nuit. `--gold` est l'or qui s'écrit : liens, survols, repères, bordures de sélection, filets. Sur papier ce sont deux ors différents (`or` et `or-profond`) ; sur la nuit, le même `or-clair`. Le basculement est fait par les tokens sémantiques (`--accent`, `--accent-hover`, `--on-accent`, `--gold`, `--positive`, `--alert`, `--focus`) ; un composant n'écrit jamais une couleur de palette en dur.",
         "section": "colors"
       },
       {
@@ -768,13 +773,13 @@
       },
       {
         "name": "Règle du fond de studio",
-        "body": "Une tuile de montre n'a ni bordure ni ombre : c'est un fond de studio, un dégradé radial (ellipse 78 % × 70 % centrée à 50 % / 42 %) du `studio-centre` vers le `studio-bord`, arrondi à 14 px.",
+        "body": "Une tuile de montre n'a ni bordure ni ombre : c'est un fond de studio, un dégradé radial (ellipse 78 % × 70 % centrée à 50 % / 42 %) du `panneau` vers le `studio-bord`, arrondi à 14 px.",
         "section": "elevation"
       }
     ],
     "dos": [
       "Do passer par les tokens sémantiques (`bg`, `bg-alt`, `panel`, `fg`, `fg-soft`, `rule`, `field`, `accent`, `on-accent`, `gold`, `positive`, `alert`) ; ils basculent seuls avec `data-theme=\"night\"`.",
-      "Do réserver l'or à ce qui est précieux : prix, repères, filet d'or, lien actif, soulignement du bouton discret.",
+      "Do faire de l'or l'unique accent : aplat `accent` avec texte `on-accent` pour ce qui se presse, `gold` pour ce qui s'écrit — prix, repères, filet d'or, lien actif, bordure de sélection, soulignement du bouton discret.",
       "Do poser chaque montre sur un fond de studio (dégradé radial, 14 px de rayon), sans bordure ni ombre.",
       "Do garder les boutons en pilule, les champs à 8 px, les cartes à 14 px.",
       "Do composer les étiquettes techniques en `mono` : Hanken Grotesk 500, 13 px, capitales, interlettrage 0,14 em.",
@@ -787,7 +792,8 @@
     "donts": [
       "Don't placer de surtitre ni de libellé au-dessus d'un titre sur le site public.",
       "Don't cumuler bordure et ombre sur une même surface ; l'ombre est réservée aux éléments flottants.",
-      "Don't utiliser la marine sur la nuit (1,24:1) ni l'or clair comme texte sur papier (1,68:1).",
+      "Don't écrire en or d'aplat (`or`, 3,40:1) ni en or clair (1,68:1) sur papier : le texte d'or y est l'or profond ; sur la nuit, l'or profond (3,16:1) cède la place à l'or clair.",
+      "Don't introduire un second accent ni une autre famille de teinte que l'encre et l'or.",
       "Don't ajouter d'autre ornement que l'or : ni texture, ni grain, ni illustration, ni pictogramme dans un cercle coloré.",
       "Don't inventer une photographie, un avis client ou un chiffre.",
       "Don't descendre sous 13 px.",

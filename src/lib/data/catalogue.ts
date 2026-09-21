@@ -18,7 +18,7 @@ export const STEPS: Step[] = [
   {
     key: "boitier",
     label: "Boîtier",
-    intro: "Le diamètre est fixé par le boîtier : c'est lui qui décide du reste.",
+    intro: "Le boîtier fixe le diamètre, et certaines options des étapes suivantes en dépendent.",
     groups: [
       {
         key: "taille",
@@ -56,7 +56,7 @@ export const STEPS: Step[] = [
           {
             key: "microbille",
             label: "Microbillé",
-            description: "Mat profond, sans reflet. Le choix des montres de terrain.",
+            description: "Mat profond, sans reflet. Courant sur les montres de terrain.",
             priceDeltaCents: 4000,
             render: { caseFinish: "microbille" },
           },
@@ -67,7 +67,7 @@ export const STEPS: Step[] = [
   {
     key: "cadran",
     label: "Cadran",
-    intro: "La pièce qu'on regarde cent fois par jour. Teinte, finition, index.",
+    intro: "C'est la pièce que vous regarderez le plus. Choisissez sa teinte, sa finition et ses index.",
     groups: [
       {
         key: "cadran-teinte",
@@ -79,7 +79,7 @@ export const STEPS: Step[] = [
           { key: "vert-sauge", label: "Vert sauge", colorName: "Vert sauge", colorHex: "#3F4B39", priceDeltaCents: 0, partRef: "CAD-VER", render: { dialColor: "#3F4B39" } },
           { key: "saumon", label: "Saumon", colorName: "Saumon", colorHex: "#C98263", priceDeltaCents: 6000, partRef: "CAD-SAU", render: { dialColor: "#C98263" } },
           { key: "gris-ardoise", label: "Gris ardoise", colorName: "Gris ardoise", colorHex: "#474B50", priceDeltaCents: 0, partRef: "CAD-GRI", render: { dialColor: "#474B50" } },
-          { key: "noir-mat", label: "Noir mat", colorName: "Noir mat", colorHex: "#26241F", priceDeltaCents: 0, partRef: "CAD-NOI", render: { dialColor: "#26241F" } },
+          { key: "noir-mat", label: "Noir mat", colorName: "Noir mat", colorHex: "#1C1E21", priceDeltaCents: 0, partRef: "CAD-NOI", render: { dialColor: "#1C1E21" } },
         ],
       },
       {
@@ -97,7 +97,7 @@ export const STEPS: Step[] = [
           {
             key: "mat",
             label: "Mat",
-            description: "Aucune réflexion. Lecture garantie en plein soleil.",
+            description: "Aucune réflexion : lisible en plein soleil.",
             priceDeltaCents: 0,
             render: { dialTexture: "mat" },
           },
@@ -133,7 +133,7 @@ export const STEPS: Step[] = [
           {
             key: "plongee",
             label: "Ronds et triangle",
-            description: "Triangle à midi, bâtons aux quarts, ronds ailleurs : le code des montres de plongée.",
+            description: "Triangle à midi, bâtons aux quarts, ronds ailleurs : la disposition habituelle des montres de plongée.",
             priceDeltaCents: 2000,
             render: { indexStyle: "plongee" },
           },
@@ -159,7 +159,7 @@ export const STEPS: Step[] = [
   {
     key: "aiguilles",
     label: "Aiguilles",
-    intro: "Chassées une à une au potence, puis vérifiées à la loupe.",
+    intro: "Je les chasse une à une au potence, puis je les vérifie à la loupe.",
     groups: [
       {
         key: "aiguilles-forme",
@@ -176,9 +176,9 @@ export const STEPS: Step[] = [
         label: "Traitement",
         selection: "unique",
         options: [
-          { key: "acier", label: "Acier poli", colorName: "Acier", colorHex: "#B0A899", priceDeltaCents: 0, render: { handMetal: "acier" } },
-          { key: "dore", label: "Doré", colorName: "Doré", colorHex: "#C09755", priceDeltaCents: 5000, render: { handMetal: "dore" } },
-          { key: "bleui", label: "Bleui au feu", colorName: "Bleu acier", colorHex: "#3F4F6C", priceDeltaCents: 7000, render: { handMetal: "bleui" } },
+          { key: "acier", label: "Acier poli", colorName: "Acier", colorHex: "#A9AFB6", priceDeltaCents: 0, render: { handMetal: "acier" } },
+          { key: "dore", label: "Doré", colorName: "Doré", colorHex: "#C99A45", priceDeltaCents: 5000, render: { handMetal: "dore" } },
+          { key: "bleui", label: "Bleui au feu", colorName: "Bleu acier", colorHex: "#3A4E82", priceDeltaCents: 7000, render: { handMetal: "bleui" } },
         ],
       },
       {
@@ -195,14 +195,14 @@ export const STEPS: Step[] = [
   {
     key: "lunette",
     label: "Lunette",
-    intro: "Elle décide de l'allure générale bien plus que le cadran.",
+    intro: "La lunette compte plus que le cadran dans l'allure générale de la montre.",
     groups: [
       {
         key: "lunette-style",
         label: "Style",
         selection: "unique",
         options: [
-          { key: "lisse", label: "Lisse", description: "Fine, sans relief. Elle s'efface.", priceDeltaCents: 0, partRef: "LUN-LIS", render: { bezelStyle: "lisse" } },
+          { key: "lisse", label: "Lisse", description: "Fine, sans relief, pour laisser la place au cadran.", priceDeltaCents: 0, partRef: "LUN-LIS", render: { bezelStyle: "lisse" } },
           { key: "cannelee", label: "Cannelée", description: "Soixante-douze crans, reflets en étoile.", priceDeltaCents: 6000, partRef: "LUN-CAN", render: { bezelStyle: "cannelee" } },
           { key: "plongee", label: "Plongée, 120 clics", description: "Unidirectionnelle, graduée soixante minutes.", priceDeltaCents: 12000, partRef: "LUN-PLO", render: { bezelStyle: "plongee" } },
           { key: "gmt", label: "GMT, 24 heures", description: "Bidirectionnelle, graduée vingt-quatre heures : un second fuseau se lit sur la lunette.", priceDeltaCents: 14000, partRef: "LUN-GMT", render: { bezelStyle: "gmt" } },
@@ -215,7 +215,7 @@ export const STEPS: Step[] = [
         optional: true,
         options: [
           { key: "aluminium", label: "Aluminium", description: "Patine avec le temps, se raye, se remplace facilement.", priceDeltaCents: 0, render: { insertMaterial: "aluminium" } },
-          { key: "ceramique", label: "Céramique", description: "Garde sa teinte au soleil et ne se raye pratiquement pas.", priceDeltaCents: 8000, leadDaysDelta: 2, render: { insertMaterial: "ceramique" } },
+          { key: "ceramique", label: "Céramique", description: "Garde sa teinte au soleil et ne se raye presque pas.", priceDeltaCents: 8000, leadDaysDelta: 2, render: { insertMaterial: "ceramique" } },
         ],
       },
       {
@@ -224,7 +224,7 @@ export const STEPS: Step[] = [
         selection: "unique",
         optional: true,
         options: [
-          { key: "noir", label: "Noir", colorName: "Noir", colorHex: "#22201D", priceDeltaCents: 0, partRef: "INS-NOI", render: { insertColor: "#22201D" } },
+          { key: "noir", label: "Noir", colorName: "Noir", colorHex: "#17191C", priceDeltaCents: 0, partRef: "INS-NOI", render: { insertColor: "#17191C" } },
           { key: "bleu-nuit", label: "Bleu nuit", colorName: "Bleu nuit", colorHex: "#1B2E42", priceDeltaCents: 0, partRef: "INS-BLE", render: { insertColor: "#1B2E42" } },
           { key: "vert-foret", label: "Vert forêt", colorName: "Vert forêt", colorHex: "#2C3B2C", priceDeltaCents: 0, partRef: "INS-VER", render: { insertColor: "#2C3B2C" } },
           { key: "gris-ardoise", label: "Gris ardoise", colorName: "Gris ardoise", colorHex: "#4A4E52", priceDeltaCents: 0, partRef: "INS-GRI", render: { insertColor: "#4A4E52" } },
@@ -246,7 +246,7 @@ export const STEPS: Step[] = [
   {
     key: "couronne",
     label: "Couronne",
-    intro: "On la manipule chaque matin : sa prise compte autant que son dessin.",
+    intro: "Vous la manipulerez souvent : regardez sa prise en main autant que son dessin.",
     groups: [
       {
         key: "couronne-signature",
@@ -262,9 +262,9 @@ export const STEPS: Step[] = [
         label: "Teinte",
         selection: "unique",
         options: [
-          { key: "acier", label: "Acier", colorName: "Acier", colorHex: "#B0A899", priceDeltaCents: 0, render: { crownMetal: "acier" } },
-          { key: "dore", label: "Doré", colorName: "Doré", colorHex: "#C09755", priceDeltaCents: 4000, render: { crownMetal: "dore" } },
-          { key: "noir", label: "Noir PVD", colorName: "Noir", colorHex: "#3D372F", priceDeltaCents: 3000, render: { crownMetal: "noir" } },
+          { key: "acier", label: "Acier", colorName: "Acier", colorHex: "#A9AFB6", priceDeltaCents: 0, render: { crownMetal: "acier" } },
+          { key: "dore", label: "Doré", colorName: "Doré", colorHex: "#C99A45", priceDeltaCents: 4000, render: { crownMetal: "dore" } },
+          { key: "noir", label: "Noir PVD", colorName: "Noir", colorHex: "#33373C", priceDeltaCents: 3000, render: { crownMetal: "noir" } },
         ],
       },
       {
@@ -281,15 +281,15 @@ export const STEPS: Step[] = [
   {
     key: "bracelet",
     label: "Bracelet",
-    intro: "Le même boîtier change complètement de caractère selon le brin.",
+    intro: "Selon le brin, un même boîtier paraît plus sportif ou plus habillé.",
     groups: [
       {
         key: "bracelet-type",
         label: "Type",
         selection: "unique",
         options: [
-          { key: "acier-3-maillons", label: "Acier, trois maillons", priceDeltaCents: 0, partRef: "BRA-3M", render: { strapKind: "acier-3-maillons", strapColor: "#B0A899" } },
-          { key: "acier-jubile", label: "Acier, jubilé", description: "Cinq maillons, les trois centraux polis.", priceDeltaCents: 9000, partRef: "BRA-JUB", render: { strapKind: "acier-jubile", strapColor: "#B0A899" } },
+          { key: "acier-3-maillons", label: "Acier, trois maillons", priceDeltaCents: 0, partRef: "BRA-3M", render: { strapKind: "acier-3-maillons", strapColor: "#A9AFB6" } },
+          { key: "acier-jubile", label: "Acier, jubilé", description: "Cinq maillons, les trois centraux polis.", priceDeltaCents: 9000, partRef: "BRA-JUB", render: { strapKind: "acier-jubile", strapColor: "#A9AFB6" } },
           { key: "cuir", label: "Cuir", description: "Tannage végétal, coutures à la main.", priceDeltaCents: 0, partRef: "BRA-CUI", render: { strapKind: "cuir" } },
           { key: "caoutchouc", label: "Caoutchouc", description: "Vulcanisé, insensible à l'eau de mer.", priceDeltaCents: 0, partRef: "BRA-CAO", render: { strapKind: "caoutchouc" } },
           { key: "nato", label: "NATO", description: "Sangle tissée, passe sous le boîtier.", priceDeltaCents: 0, partRef: "BRA-NAT", render: { strapKind: "nato" } },
@@ -303,8 +303,8 @@ export const STEPS: Step[] = [
         options: [
           { key: "fauve", label: "Cuir fauve", colorName: "Fauve", colorHex: "#8A5A33", priceDeltaCents: 0, render: { strapColor: "#8A5A33" } },
           { key: "chocolat", label: "Cuir chocolat", colorName: "Chocolat", colorHex: "#4A3728", priceDeltaCents: 0, render: { strapColor: "#4A3728" } },
-          { key: "cuir-noir", label: "Cuir noir", colorName: "Noir", colorHex: "#2A2622", priceDeltaCents: 0, render: { strapColor: "#2A2622" } },
-          { key: "caoutchouc-noir", label: "Caoutchouc noir", colorName: "Noir", colorHex: "#262320", priceDeltaCents: 0, render: { strapColor: "#262320" } },
+          { key: "cuir-noir", label: "Cuir noir", colorName: "Noir", colorHex: "#1E1F21", priceDeltaCents: 0, render: { strapColor: "#1E1F21" } },
+          { key: "caoutchouc-noir", label: "Caoutchouc noir", colorName: "Noir", colorHex: "#1B1D20", priceDeltaCents: 0, render: { strapColor: "#1B1D20" } },
           { key: "caoutchouc-bleu", label: "Caoutchouc bleu", colorName: "Bleu", colorHex: "#24384A", priceDeltaCents: 0, render: { strapColor: "#24384A" } },
           { key: "nato-kaki", label: "NATO kaki", colorName: "Kaki", colorHex: "#5D6152", priceDeltaCents: 0, render: { strapColor: "#5D6152" } },
           { key: "nato-marine", label: "NATO marine", colorName: "Marine", colorHex: "#2E3B4A", priceDeltaCents: 0, render: { strapColor: "#2E3B4A" } },
@@ -331,7 +331,7 @@ export const STEPS: Step[] = [
   {
     key: "verre",
     label: "Verre",
-    intro: "Saphir dans tous les cas : rien d'autre ne tient à l'usage quotidien.",
+    intro: "Je ne monte que du saphir, qui résiste aux rayures du quotidien.",
     groups: [
       {
         key: "verre-forme",
@@ -339,7 +339,7 @@ export const STEPS: Step[] = [
         selection: "unique",
         options: [
           { key: "plat", label: "Saphir plat", description: "Silhouette basse, aucune déformation sur les bords.", priceDeltaCents: 0, partRef: "VER-PLA", render: { crystal: "plat" } },
-          { key: "bombe", label: "Saphir bombé", description: "Galbe ancien ; la lumière file sur tout le pourtour.", priceDeltaCents: 7000, partRef: "VER-BOM", render: { crystal: "bombe" } },
+          { key: "bombe", label: "Saphir bombé", description: "Galbe à l'ancienne, avec des reflets sur tout le pourtour.", priceDeltaCents: 7000, partRef: "VER-BOM", render: { crystal: "bombe" } },
         ],
       },
       {
@@ -413,14 +413,14 @@ export const STEPS: Step[] = [
       {
         key: "compteurs",
         label: "Compteurs chronographe",
-        help: "60 secondes à 9 h, 30 minutes à 3 h. Le contraste avec le cadran est ce qui rend un chronographe lisible en course.",
+        help: "60 secondes à 9 h, 30 minutes à 3 h. Un chronographe se lit mieux en course quand les compteurs contrastent avec le cadran.",
         selection: "unique",
         optional: true,
         options: [
           {
             key: "panda",
             label: "Panda",
-            description: "Compteurs clairs sur cadran sombre — le classique des chronographes de course.",
+            description: "Compteurs clairs sur cadran sombre, comme sur les chronographes de course classiques.",
             priceDeltaCents: 0,
             render: { subdialColor: "#EFE7D6" },
           },
@@ -429,7 +429,7 @@ export const STEPS: Step[] = [
             label: "Panda inversé",
             description: "Compteurs sombres sur cadran clair.",
             priceDeltaCents: 0,
-            render: { subdialColor: "#26241F" },
+            render: { subdialColor: "#1C1E21" },
           },
         ],
       },
@@ -438,7 +438,7 @@ export const STEPS: Step[] = [
   {
     key: "fond",
     label: "Fond",
-    intro: "La face que vous ne verrez presque jamais, et qui reste la plus personnelle.",
+    intro: "Vous verrez peu cette face de la montre. Vous pouvez y faire graver un texte.",
     groups: [
       {
         key: "fond-type",
@@ -446,7 +446,7 @@ export const STEPS: Step[] = [
         selection: "unique",
         options: [
           { key: "plein", label: "Fond plein", description: "Acier vissé, joint torique. Le plus étanche.", priceDeltaCents: 0, partRef: "FON-PLE", render: { caseback: "plein" } },
-          { key: "transparent", label: "Fond transparent", description: "Saphir vissé : le mouvement travaille sous les yeux.", priceDeltaCents: 9000, leadDaysDelta: 2, partRef: "FON-TRA", render: { caseback: "transparent" } },
+          { key: "transparent", label: "Fond transparent", description: "Saphir vissé : vous voyez le mouvement tourner.", priceDeltaCents: 9000, leadDaysDelta: 2, partRef: "FON-TRA", render: { caseback: "transparent" } },
         ],
       },
       {
@@ -488,7 +488,7 @@ export const RULES: CompatibilityRule[] = [
     subject: "lunette-style:gmt",
     kind: "exige-une-de",
     targets: ["mouvement:nh34"],
-    message: "Une lunette 24 heures n'a de sens qu'avec le calibre GMT NH34.",
+    message: "La lunette 24 heures se lit avec l'aiguille GMT du calibre NH34.",
   },
   {
     subject: "insert-matiere:ceramique",
@@ -536,7 +536,7 @@ export const RULES: CompatibilityRule[] = [
     subject: "aiguille-24h:baton-lume",
     kind: "exige-une-de",
     targets: ["luminova:avec"],
-    message: "Sans luminova sur le reste de la montre, ce choix n'aurait pas de sens.",
+    message: "Le bâton luminescent suppose le luminova sur le reste de la montre.",
   },
   {
     subject: "mouvement:vk64",

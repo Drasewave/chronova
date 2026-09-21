@@ -2,7 +2,7 @@
 
 Référence interne du système visuel tel qu'il est dans le code. Source unique des valeurs : `src/app/globals.css`. Le format portable pour les outils (tokens en frontmatter, règles nommées) est `DESIGN.md` à la racine, avec son annexe `.impeccable/design.json`.
 
-Parti pris : le standard du secteur horloger, sans détour. La montre est photographiée, la page s'efface. Un papier neutre et clair pour la vitrine, une nuit bleu-noir pour les scènes où l'acier doit briller, un or champagne, rare, pour ce qui compte.
+Parti pris : le standard du secteur horloger, sans détour. La montre est photographiée, la page s'efface. Deux familles de couleur seulement, partout : l'encre — du papier clair à la nuit bleu-noir, une même teinte (~212°) — et l'or. L'or est l'unique accent du site, sur papier comme sur la nuit ; seule sa clarté change selon le fond pour garder le contraste.
 
 ## 1. Couleurs
 
@@ -14,27 +14,29 @@ Valeurs brutes, déclarées dans `@theme`. Les composants ne les utilisent pas d
 |---|---|---|
 | `--color-papier` | `#f5f5f3` | Fond principal du site clair |
 | `--color-papier-alt` | `#ebebe8` | Sections alternées, petits blocs teintés du CRM |
-| `--color-panneau` | `#fdfdfc` | Champs, puces, panneaux ; texte du bouton marine |
+| `--color-panneau` | `#fdfdfc` | Champs, puces, panneaux ; centre du fond de studio clair |
 | `--color-encre` | `#111417` | Texte principal |
 | `--color-encre-douce` | `#555b63` | Texte secondaire |
 | `--color-filet` | `#dadad6` | Filets décoratifs de 1 px |
-| `--color-marine` | `#14263a` | Accent sur papier : bouton plein, sélection, focus |
-| `--color-marine-vive` | `#1f3b5a` | Survol de l'accent sur papier |
-| `--color-or` | `#7d5e27` | L'or lisible sur papier : prix, repères, filet d'or, lien actif |
-| `--color-or-clair` | `#d9bc7a` | Accent des scènes nuit ; décor seul sur papier |
+| `--color-or-profond` | `#7d5e27` | L'or qui s'écrit sur papier : liens, survols, prix, repères, filet d'or, bordure de sélection |
+| `--color-or` | `#a47f32` | Aplat d'accent sur papier : bouton plein, puce active, barres de graphique (texte nuit dessus) |
+| `--color-or-vif` | `#9a762c` | Survol de l'aplat sur papier |
+| `--color-or-clair` | `#d9bc7a` | Accent de la nuit, aplat comme texte ; décor seul sur papier |
 | `--color-or-pale` | `#ead7a6` | Survol de l'accent sur la nuit |
 | `--color-sapin` | `#1e6b4c` | Statuts positifs |
 | `--color-sapin-clair` | `#7fd0a8` | Statut positif sur la nuit |
 | `--color-grenat` | `#a12a3c` | Alerte, erreur, `À remplir`, pastille « Exemple » |
 | `--color-grenat-clair` | `#f09aaa` | Alerte sur la nuit |
-| `--color-nuit` | `#0b1118` | Scènes nuit, pied de page, thème nuit du CRM |
+| `--color-nuit` | `#0b1118` | Scènes nuit, pied de page, thème nuit du CRM ; texte posé sur tout aplat d'or |
+| `--color-nuit-profonde` | `#070b10` | Fond des gros plans macro, haut du cyclorama |
+| `--color-nuit-scene` | `#223246` | Halo des scènes nuit, centre du fond de studio nuit |
 | `--color-nuit-alt` | `#111923` | Fond alterné sur la nuit |
 | `--color-nuit-panneau` | `#16202c` | Panneaux sur la nuit |
 | `--color-nuit-encre` | `#eef0f2` | Texte sur la nuit |
 | `--color-nuit-douce` | `#a3abb5` | Texte secondaire sur la nuit |
 | `--color-nuit-filet` | `#263241` | Filets sur la nuit |
 
-Valeurs déclarées hors `@theme`, directement dans les tokens sémantiques : contour de champ `--field` (`#767c84` clair, `#78828e` nuit) et fond de studio `--stage-in` / `--stage-out` (`#ffffff` → `#e3e4e6` clair, `#223246` → `#0b1118` nuit).
+Valeurs déclarées hors `@theme`, directement dans les tokens sémantiques : contour de champ `--field` (`#767c84` clair, `#78828e` nuit) et bord du fond de studio clair `--stage-out` (`#e2e3e5`). Les autres arrêts du fond de studio sont des tokens : `panneau` au centre en clair, `nuit-scene` → `nuit` sur la nuit.
 
 ### Tokens sémantiques
 
@@ -49,20 +51,22 @@ Le thème nuit s'active par `data-theme="night"` sur n'importe quel conteneur : 
 | `--fg-soft` | encre-douce | nuit-douce |
 | `--rule` | filet | nuit-filet |
 | `--field` | `#767c84` | `#78828e` |
-| `--accent` | marine | or-clair |
-| `--accent-hover` | marine-vive | or-pale |
+| `--accent` (aplat) | or | or-clair |
+| `--accent-hover` | or-vif | or-pale |
 | `--accent-decor` | or-clair | or |
-| `--on-accent` | panneau | nuit |
-| `--gold` | or | or-clair |
+| `--on-accent` | nuit | nuit |
+| `--gold` (l'or qui s'écrit) | or-profond | or-clair |
 | `--positive` | sapin | sapin-clair |
 | `--alert` | grenat | grenat-clair |
-| `--focus` | marine | or-clair |
-| `--stage-in` → `--stage-out` | `#ffffff` → `#e3e4e6` | `#223246` → `#0b1118` |
+| `--focus` | encre | or-clair |
+| `--stage-in` → `--stage-out` | panneau → `#e2e3e5` | nuit-scene → nuit |
 
 Principes :
 
-- La marine porte l'accent sur papier ; sur la nuit elle disparaît, c'est l'or clair qui prend le relais.
-- L'or est le seul ornement du site (`--gold`) : prix, repères numérotés, filet d'or (`.filet-or`), lien de navigation actif, soulignement du bouton discret, puces de liste, curseur de saisie. La sélection de texte est or clair sur nuit.
+- Deux familles seulement : l'encre (papier → nuit) et l'or. Le sapin et le grenat ne sont que des statuts.
+- L'or est l'unique accent et le seul ornement, sur papier comme sur la nuit ; seule sa clarté change selon le fond.
+- `--accent` est un **aplat** : bouton plein, puce de filtre active, vue active, pastille de quantité, barres de graphique — toujours avec un texte `--on-accent` (la nuit) dessus. Dans les composants : `bg-accent` + `text-on-accent`.
+- `--gold` est **l'or qui s'écrit** : liens et survols, prix, repères numérotés, filet d'or (`.filet-or`), lien de navigation actif, soulignement du bouton discret, bordure de l'option choisie et du champ en focus, puces de liste, curseur de saisie. Dans les composants : `text-gold`, `border-gold`. Sur papier c'est l'or profond, plus sombre pour tenir 4,5:1 ; sur la nuit, l'or clair sert aux deux rôles. La sélection de texte est or clair sur nuit.
 - `--rule` est réservé aux séparateurs décoratifs. Un champ de saisie se délimite avec `--field`, qui tient 3:1 sur tous les fonds (WCAG 1.4.11).
 
 ### Règles de contraste vérifiées
@@ -73,12 +77,11 @@ Ratios calculés (WCAG 2.1) à partir des hex de `globals.css`. Les couples marq
 |---|---|---|
 | `encre` sur `papier` / `papier-alt` | 16,93:1 / 15,47:1 | ✅ testé |
 | `encre-douce` sur `papier` / `papier-alt` | 6,28:1 / 5,74:1 | ✅ testé |
-| `marine` sur `papier` / `papier-alt` | 14,06:1 / 12,85:1 | ✅ testé |
-| `marine-vive` sur `papier` / `papier-alt` | 10,50:1 / 9,60:1 | ✅ testé |
-| `or` sur `papier` / `papier-alt` | 5,49:1 / 5,02:1 | ✅ testé |
+| `or-profond` sur `papier` / `papier-alt` | 5,49:1 / 5,02:1 | ✅ testé |
 | `sapin` sur `papier` / `papier-alt` | 5,90:1 / 5,39:1 | ✅ testé |
 | `grenat` sur `papier` / `papier-alt` | 6,61:1 / 6,04:1 | ✅ testé |
-| `panneau` sur `marine` / `marine-vive` (bouton plein) | 15,08:1 / 11,27:1 | ✅ testé |
+| `nuit` sur `or` / `or-vif` (bouton plein, repos / survol) | 5,11:1 / 4,52:1 | ✅ testé |
+| `or` sur `papier` | **3,40:1** | ❌ testé < 4,5 : aplat uniquement, le texte d'or prend `or-profond` |
 | `or-clair` sur `papier` | **1,68:1** | ❌ testé < 3 : décor uniquement, jamais de texte |
 | `nuit-encre` sur `nuit` / `nuit-panneau` | 16,60:1 / 14,39:1 | ✅ testé |
 | `nuit-douce` sur `nuit` / `nuit-panneau` | 8,17:1 / 7,09:1 | ✅ testé |
@@ -87,7 +90,7 @@ Ratios calculés (WCAG 2.1) à partir des hex de `globals.css`. Les couples marq
 | `sapin-clair` sur `nuit` / `nuit-panneau` | 10,37:1 / 9,00:1 | ✅ testé |
 | `grenat-clair` sur `nuit` / `nuit-panneau` | 8,95:1 / 7,76:1 | ✅ testé |
 | `nuit` sur `or-clair` (bouton plein nuit) | 10,31:1 | ✅ testé |
-| `marine` sur `nuit` | **1,24:1** | ❌ testé < 3 → sur la nuit l'accent devient `or-clair` |
+| `or-profond` sur `nuit` | **3,16:1** | ❌ testé < 4,5 → sur la nuit le texte d'accent passe à `or-clair` |
 | `sapin` sur `nuit` | **2,95:1** | ❌ testé < 3 → `sapin-clair` |
 
 Couples calculés mais non couverts par la suite de tests :
@@ -95,24 +98,27 @@ Couples calculés mais non couverts par la suite de tests :
 | Couple | Ratio | Remarque |
 |---|---|---|
 | `encre` / `encre-douce` sur `panneau` | 18,16:1 / 6,74:1 | ✅ |
-| `or` sur `panneau` | 5,89:1 | ✅ |
-| `encre` / `encre-douce` sur `--stage-out` clair (`#e3e4e6`) | 14,53:1 / 5,39:1 | ✅ bord le plus dense d'une tuile de montre |
+| `or-profond` sur `panneau` | 5,89:1 | ✅ |
+| `or-profond` sur `--stage-out` clair (`#e2e3e5`) | 4,67:1 | ✅ |
+| `or` sur `panneau` / `papier-alt` ; `or-vif` sur `papier` | 3,65:1 / 3,11:1 ; 3,85:1 | aplats : jamais de texte dans ces teintes |
+| `encre` / `encre-douce` sur `--stage-out` clair (`#e2e3e5`) | 14,39:1 / 5,34:1 | ✅ bord le plus dense d'une tuile de montre |
 | `nuit-encre` / `nuit-douce` sur `nuit-alt` | 15,48:1 / 7,62:1 | ✅ |
-| `nuit-encre` / `nuit-douce` sur `--stage-in` nuit (`#223246`) | 11,40:1 / 5,61:1 | ✅ |
+| `nuit-encre` / `nuit-douce` sur `nuit-scene` (`--stage-in` nuit) | 11,40:1 / 5,61:1 | ✅ |
+| `nuit-encre` / `nuit-douce` / `or-clair` sur `nuit-profonde` | 17,27:1 / 8,50:1 / 10,73:1 | ✅ fond des gros plans |
 | `--field` clair sur `papier` / `papier-alt` / `panneau` | 3,86:1 / 3,53:1 / 4,14:1 | ✅ contour de champ ≥ 3:1 |
 | `--field` nuit sur `nuit` / `nuit-panneau` | 4,86:1 / 4,21:1 | ✅ contour de champ ≥ 3:1 |
 | `filet` sur `papier` | 1,28:1 | décor : séparateur, jamais un contour porteur de sens |
 | `nuit-filet` sur `nuit` | 1,46:1 | décor |
-| `or` sur `nuit` (`--accent-decor` nuit) | 3,16:1 | décor uniquement |
+| `or` sur `nuit` (`--accent-decor` nuit) | 5,11:1 | employé en décor |
 
-**Conséquence** : `or-clair` est interdit en texte sur le papier mais **devient l'accent du thème nuit** ; l'or du papier est une version assombrie (`or`). Les tokens sémantiques (`--accent`, `--accent-hover`, `--on-accent`, `--gold`, `--positive`, `--alert`, `--focus`) basculent donc avec le thème ; les composants n'utilisent pas de couleur brute.
+**Conséquence** : sur papier, l'or se dédouble — `or` pour les aplats (texte nuit dessus), `or-profond` pour tout ce qui s'écrit ; `or-clair` y est interdit en texte mais **devient l'accent du thème nuit**, aplat comme texte. Les tokens sémantiques (`--accent`, `--accent-hover`, `--on-accent`, `--gold`, `--positive`, `--alert`, `--focus`) basculent avec le thème ; les composants n'utilisent pas de couleur brute.
 
 ```css
 :root {
-  --accent: var(--color-marine);   --accent-hover: var(--color-marine-vive);
-  --on-accent: var(--color-panneau); --gold: var(--color-or);
+  --accent: var(--color-or);       --accent-hover: var(--color-or-vif);
+  --on-accent: var(--color-nuit);  --gold: var(--color-or-profond);
   --positive: var(--color-sapin);  --alert: var(--color-grenat);
-  --focus: var(--color-marine);
+  --focus: var(--color-encre);
 }
 [data-theme="night"] {
   --accent: var(--color-or-clair); --accent-hover: var(--color-or-pale);
@@ -159,17 +165,17 @@ Pas d'échelle d'espacement propre : les espacements courants sont ceux de Tailw
 
 - Gouttière : `--gutter: clamp(20px, 4vw, 56px)` — jamais moins de 20 px sur les bords. Elle est posée une seule fois, par `Section` (ou par la bande elle-même) ; aucun composant enfant ne gère ses marges de bord d'écran.
 - Rythme vertical des sections : `--section-y: clamp(72px, 9vw, 136px)` ; variante `compact` : `clamp(40px, 5vw, 72px)`.
-- Conteneurs : `--container-prose: 68ch`, `--container-content: 80rem` (1280 px, contenu des `Section`), `--container-wide: 90rem` (1440 px : en-tête, héros, bande macro, clôture, pied de page).
+- Conteneurs : `--container-prose: 68ch`, `--container-wide: 90rem` (1440 px). Tout le site public — en-tête, héros, `Section`, vue éclatée, bande macro, clôture, pied de page — s'aligne sur `max-w-wide`. `--container-content: 80rem` (1280 px) reste déclaré mais n'est plus utilisé sur le site public.
 - Grilles : définies section par section en utilitaires Tailwind. Modèles : 1 → 2 colonnes (640 px) → 3 (1024 px). Frise du parcours : 1 → 2 (768 px) → 4 (1280 px). Gros plans macro : 3 colonnes dès 768 px. Héros : deux colonnes dès 1024 px, la montre sur deux rangées à droite, sans `order` (l'ordre du DOM reste l'ordre de lecture).
 - Rayons : `--radius-field: 8px` (champs, petits blocs), `--radius-card: 14px` (tuiles de montre, cartes d'option, panneaux, boîte de zoom), `--radius-pill: 999px` (boutons, puces, pastilles, sélecteur de vue, boutons d'icône, repères). Anneau de focus : 4 px.
 - Séparation : filet de 1 px `--rule` (`Rule`, `hr`). **Une bordure ou une ombre, jamais les deux.**
 - Ombres : deux seulement, teintées nuit, réservées aux éléments flottants. `--shadow-lift: 0 18px 48px -20px rgb(11 17 24 / 0.38)` (tiroir du panier, palette de recherche du CRM en thème clair — en thème nuit elle échange son ombre contre un filet) ; `--shadow-sheet: 0 -12px 40px -18px rgb(11 17 24 / 0.36)` (barre de total collée en bas du configurateur mobile).
 - Aucune texture de surface, aucun grain.
-- Mise en scène des montres : `.cadre-montre` est un fond de studio — dégradé radial `--stage-in` → `--stage-out` (ellipse 78 % × 70 % centrée à 50 % / 42 %), rayon 14 px, **sans bordure ni ombre**. `.scene-nuit` est le cyclorama du héros et de la clôture : fond nuit, halo froid elliptique derrière la montre, lueur d'or très faible au sol, dégradé vertical ; sous 1024 px le halo se recentre. Derrière la montre du héros, une couronne graduée de soixante traits en or.
+- Mise en scène des montres : `.cadre-montre` est un fond de studio — dégradé radial `--stage-in` → `--stage-out` (ellipse 78 % × 70 % centrée à 50 % / 42 %), rayon 14 px, **sans bordure ni ombre**. `.scene-nuit` est le cyclorama du héros et de la clôture, entièrement en tokens : fond `nuit`, halo froid elliptique en `nuit-scene` derrière la montre, lueur d'`or-clair` très faible au sol, dégradé vertical de `nuit-profonde` à `nuit-alt` ; sous 1024 px le halo se recentre. Les gros plans macro sont posés sur `nuit-profonde`. Derrière la montre du héros, une couronne graduée de soixante traits en or.
 - `.filet-or` : trait de 1 px en `--gold`, fondu aux deux extrémités, opacité 0,55. Le seul ornement du site.
 - Pointillés : réservés à ce qui manque (emplacement photo, avis à venir, `À remplir`).
-- En-tête collant : transparent et en thème nuit sur le héros de l'accueil ; une fois la page défilée (12 px), voile translucide flouté (`.entete-voile` : fond à 82 %, `saturate(1.6) blur(18px)`) et filet bas.
-- Focus : `outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px` — marine sur papier, or clair sur la nuit, jamais supprimé. Lien d'évitement `.skip-link` en premier élément focusable.
+- En-tête collant : transparent sur le héros de l'accueil ; il prend le thème nuit chaque fois qu'une section nuit passe sous lui (pour ne pas couper la page en deux palettes) ; une fois la page défilée (12 px), voile translucide flouté (`.entete-voile` : fond à 82 %, `saturate(1.6) blur(18px)`) et filet bas.
+- Focus : `outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px` — encre sur papier, or clair sur la nuit, jamais supprimé. Lien d'évitement `.skip-link` en premier élément focusable.
 - Cibles : 44 px au moins pour les commandes isolées (`.lien-atelier`, boutons d'icône, puces, boutons du CRM). Bouton `md` : 48 px ; `sm` : 40 px.
 - Ancres : `scroll-margin-top: 6rem` pour ne pas passer sous l'en-tête.
 - Zones à défilement horizontal du CRM (`.defilement-atelier`) : barre fine toujours visible, pouce en or sur piste filet.
@@ -192,7 +198,7 @@ Seuls les composants présents dans `src/components` et `src/watch` sont listés
 
 **Primitives** (`ui/`) — `Button` et `ButtonLink` (variantes `primaire` / `contour` / `discret`, tailles `md` / `sm`, toujours en pilule, appui enfoncé de 1 px), `Pill` (tons `neutre` / `accent` / `positif` / `alerte`, en `type-mono`), `SamplePill` (pastille « Exemple », ton alerte, sur toute donnée fictive), `Section` (fonds `papier` / `alterne` / `nuit`, option `compact`), `SectionHeader` (titre, chapô, action — pas de surtitre), `Rule`, `PhotoPlaceholder` (fond de studio en pointillés qui décrit la photo attendue), `FillMe` (bloc grenat en pointillés « À remplir · … »), `LegalPage` (gabarit des pages longues, date de mise à jour obligatoire), icônes.
 
-**Mise en page** (`layout/`) — `Header` (collant, thème nuit sur le héros, tiroir mobile, exclu des transitions de page), `Footer` (toujours en thème nuit, identité légale commune aux mentions), `Wordmark` (« CHRONOVA » en Jost interlettré à 0,22em, aucun fichier logo), `SmoothScroll` (Lenis, site public seulement).
+**Mise en page** (`layout/`) — `Header` (collant, suit le thème de la section qui passe dessous, tiroir mobile, exclu des transitions de page), `Footer` (toujours en thème nuit, identité légale commune aux mentions), `Wordmark` (« CHRONOVA » en Jost interlettré à 0,22em, aucun fichier logo), `SmoothScroll` (Lenis, site public seulement).
 
 **Accueil** (`home/`) — `Hero` (scène nuit, fiche de la pièce et prix en pied de scène), `ExplodedView` (vue éclatée en sept plans au défilement, servie dépliée sans JavaScript), `MacroBand` (trois gros plans recadrés du même SVG), `ModelsSection` et `ModelCard` (tuile de studio, second coloris au survol, élément partagé vers la fiche), `Process` (frise en quatre temps, repères bordés d'or), `Watchmaker` (emplacements photo et blocs `À remplir`), `Testimonials` (emplacement « Avis à venir » tant qu'aucun avis réel n'existe), `FaqSection` (accordéon `<details>`), `ClosingCta` (seconde scène nuit, montre à demi hors champ).
 
@@ -204,9 +210,9 @@ Seuls les composants présents dans `src/components` et `src/watch` sont listés
 
 **Mouvement et entrée** — `Reveal` (apparition au défilement), `IntroCurtain` (rideau d'entrée) et son script d'amorçage `INTRO_BOOT`.
 
-**CRM** (`atelier/`) — `CrmShell`, `BasculeTheme` (clair / nuit, deux boutons), `RechercheGlobale` (palette `Cmd/Ctrl + K` en `<dialog>`), gabarit (`TitrePage`, `FilAriane`, `Filtres`, `Filtre`, `Tableau`, `Th`, `Td`, `EtatVide`, constantes `SURFACE`, `BLOC`, `CODE`, `CHIFFRE_FORT`, `LIGNE_LISTE`, `LIGNE_TABLEAU`), formulaire (`Champ`, `Saisie`, `Liste`, `Zone`, `Bouton`, `BoutonLeger`, constantes `SAISIE`, `CASE`), graphiques (`BarresHorizontales`, `HistogrammeMois`, `Synthese`, `Panneau` — une série, une couleur : `--accent`), `TableauDefilant`, `EditeurOption` (aperçu de la teinte sur la montre), `BandeauExemple`, `MarquerLu`. Une surface du CRM porte une bordure, jamais une ombre en plus ; les cibles font 44 px.
+**CRM** (`atelier/`) — `CrmShell`, `BasculeTheme` (clair / nuit, deux boutons), `RechercheGlobale` (palette `Cmd/Ctrl + K` en `<dialog>`), gabarit (`TitrePage`, `FilAriane`, `Filtres`, `Filtre`, `Tableau`, `Th`, `Td`, `EtatVide`, constantes `SURFACE`, `BLOC`, `CODE`, `CHIFFRE_FORT`, `LIGNE_LISTE`, `LIGNE_TABLEAU`), formulaire (`Champ`, `Saisie`, `Liste`, `Zone`, `Bouton`, `BoutonLeger`, constantes `SAISIE`, `CASE`), graphiques (`BarresHorizontales`, `HistogrammeMois`, `Synthese`, `Panneau` — une série, une couleur : l'aplat `--accent`), `TableauDefilant`, `EditeurOption` (aperçu de la teinte sur la montre), `BandeauExemple`, `MarquerLu`. Une surface du CRM porte une bordure, jamais une ombre en plus ; les cibles font 44 px.
 
-Champs de saisie (`SAISIE`) : fond `--panel`, contour `--field` de 1 px, rayon 8 px, hauteur 44 px, corps `ui` ; survol en bordure encre, focus en bordure d'accent, erreur (`aria-invalid`) en bordure d'alerte, désactivé sur fond alterné.
+Champs de saisie (`SAISIE`) : fond `--panel`, contour `--field` de 1 px, rayon 8 px, hauteur 44 px, corps `ui` ; survol en bordure encre, focus en bordure d'or (`border-gold`), erreur (`aria-invalid`) en bordure d'alerte, désactivé sur fond alterné.
 
 ## 7. Moteur de rendu de la montre
 

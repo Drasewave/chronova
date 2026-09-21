@@ -37,7 +37,7 @@ export function StepSection({
           aria-controls={id}
           className="flex w-full items-center gap-4 py-5 text-left"
         >
-          <span className="type-mono shrink-0 text-accent">{String(index).padStart(2, "0")}</span>
+          <span className="type-mono shrink-0 text-gold">{String(index).padStart(2, "0")}</span>
           <span className="min-w-0 flex-1">
             <span className="type-title-2 block text-fg">{label}</span>
             {!ouvert && resume && (
@@ -46,7 +46,7 @@ export function StepSection({
           </span>
           <IconChevron
             className={cn(
-              "shrink-0 text-accent transition-transform duration-300 ease-atelier",
+              "shrink-0 text-gold transition-transform duration-300 ease-atelier",
               ouvert && "rotate-180",
             )}
             width={22}

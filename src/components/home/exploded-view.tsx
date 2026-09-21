@@ -60,8 +60,8 @@ const EP_FOND = 14;
 
 const ACIER = METALS.acier;
 const OR = METALS.dore;
-const INSERT = "#1B2B45";
-const CADRAN = "#1F3350";
+const INSERT = "#1B2E42";
+const CADRAN = "#1E3448";
 const GRAVURE_CLAIRE = tint(ACIER.light, 0.4);
 
 /** Deux décimales : le serveur et le navigateur doivent écrire le même SVG. */
@@ -967,22 +967,22 @@ export function ExplodedView() {
         )}
         style={anime ? undefined : { paddingBlock: "var(--section-y)" }}
       >
-        <div className="mx-auto w-full max-w-content" style={{ paddingInline: "var(--gutter)" }}>
+        <div className="mx-auto w-full max-w-wide" style={{ paddingInline: "var(--gutter)" }}>
           {/* Trois colonnes en grand écran : l'intitulé à gauche, la pile au
               centre, la nomenclature à droite. Le dessin récupère ainsi toute
               la hauteur d'écran disponible. */}
           <div className="grid items-center gap-4 sm:gap-6 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] lg:gap-10">
             <header>
               <h2 id="titre-eclate" className="type-display-2 lg:max-w-[12ch]">
-                Sept plans, montés un par un.
+                Les sept pièces d&apos;une montre
               </h2>
               <p className="type-body mt-3 max-w-[44ch] text-fg-soft lg:mt-6">
-                L&apos;Abysse 40, ouverte du verre jusqu&apos;au fond : chaque pièce est posée à la main, l&apos;une
+                L&apos;Abysse 40, ouverte du verre jusqu&apos;au fond. Je pose chaque pièce à la main, l&apos;une
                 sur l&apos;autre.
               </p>
               {anime && (
                 <p className="type-caption mt-6 hidden border-l border-gold pl-3 text-fg-soft lg:block">
-                  Continuez à faire défiler : la montre se sépare.
+                  Faites défiler la page pour séparer les pièces.
                 </p>
               )}
             </header>

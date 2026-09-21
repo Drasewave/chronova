@@ -39,10 +39,10 @@ export default async function Cgv() {
       {identite.raisonSociale ? (
         <p>
           {identite.raisonSociale}, entrepreneur individuel (EI), exerçant sous le nom commercial
-          Chronova{identite.adresse ? ` — ${identite.adresse}` : ""}
-          {identite.siret ? ` — SIRET ${identite.siret}` : ""}
-          {identite.email ? ` — ${identite.email}` : ""}
-          {identite.telephone ? ` — ${identite.telephone}` : ""}.
+          Chronova{identite.adresse ? `, ${identite.adresse}` : ""}
+          {identite.siret ? `, SIRET ${identite.siret}` : ""}
+          {identite.email ? `, ${identite.email}` : ""}
+          {identite.telephone ? `, ${identite.telephone}` : ""}.
         </p>
       ) : (
         <FillMe>identité complète du vendeur (se remplit depuis Atelier › Paramètres › Identité légale)</FillMe>
@@ -121,8 +121,8 @@ export default async function Cgv() {
       </p>
       <FillMe>pays livrés, transporteur, délai d&apos;acheminement, et seuil de livraison offerte s&apos;il est maintenu</FillMe>
       <p>
-        Si la montre n&apos;est pas livrée à la date annoncée — ou, à défaut de date, dans les
-        trente jours suivant la commande — vous pouvez mettre l&apos;atelier en demeure de livrer
+        Si la montre n&apos;est pas livrée à la date annoncée (ou, à défaut de date, dans les
+        trente jours suivant la commande), vous pouvez mettre l&apos;atelier en demeure de livrer
         dans un délai supplémentaire raisonnable, puis, sans résultat, annuler la commande par
         écrit : vous êtes alors remboursé sous quatorze jours (articles L216-1 et suivants du Code
         de la consommation). Le risque de perte ou de dommage vous est transféré à la remise du
@@ -150,8 +150,8 @@ export default async function Cgv() {
       </p>
       <p>
         Vous pouvez examiner et essayer la montre comme vous le feriez en boutique. Des
-        manipulations qui vont au-delà — port prolongé, rayures, bracelet mis à taille de façon
-        irréversible, ouverture du boîtier — engagent votre responsabilité pour la perte de valeur
+        manipulations qui vont au-delà (port prolongé, rayures, bracelet mis à taille de façon
+        irréversible, ouverture du boîtier) engagent votre responsabilité pour la perte de valeur
         qui en résulte.
       </p>
 
@@ -303,7 +303,7 @@ export default async function Cgv() {
         par le Code de la consommation : vous pouvez saisir la juridiction de votre domicile.
       </p>
 
-      <h2>Annexe — formulaire type de rétractation</h2>
+      <h2>Annexe : formulaire type de rétractation</h2>
       <p>
         À compléter et renvoyer uniquement si vous souhaitez vous rétracter. Un e-mail reprenant
         ces informations a la même valeur.
@@ -313,7 +313,7 @@ export default async function Cgv() {
           À l&apos;attention de{" "}
           {identite.raisonSociale
             ? `${identite.raisonSociale} (Chronova)${identite.adresse ? `, ${identite.adresse}` : ""}${identite.email ? `, ${identite.email}` : ""}`
-            : "[nom, adresse postale et adresse e-mail du vendeur — à compléter]"}{" "}
+            : "[nom, adresse postale et adresse e-mail du vendeur, à compléter]"}{" "}
           :
         </p>
         <p>

@@ -7,7 +7,7 @@ import { getCatalogue, getModels } from "@/lib/data/queries";
 export const metadata: Metadata = {
   title: "La collection",
   description:
-    "Quatre bases mécaniques assemblées à la main : plongée, terrain, GMT, habillée. Diamètres de 37 à 40 mm, calibres automatiques NH35, NH34 et NH38.",
+    "Les modèles de départ, assemblés à la main : plongée, terrain, GMT, habillée, chronographe. Diamètres de 37 à 41 mm.",
   alternates: { canonical: "/collection" },
 };
 
@@ -36,7 +36,7 @@ export default async function Collection() {
       <SectionHeader
         niveau={1}
         titre="La collection"
-        intro="Le modèle décide du boîtier, du diamètre et de l'étanchéité. Cadran, aiguilles, lunette, couronne, bracelet, verre, mouvement et fond se composent ensuite — c'est là que deux Chronova cessent de se ressembler."
+        intro="Chaque modèle fixe le boîtier, le diamètre et l'étanchéité. Vous composez ensuite le cadran, les aiguilles, la lunette, la couronne, le bracelet, le verre, le mouvement et le fond."
       />
 
       <div className="mt-10">

@@ -95,7 +95,7 @@ export function FormulaireDemande({
           <Champ
             label="Budget envisagé"
             htmlFor={`${id}-budget`}
-            aide="En euros, facultatif. Cela évite de vous proposer l'impossible."
+            aide="En euros, facultatif. Je cherche alors des pièces dans cette enveloppe."
           >
             <Entree id={`${id}-budget`} name="budget" inputMode="numeric" />
           </Champ>
@@ -153,7 +153,7 @@ export function FormulaireDemande({
           {type === "SUR_MESURE" ? " et à établir un devis" : ""}. Ils sont conservés trois ans au
           plus, ne sont ni revendus ni utilisés pour de la publicité, et vous pouvez demander leur
           suppression à tout moment. Détail dans la{" "}
-          <Link href="/confidentialite" className="link-underline text-accent">
+          <Link href="/confidentialite" className="link-underline text-gold">
             politique de confidentialité
           </Link>
           .

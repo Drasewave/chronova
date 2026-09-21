@@ -25,8 +25,8 @@ export function PanierComplet() {
       <Section fond="papier">
         <h1 className="type-display-2">Votre panier est vide</h1>
         <p className="type-lead measure mt-5 text-fg-soft">
-          Chaque montre étant montée à la demande, rien n&apos;est réservé tant que vous n&apos;avez
-          pas composé la vôtre.
+          Je monte chaque montre à la demande : je ne réserve aucune pièce tant que vous
+          n&apos;avez pas composé la vôtre.
         </p>
         <ButtonLink href="/composer" className="mt-9">
           Composer ma montre
@@ -82,7 +82,7 @@ export function PanierComplet() {
                 </label>
                 <Link
                   href={`/composer/${ligne.modelSlug}?c=${encodeURIComponent(ligne.shareParam)}`}
-                  className="type-caption link-underline text-fg-soft hover:text-accent"
+                  className="type-caption link-underline text-fg-soft hover:text-gold"
                 >
                   Modifier la configuration
                 </Link>

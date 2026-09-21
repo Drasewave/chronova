@@ -15,22 +15,22 @@ const ETABLI = [
   {
     titre: "Le potence",
     texte:
-      "Il sert à chasser les aiguilles sur leurs canons sans les tordre. C'est le geste le plus délicat du montage : une aiguille posée de travers touche la suivante et arrête la montre.",
+      "Je m'en sers pour chasser les aiguilles sur leurs canons sans les tordre. C'est le geste le plus délicat du montage : une aiguille posée de travers touche la suivante et arrête la montre.",
   },
   {
     titre: "La machine à étancher",
     texte:
-      "Chaque montre y passe avant de partir : on la met sous pression, puis on cherche la moindre fuite. Une montre qui ne passe pas ce test est rouverte, rejointée, retestée.",
+      "Chaque montre y passe avant de partir : je la mets sous pression, puis je cherche la moindre fuite. Si elle échoue, je la rouvre, je change les joints et je refais le test.",
   },
   {
     titre: "Le chronocomparateur",
     texte:
-      "Il écoute le battement du mouvement et en déduit l'écart de marche, l'amplitude et l'erreur de levée. C'est lui qui dit si un réglage tient sur trois jours.",
+      "Son micro capte le battement du mouvement. J'y lis l'écart de marche, l'amplitude et l'erreur de levée, et je m'en sers pour vérifier qu'un réglage tient sur trois jours.",
   },
   {
     titre: "La poire et les brucelles",
     texte:
-      "Souffler la poussière, saisir une pièce sans la marquer. L'essentiel du travail se joue là, à la loupe, et ne se voit sur aucune photo.",
+      "Avec la poire, je chasse la poussière ; avec les brucelles, je saisis une pièce sans la marquer. J'y passe l'essentiel de mon temps, à la loupe.",
   },
 ];
 
@@ -40,11 +40,11 @@ export default function Horloger() {
       <Section fond="papier">
         <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <div>
-            <h1 className="type-display-1 text-balance">Une paire de mains, un établi.</h1>
+            <h1 className="type-display-1 text-balance">Je monte chaque montre moi-même</h1>
             <p className="type-lead measure mt-8 text-fg-soft">
-              Chronova n&apos;est pas une marque qui fait assembler ses montres ailleurs. Les pièces
-              arrivent à l&apos;atelier, elles y sont contrôlées, montées, réglées, testées, puis
-              expédiées. Il n&apos;y a personne entre vous et la montre.
+              Les pièces arrivent à mon atelier. Je les contrôle, je monte la montre, je la règle
+              et je la teste, puis je l&apos;expédie. Je ne confie aucune de ces étapes à un
+              sous-traitant.
             </p>
           </div>
 
@@ -74,33 +74,33 @@ export default function Horloger() {
       <Section fond="papier">
         <SectionHeader
           titre="Des calibres qu'on peut réparer"
-          intro="Le choix des mouvements n'est pas un choix de prix : c'est un choix d'entretien."
+          intro="J'ai choisi ces mouvements parce qu'ils s'entretiennent facilement, chez moi comme chez un autre horloger."
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-3">
           <Reveal>
             <h3 className="type-title-2">Réparables partout</h3>
             <p className="type-body mt-3 text-fg-soft">
-              Les calibres de la famille NH sont produits à très grande échelle. Les pièces de
-              rechange se trouvent, et n&apos;importe quel horloger sait les démonter. Dans vingt
-              ans, votre montre sera encore révisable — ce qui n&apos;est pas vrai de tous les
-              mouvements d&apos;une microbrand.
+              Les calibres de la famille NH sont produits à grande échelle. Les pièces de rechange
+              se trouvent, et n&apos;importe quel horloger sait les démonter. Dans vingt ans, votre
+              montre sera encore révisable, ce qui n&apos;est pas le cas de tous les mouvements
+              montés par les microbrands.
             </p>
           </Reveal>
           <Reveal delay={60}>
             <h3 className="type-title-2">Rien de monté à l&apos;avance</h3>
             <p className="type-body mt-3 text-fg-soft">
-              Aucun stock de montres finies. L&apos;assemblage commence après votre commande, avec
-              les pièces que vous avez choisies. C&apos;est plus long, et c&apos;est la seule façon
-              de ne monter que des montres que quelqu&apos;un attend.
+              Je ne tiens aucun stock de montres finies. Je commence l&apos;assemblage après votre
+              commande, avec les pièces que vous avez choisies. C&apos;est plus long qu&apos;un
+              achat sur étagère, et je ne monte ainsi que des montres déjà commandées.
             </p>
           </Reveal>
           <Reveal delay={120}>
             <h3 className="type-title-2">Des fournisseurs nommés</h3>
             <p className="type-body mt-3 text-fg-soft">
-              Boîtiers, cadrans, aiguilles, bracelets : chaque pièce a une référence et un
-              fournisseur, consignés dans la fiche de votre commande. Vous pouvez demander
-              lesquels, et les recommander vous-même le jour où vous voudrez changer un brin.
+              Je consigne la référence et le fournisseur de chaque pièce (boîtier, cadran,
+              aiguilles, bracelet) dans la fiche de votre commande. Demandez-les-moi : vous pourrez
+              recommander vous-même un brin le jour où vous voudrez en changer.
             </p>
           </Reveal>
         </div>
@@ -108,8 +108,8 @@ export default function Horloger() {
 
       <Section fond="alterne">
         <SectionHeader
-          titre="Quatre outils qui font le travail"
-          intro="Rien d'exceptionnel : ce sont les outils de n'importe quel horloger. Ce qui change, c'est le temps qu'on passe dessus."
+          titre="Les quatre outils de l'établi"
+          intro="Vous les trouverez sur l'établi de n'importe quel horloger. J'explique ici à quoi me sert chacun."
         />
 
         <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
@@ -132,11 +132,11 @@ export default function Horloger() {
         <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="type-display-2 max-w-[18ch] text-fg">
-              Une question avant de vous lancer ?
+              Posez-moi vos questions
             </h2>
             <p className="type-lead measure mt-6 text-fg-soft">
-              Le plus simple est d&apos;écrire. Je réponds moi-même, et il n&apos;y a pas de
-              mauvaise question sur une montre qu&apos;on va porter dix ans.
+              Écrivez-moi avant de commander si un point vous arrête. Je réponds moi-même, y
+              compris aux questions de débutant.
             </p>
           </div>
           <div className="flex flex-wrap gap-4">

@@ -106,13 +106,13 @@ export function Configurator({
       <nav aria-label="Fil d'Ariane" className="py-5">
         <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
           <li>
-            <Link href="/collection" className="link-underline hover:text-accent">
+            <Link href="/collection" className="link-underline hover:text-gold">
               Collection
             </Link>
           </li>
           <li aria-hidden="true">·</li>
           <li>
-            <Link href={`/collection/${model.slug}`} className="link-underline hover:text-accent">
+            <Link href={`/collection/${model.slug}`} className="link-underline hover:text-gold">
               {model.name}
             </Link>
           </li>
@@ -255,7 +255,7 @@ function Resume({
         type="button"
         onClick={() => setDetail((v) => !v)}
         aria-expanded={detail}
-        className="type-caption link-underline mt-4 text-fg-soft hover:text-accent"
+        className="type-caption link-underline mt-4 text-fg-soft hover:text-gold"
       >
         {detail ? "Masquer le détail" : `Détail des suppléments (${configuration.price.lines.length})`}
       </button>
@@ -316,7 +316,7 @@ function Recapitulatif({
         Récapitulatif
       </h2>
       <p className="type-body measure mt-3 text-fg-soft">
-        Voici la montre telle qu&apos;elle sera montée, pièce par pièce.
+        Vérifiez chaque pièce : je monterai la montre telle qu&apos;elle est décrite ici.
       </p>
 
       {/* Groupé par étape : hors de la sienne, « Forme » ou « Teinte » ne veut
@@ -410,7 +410,7 @@ function GravureField({
         value={value}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Pour Camille — 12 juin"
+        placeholder="Pour Camille, 12 juin"
         className="type-ui mt-4 h-11 w-full rounded-field border border-rule bg-panel px-4 text-fg placeholder:text-fg-soft"
       />
 

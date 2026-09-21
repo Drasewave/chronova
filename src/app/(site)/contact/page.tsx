@@ -31,16 +31,15 @@ export default async function Contact() {
         <div>
           <h1 className="type-display-2">Écrire à l&apos;atelier</h1>
           <p className="type-lead measure mt-6 text-fg-soft">
-            C&apos;est l&apos;horloger qui lit et qui répond. Il n&apos;y a ni formulaire trié par
-            un robot, ni numéro de ticket.
+            Je lis chaque message et j&apos;y réponds moi-même.
           </p>
 
           <dl className="mt-12 flex flex-col gap-8">
             <div>
               <dt className="type-mono text-fg-soft">Délai de réponse</dt>
               <dd className="type-body mt-2 text-fg">
-                Un à deux jours ouvrés. Au-delà, votre message est passé à côté : réécrivez sans
-                hésiter.
+                Un à deux jours ouvrés. Sans réponse au-delà, réécrivez-moi : votre message
+                m&apos;a échappé.
               </dd>
             </div>
             <div>
@@ -61,7 +60,7 @@ export default async function Contact() {
                 {identite.email ? (
                   <a
                     href={`mailto:${identite.email}`}
-                    className="type-body link-underline self-start text-accent"
+                    className="type-body link-underline self-start text-gold"
                   >
                     {identite.email}
                   </a>
@@ -74,7 +73,7 @@ export default async function Contact() {
               <dt className="type-mono text-fg-soft">Une montre sur mesure ?</dt>
               <dd className="type-body mt-2 text-fg-soft">
                 Pour une pièce qui sort du configurateur, passez plutôt par{" "}
-                <Link href="/sur-mesure" className="link-underline text-accent">
+                <Link href="/sur-mesure" className="link-underline text-gold">
                   la demande de pièce unique
                 </Link>{" "}
                 : le formulaire est fait pour ça.

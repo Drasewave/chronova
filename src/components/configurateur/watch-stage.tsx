@@ -96,7 +96,7 @@ export function WatchStage({
           <button
             type="button"
             onClick={() => setZoom(false)}
-            className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center text-fg-soft hover:text-accent"
+            className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center text-fg-soft hover:text-gold"
             aria-label="Fermer l'agrandissement"
           >
             <IconCroix />

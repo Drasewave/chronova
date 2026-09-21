@@ -30,8 +30,8 @@ export async function Footer() {
           <div>
             <Wordmark />
             <p className="type-body measure mt-6 text-fg-soft">
-              Montres mécaniques composées par leur futur propriétaire, puis assemblées et réglées
-              à la main dans un atelier indépendant.
+              Vous composez votre montre mécanique en ligne. Je l&apos;assemble et je la règle à la
+              main, dans mon atelier indépendant.
             </p>
             {/* Pas de formulaire d'inscription à la lettre ici : aucun envoi n'existe
                 encore. L'inscription se fait depuis le profil, case décochée par
@@ -47,7 +47,7 @@ export async function Footer() {
                     <li key={lien.href}>
                       <Link
                         href={lien.href}
-                        className="type-body link-underline text-fg transition-colors duration-200 hover:text-accent"
+                        className="type-body link-underline text-fg transition-colors duration-200 hover:text-gold"
                       >
                         {lien.label}
                       </Link>
@@ -79,7 +79,7 @@ export async function Footer() {
             {identite.email ? (
               <a
                 href={`mailto:${identite.email}`}
-                className="type-caption link-underline self-start text-fg hover:text-accent"
+                className="type-caption link-underline self-start text-fg hover:text-gold"
               >
                 {identite.email}
               </a>
@@ -91,11 +91,11 @@ export async function Footer() {
             <h2 className="type-mono text-fg-soft">Mentions</h2>
             {identite.raisonSociale && identite.siret ? (
               <p className="type-caption text-fg">
-                {identite.raisonSociale}, EI — SIRET <span data-numeric>{identite.siret}</span>
+                {identite.raisonSociale}, EI · SIRET <span data-numeric>{identite.siret}</span>
                 {identite.tva ? (
                   <>
                     {" "}
-                    — TVA <span data-numeric>{identite.tva}</span>
+                    · TVA <span data-numeric>{identite.tva}</span>
                   </>
                 ) : null}
               </p>
@@ -108,7 +108,7 @@ export async function Footer() {
                 <a
                   href={identite.mediateurSite}
                   rel="noopener noreferrer"
-                  className="link-underline text-fg hover:text-accent"
+                  className="link-underline text-fg hover:text-gold"
                 >
                   {identite.mediateurNom}
                 </a>

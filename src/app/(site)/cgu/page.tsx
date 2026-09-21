@@ -64,8 +64,8 @@ export default async function Cgu() {
         <li>fournir de fausses informations, ni créer un compte avec l&apos;adresse d&apos;un tiers ;</li>
         <li>
           faire graver ou écrire dans un formulaire un texte injurieux, haineux, contrefaisant une
-          marque, ou portant atteinte aux droits d&apos;un tiers — l&apos;atelier peut refuser une
-          gravure pour ce motif ;
+          marque, ou portant atteinte aux droits d&apos;un tiers (l&apos;atelier peut refuser une
+          gravure pour ce motif) ;
         </li>
         <li>
           perturber le site : tentative d&apos;intrusion, contournement des protections, envoi
@@ -94,13 +94,13 @@ export default async function Cgu() {
 
       <h2>5. Propriété intellectuelle</h2>
       <p>
-        <strong>Le contenu de l&apos;atelier</strong> — textes, illustrations, rendus de montres,
-        configurateur, marque Chronova — reste sa propriété. Vous pouvez partager librement le lien
+        <strong>Le contenu de l&apos;atelier</strong> (textes, illustrations, rendus de montres,
+        configurateur, marque Chronova) reste sa propriété. Vous pouvez partager librement le lien
         ou l&apos;image de votre configuration à titre personnel ; toute reprise commerciale
         demande un accord écrit.
       </p>
       <p>
-        <strong>Le vôtre</strong> — texte de gravure, messages, préférences — reste à vous. Vous
+        <strong>Le vôtre</strong> (texte de gravure, messages, préférences) reste à vous. Vous
         autorisez seulement l&apos;atelier à l&apos;utiliser pour traiter votre demande et réaliser
         votre montre, et vous garantissez avoir le droit de faire graver le texte choisi. Aucun
         avis, photo ou témoignage n&apos;est publié sans votre accord exprès.

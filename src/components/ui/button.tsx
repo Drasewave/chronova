@@ -10,7 +10,7 @@ const BASE =
 
 const VARIANTS: Record<Variant, string> = {
   primaire: "bg-accent text-on-accent hover:bg-accent-hover",
-  contour: "border border-fg/70 text-fg hover:border-accent hover:bg-accent hover:text-on-accent",
+  contour: "border border-fg/70 text-fg hover:border-gold hover:bg-accent hover:text-on-accent",
   discret: "text-fg underline decoration-gold decoration-1 underline-offset-[6px] hover:text-gold",
 };
 

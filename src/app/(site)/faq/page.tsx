@@ -40,7 +40,7 @@ export default async function Faq() {
       <SectionHeader
         niveau={1}
         titre="Ce qu'on me demande le plus"
-        intro="Si votre question n'est pas là, écrivez-moi : la réponse finira probablement sur cette page."
+        intro="Si votre question n'y figure pas, écrivez-moi. J'ajouterai sans doute la réponse à cette page."
         action={<ButtonLink href="/contact" variant="contour">Poser une autre question</ButtonLink>}
       />
 
@@ -50,7 +50,7 @@ export default async function Faq() {
             <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-fg marker:content-none">
               <h2 className="type-title-2">{entree.question}</h2>
               <IconChevron
-                className="shrink-0 text-accent transition-transform duration-300 ease-atelier group-open:rotate-180"
+                className="shrink-0 text-gold transition-transform duration-300 ease-atelier group-open:rotate-180"
                 width={22}
                 height={22}
               />

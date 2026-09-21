@@ -39,8 +39,8 @@ export default async function Compte() {
       {commandes.length === 0 ? (
         <div className="mt-10 rounded-card border border-dashed border-rule p-8">
           <p className="type-body measure text-fg-soft">
-            Aucune commande pour l&apos;instant. Chaque montre étant montée à la demande, votre
-            première Chronova commencera à exister le jour où vous la composerez.
+            Aucune commande pour l&apos;instant. Je monte chaque montre à la demande :
+            l&apos;assemblage de la vôtre commencera après votre commande.
           </p>
           <ButtonLink href="/composer" className="mt-7">
             Composer ma montre
@@ -91,7 +91,7 @@ export default async function Compte() {
 
               <Link
                 href={`/compte/commandes/${enCours.number}`}
-                className="type-ui link-underline mt-6 inline-block text-accent"
+                className="type-ui link-underline mt-6 inline-block text-gold"
               >
                 Voir le détail de l&apos;assemblage
               </Link>
@@ -109,7 +109,7 @@ export default async function Compte() {
                   >
                     <span className="type-mono text-fg-soft">{commande.number}</span>
                     <span className="type-ui flex-1 text-fg">
-                      {(commande.items[0]?.snapshot as { modele?: string } | null)?.modele ?? "—"}
+                      {(commande.items[0]?.snapshot as { modele?: string } | null)?.modele ?? "Montre Chronova"}
                     </span>
                     <span className="type-caption text-fg-soft">
                       {libelleStatut(commande.status)}

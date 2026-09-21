@@ -226,7 +226,7 @@ export default async function FicheClient(props: PageProps<"/atelier/clients/[id
                       href={`/atelier/commandes/${commande.number}`}
                       className={LIGNE_LISTE}
                     >
-                      <span className="type-mono text-accent">{commande.number}</span>
+                      <span className="type-mono text-gold">{commande.number}</span>
                       <span className="type-ui flex-1 text-fg">
                         {(commande.items[0]?.snapshot as { modele?: string } | null)?.modele ?? "—"}
                       </span>

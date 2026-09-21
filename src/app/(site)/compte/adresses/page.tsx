@@ -54,7 +54,7 @@ export default async function Adresses() {
                 {!adresse.isDefaultShipping && (
                   <form action={definirAdresseParDefaut}>
                     <input type="hidden" name="id" value={adresse.id} />
-                    <button type="submit" className="type-caption link-underline text-fg-soft hover:text-accent">
+                    <button type="submit" className="type-caption link-underline text-fg-soft hover:text-gold">
                       Définir par défaut
                     </button>
                   </form>

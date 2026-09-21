@@ -9,7 +9,7 @@ import { FAQ } from "@/lib/content/home";
  */
 export function FaqSection() {
   return (
-    <Section fond="alterne" id="faq">
+    <Section fond="papier" id="faq">
       <SectionHeader
         titre="Ce qu'on me demande le plus"
         action={

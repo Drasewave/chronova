@@ -13,9 +13,9 @@ import { getCatalogue, getModels } from "@/lib/data/queries";
 export const metadata: Metadata = {
   // `absolute` : sans lui le gabarit « %s · Chronova » ajouterait une seconde
   // fois le nom de la maison au titre de l'accueil.
-  title: { absolute: "Chronova — montres mécaniques assemblées à la main" },
+  title: { absolute: "Chronova, montres mécaniques assemblées à la main" },
   description:
-    "Quatre bases mécaniques à composer : cadran, aiguilles, lunette, couronne, bracelet. Chaque montre est assemblée, réglée et contrôlée 72 heures dans un atelier indépendant.",
+    "Des montres à composer pièce par pièce : cadran, aiguilles, lunette, couronne, bracelet. Chaque montre est assemblée, réglée et contrôlée 72 heures dans un atelier indépendant.",
   alternates: { canonical: "/" },
   openGraph: { url: "/" },
 };
@@ -69,8 +69,8 @@ export default async function Accueil() {
       <ExplodedView />
       <Process />
       <Watchmaker />
-      <Testimonials />
       <FaqSection />
+      <Testimonials />
       {cloture && <ClosingCta catalogue={catalogue} modele={cloture} />}
     </>
   );

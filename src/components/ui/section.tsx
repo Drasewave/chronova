@@ -36,7 +36,7 @@ export function Section({
         paddingBlock: compact ? "clamp(40px, 5vw, 72px)" : "var(--section-y)",
       }}
     >
-      <div className="mx-auto w-full max-w-content">{children}</div>
+      <div className="mx-auto w-full max-w-wide">{children}</div>
     </section>
   );
 }

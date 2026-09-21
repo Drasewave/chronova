@@ -25,7 +25,7 @@ export default async function Confidentialite() {
       <h2>Responsable du traitement</h2>
       {identite.raisonSociale && identite.adresse ? (
         <p>
-          {identite.raisonSociale}, entrepreneur individuel exerçant sous le nom Chronova —{" "}
+          {identite.raisonSociale}, entrepreneur individuel exerçant sous le nom Chronova,{" "}
           {identite.adresse}.
         </p>
       ) : (
@@ -120,7 +120,7 @@ export default async function Confidentialite() {
       <h3>La lettre d&apos;information</h3>
       <p>
         <strong>Donnée</strong> : votre adresse e-mail, et seulement si vous cochez la case prévue
-        dans votre profil — elle est décochée par défaut. Chaque accord et chaque retrait sont
+        dans votre profil (elle est décochée par défaut). Chaque accord et chaque retrait sont
         horodatés pour en garder la preuve. <strong>Base légale</strong> : votre consentement, que
         vous retirez en décochant la case ou par le lien présent dans chaque envoi.
       </p>
@@ -155,15 +155,15 @@ export default async function Confidentialite() {
       </p>
       <ul>
         <li>
-          <strong>{HEBERGEUR.nom}</strong> ({HEBERGEUR.service}) — hébergement du site et de la
+          <strong>{HEBERGEUR.nom}</strong> ({HEBERGEUR.service}) : hébergement du site et de la
           base de données. <FillMe inline>région du centre de données</FillMe>
         </li>
         <li>
-          <strong>Stripe Payments Europe Ltd</strong> (Irlande) — encaissement des paiements.
+          <strong>Stripe Payments Europe Ltd</strong> (Irlande) : encaissement des paiements.
         </li>
         <li>
-          <strong>Resend, Inc.</strong> (États-Unis) — acheminement des e-mails de connexion et de
-          suivi de commande : il voit votre adresse e-mail et le contenu de ces messages.
+          <strong>Resend, Inc.</strong> (États-Unis) : acheminement des e-mails de connexion et de
+          suivi de commande. Il voit votre adresse e-mail et le contenu de ces messages.
         </li>
         <li>
           <FillMe inline>transporteur, qui reçoit nom, adresse et téléphone pour la livraison</FillMe>
@@ -223,7 +223,7 @@ export default async function Confidentialite() {
       <p>
         L&apos;effacement ne peut pas porter sur ce que la loi impose de conserver : une commande
         et sa facture gardent le nom et l&apos;adresse qui y figurent pendant dix ans. Tout le
-        reste — profil, carnet d&apos;adresses, téléphone, préférences, notes, messages — est
+        reste (profil, carnet d&apos;adresses, téléphone, préférences, notes, messages) est
         effacé immédiatement.
       </p>
       <p>
@@ -235,7 +235,7 @@ export default async function Confidentialite() {
       <p>
         Si une réponse ne vous satisfait pas, vous pouvez saisir la Commission nationale de
         l&apos;informatique et des libertés (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris
-        Cedex 07 — <a href="https://www.cnil.fr/fr/plaintes">cnil.fr/fr/plaintes</a>.
+        Cedex 07, <a href="https://www.cnil.fr/fr/plaintes">cnil.fr/fr/plaintes</a>.
       </p>
     </LegalPage>
   );

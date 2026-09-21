@@ -118,7 +118,7 @@ export function CrmShell({
                 Se déconnecter
               </button>
             </form>
-            <Link href="/" className="type-caption lien-atelier link-underline mt-1 text-fg-soft hover:text-accent">
+            <Link href="/" className="type-caption lien-atelier link-underline mt-1 text-fg-soft hover:text-gold">
               Voir le site public
             </Link>
           </div>

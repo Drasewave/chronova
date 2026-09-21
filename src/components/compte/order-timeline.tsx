@@ -51,7 +51,7 @@ export function OrderTimeline({
               aria-hidden="true"
               className={cn(
                 "relative mt-1 size-[15px] shrink-0 rounded-pill border-2",
-                franchie ? "border-accent bg-accent" : "border-rule bg-bg",
+                franchie ? "border-gold bg-accent" : "border-rule bg-bg",
                 courante && "ring-4 ring-[color-mix(in_srgb,var(--accent)_22%,transparent)]",
               )}
             />
@@ -59,7 +59,7 @@ export function OrderTimeline({
             <div className="min-w-0 flex-1">
               <p className={cn("type-ui", franchie ? "text-fg" : "text-fg-soft")}>
                 {etape.label}
-                {courante && <span className="type-mono ml-3 text-accent">En cours</span>}
+                {courante && <span className="type-mono ml-3 text-gold">En cours</span>}
               </p>
               <p className="type-caption mt-1 text-fg-soft">{etape.description}</p>
               {date && <p className="type-mono mt-2 text-fg-soft">{date}</p>}

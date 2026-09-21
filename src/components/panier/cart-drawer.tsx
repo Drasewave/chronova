@@ -44,7 +44,7 @@ export function CartDrawer() {
           <button
             type="button"
             onClick={close}
-            className="inline-flex size-11 items-center justify-center text-fg-soft hover:text-accent"
+            className="inline-flex size-11 items-center justify-center text-fg-soft hover:text-gold"
             aria-label="Fermer le panier"
           >
             <IconCroix />
@@ -54,7 +54,7 @@ export function CartDrawer() {
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-start justify-center gap-5 px-6">
             <p className="type-body text-fg-soft">
-              Votre panier est vide. Une montre se compose en quelques minutes.
+              Votre panier est vide. Comptez quelques minutes pour composer une montre.
             </p>
             <ButtonLink href="/composer" onClick={close}>
               Composer ma montre

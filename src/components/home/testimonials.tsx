@@ -9,12 +9,12 @@ import { AVIS_PUBLIES } from "@/lib/content/home";
 export function Testimonials() {
   if (AVIS_PUBLIES.length === 0) {
     return (
-      <Section fond="papier" compact id="avis">
+      <Section fond="alterne" compact id="avis">
         <div className="rounded-card border border-dashed border-field/60 p-8 text-center md:p-12">
           <p className="type-mono text-fg-soft">Avis à venir</p>
           <p className="type-body measure mx-auto mt-4 text-fg-soft">
-            Aucun avis n&apos;est affiché tant qu&apos;aucun client n&apos;en a écrit. Les
-            témoignages publiés ici seront rattachés à une commande réelle et modifiables depuis
+            Je n&apos;affiche aucun avis tant qu&apos;aucun client n&apos;en a écrit. Ceux que je
+            publierai ici seront rattachés à une commande réelle et modifiables depuis
             l&apos;atelier.
           </p>
         </div>
@@ -23,7 +23,7 @@ export function Testimonials() {
   }
 
   return (
-    <Section fond="papier" id="avis">
+    <Section fond="alterne" id="avis">
       <SectionHeader titre="Ce qu'en disent les clients" />
       <ul className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
         {AVIS_PUBLIES.map((avis) => (

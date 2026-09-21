@@ -13,12 +13,12 @@ export default function Interrompue() {
       <div className="mx-auto max-w-[40rem]">
         <h1 className="type-display-2">Paiement interrompu</h1>
         <p className="type-lead mt-6 text-fg-soft">
-          Le paiement n&apos;est pas allé à son terme, et aucune somme n&apos;a été prélevée. Votre
-          panier vous attend tel que vous l&apos;aviez laissé.
+          Le paiement n&apos;est pas allé à son terme, et aucune somme n&apos;a été prélevée. Vous
+          retrouverez votre panier tel que vous l&apos;aviez laissé.
         </p>
         <p className="type-body mt-6 text-fg-soft">
-          Si quelque chose a coincé — une carte refusée, une page qui ne répondait plus —
-          dites-le-moi : il est possible de prendre la commande autrement.
+          Si quelque chose a coincé (une carte refusée, une page qui ne répondait plus),
+          dites-le-moi : je peux prendre la commande autrement.
         </p>
         <div className="mt-9 flex flex-wrap gap-4">
           <ButtonLink href="/panier">Revenir au panier</ButtonLink>

@@ -105,7 +105,7 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
                   {dossier.user ? (
                     <Link
                       href={`/atelier/clients/${dossier.user.id}`}
-                      className="link-underline text-accent"
+                      className="link-underline text-gold"
                     >
                       {dossier.user.name ?? dossier.user.email}
                     </Link>
@@ -117,7 +117,7 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
                       {" · "}
                       <Link
                         href={`/atelier/commandes/${dossier.order.number}`}
-                        className="link-underline text-accent"
+                        className="link-underline text-gold"
                       >
                         {dossier.order.number}
                       </Link>
@@ -204,7 +204,7 @@ export default async function ApresVente(props: PageProps<"/atelier/sav">) {
                       <div className="flex flex-wrap items-baseline justify-between gap-3">
                         <Link
                           href={`/atelier/commandes/${garantie.order.number}`}
-                          className="type-mono lien-atelier link-underline text-accent"
+                          className="type-mono lien-atelier link-underline text-gold"
                         >
                           {garantie.order.number}
                         </Link>

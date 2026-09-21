@@ -27,8 +27,8 @@ export default async function Commandes() {
       <div>
         <h1 className="type-display-2">Mes commandes</h1>
         <p className="type-body measure mt-6 text-fg-soft">
-          Vous n&apos;avez pas encore commandé. Rien n&apos;est monté à l&apos;avance : votre montre
-          commencera à exister le jour où vous la composerez.
+          Vous n&apos;avez pas encore commandé. Je ne monte rien à l&apos;avance :
+          l&apos;assemblage de votre montre commencera après votre commande.
         </p>
         <ButtonLink href="/composer" className="mt-8">
           Composer ma montre

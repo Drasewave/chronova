@@ -11,28 +11,28 @@ export const ETAPES = [
     numero: "01",
     titre: "Vous composez",
     texte:
-      "Boîtier, cadran, aiguilles, lunette, couronne, bracelet, verre, mouvement, fond. Le rendu se met à jour à chaque choix, le prix et le délai aussi. La configuration tient dans un lien : vous pouvez la garder de côté ou la faire relire.",
+      "Vous choisissez le boîtier, puis le cadran, les aiguilles, la lunette, la couronne, le bracelet, le verre, le mouvement et le fond. À chaque choix, vous voyez le rendu, le prix et le délai changer. Votre configuration tient dans un lien : gardez-le de côté ou envoyez-le à quelqu'un pour avis.",
     icone: "mouvement",
   },
   {
     numero: "02",
     titre: "Je commande et je contrôle les pièces",
     texte:
-      "Ce qui est en stock à l'atelier est réservé pour vous le jour de la commande. Le reste est commandé auprès des fournisseurs, puis contrôlé pièce par pièce à réception : cotes, finition, absence de rayure.",
+      "Le jour de la commande, je réserve pour vous les pièces que j'ai en stock à l'atelier. Je commande les autres chez mes fournisseurs et je les contrôle une par une à réception : cotes, finition, absence de rayure.",
     icone: "colis",
   },
   {
     numero: "03",
     titre: "J'assemble et je teste",
     texte:
-      "Montage du mouvement, pose du cadran et des aiguilles, emboîtage, réglage. Puis deux contrôles : étanchéité sous pression, et marche suivie pendant 72 heures pour mesurer l'écart en secondes par jour.",
+      "Je monte le mouvement, je pose le cadran et les aiguilles, j'emboîte, puis je règle. Je fais ensuite deux contrôles : l'étanchéité sous pression, et la marche, que je suis pendant 72 heures pour mesurer l'écart en secondes par jour.",
     icone: "tournevis",
   },
   {
     numero: "04",
     titre: "Expédition assurée",
     texte:
-      "La montre part dans son écrin avec sa fiche de contrôle : écart mesuré, pression testée, références des pièces montées. Envoi suivi et assuré, numéro de suivi visible depuis votre compte.",
+      "J'expédie la montre dans son écrin, avec sa fiche de contrôle : écart mesuré, pression testée, références des pièces montées. L'envoi est suivi et assuré, et vous retrouvez le numéro de suivi dans votre compte.",
     icone: "etancheite",
   },
 ] as const;
@@ -41,22 +41,22 @@ export const FAQ = [
   {
     question: "Quelle est la garantie ?",
     reponse:
-      "La garantie couvre le mouvement et l'assemblage : tout défaut de montage ou de fonctionnement est repris à l'atelier, sans frais. Elle ne couvre ni les rayures d'usage, ni les chocs, ni l'ouverture de la montre par un tiers. Durée exacte et modalités : [À REMPLIR : durée de garantie et conditions].",
+      "La garantie couvre le mouvement et l'assemblage : je reprends à l'atelier, sans frais, tout défaut de montage ou de fonctionnement. Les rayures d'usage, les chocs et l'ouverture de la montre par un tiers en sont exclus. Durée exacte et modalités : [À REMPLIR : durée de garantie et conditions].",
   },
   {
     question: "Quels mouvements équipent les montres ?",
     reponse:
-      "Trois calibres automatiques japonais de la famille NH, choisis pour leur robustesse et parce que n'importe quel horloger sait les réviser. Le NH35 : 24 rubis, 21 600 alternances par heure, arrêt de la trotteuse et remontage manuel possibles, environ 41 heures de réserve de marche. Le NH34 ajoute une aiguille 24 heures réglable indépendamment. Le NH38 se passe de date et laisse voir le balancier par une ouverture du cadran.",
+      "Je monte trois calibres automatiques japonais de la famille NH. Je les ai retenus pour leur robustesse et parce que n'importe quel horloger sait les réviser. Le NH35 : 24 rubis, 21 600 alternances par heure, arrêt de la trotteuse et remontage manuel possibles, environ 41 heures de réserve de marche. Le NH34 ajoute une aiguille 24 heures réglable indépendamment. Le NH38 n'a pas de date et laisse voir le balancier par une ouverture du cadran.",
   },
   {
     question: "Que signifie l'étanchéité annoncée ?",
     reponse:
-      "Les valeurs suivent la norme ISO 22810 : elles correspondent à une pression statique en laboratoire, pas à une profondeur de plongée. En pratique, 50 m supporte les éclaboussures et le lavage des mains, 100 m la natation, 200 m la plongée en apnée et en bouteille. Dans tous les cas, la couronne doit être vissée ou enfoncée avant tout contact avec l'eau, et jamais manipulée sous l'eau.",
+      "Les valeurs suivent la norme ISO 22810 : elles indiquent la pression statique que la montre supporte en laboratoire, ce qui ne correspond pas à une profondeur de plongée. En pratique, 50 m supporte les éclaboussures et le lavage des mains, 100 m la natation, 200 m la plongée en apnée et en bouteille. Quelle que soit la valeur, vissez ou enfoncez la couronne avant tout contact avec l'eau, et ne la manipulez pas sous l'eau.",
   },
   {
     question: "Combien de temps faut-il pour recevoir sa montre ?",
     reponse:
-      "Le délai dépend des pièces à commander : il est calculé et affiché dans le configurateur au moment du choix, puis rappelé sur le récapitulatif et dans l'e-mail de confirmation. Si une pièce prend du retard chez un fournisseur, vous en êtes informé avec la nouvelle date. [À REMPLIR : délai moyen constaté].",
+      "Le délai dépend des pièces à commander. Vous le voyez dans le configurateur à chaque choix, puis sur le récapitulatif et dans l'e-mail de confirmation. Si un fournisseur prend du retard sur une pièce, je vous préviens et je vous donne la nouvelle date. [À REMPLIR : délai moyen constaté].",
   },
   {
     question: "Comment entretenir sa montre ?",

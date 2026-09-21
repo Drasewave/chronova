@@ -30,7 +30,7 @@ export function CompteNav({ prenom }: { prenom: string }) {
                 aria-current={actif ? "page" : undefined}
                 className={cn(
                   "type-ui flex min-h-12 items-center transition-colors duration-200",
-                  actif ? "text-accent" : "text-fg hover:text-accent",
+                  actif ? "text-gold" : "text-fg hover:text-gold",
                 )}
               >
                 {lien.label}

@@ -31,18 +31,18 @@ export const metadata: Metadata = {
   // robots.txt et llms.txt : une seule variable décide de toutes les URL absolues.
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr"),
   title: {
-    default: "Chronova — montres mécaniques assemblées à la main",
+    default: "Chronova, montres mécaniques assemblées à la main",
     template: "%s · Chronova",
   },
   description:
-    "Chaque Chronova est composée par son futur propriétaire, puis assemblée et réglée à la main, pièce par pièce, dans un atelier indépendant.",
+    "Composez votre montre mécanique en ligne. L'horloger l'assemble et la règle à la main, pièce par pièce, dans son atelier indépendant.",
   openGraph: {
     type: "website",
     locale: "fr_FR",
     siteName: "Chronova",
-    title: "Chronova — montres mécaniques assemblées à la main",
+    title: "Chronova, montres mécaniques assemblées à la main",
     description:
-      "Chaque Chronova est composée par son futur propriétaire, puis assemblée et réglée à la main, pièce par pièce, dans un atelier indépendant.",
+      "Composez votre montre mécanique en ligne. L'horloger l'assemble et la règle à la main, pièce par pièce, dans son atelier indépendant.",
   },
   twitter: { card: "summary" },
   robots: { index: true, follow: true },

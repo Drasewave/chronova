@@ -115,7 +115,7 @@ function OptionChoice({
           className={cn(
             "relative block size-11 rounded-pill border transition-[box-shadow,border-color] duration-200 ease-atelier",
             "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-[var(--focus)]",
-            checked ? "border-accent shadow-[0_0_0_3px_var(--bg),0_0_0_4px_var(--accent)]" : "border-rule",
+            checked ? "border-gold shadow-[0_0_0_3px_var(--bg),0_0_0_4px_var(--accent)]" : "border-rule",
             bloque && "opacity-40",
           )}
           style={{ backgroundColor: option.colorHex }}
@@ -143,7 +143,7 @@ function OptionChoice({
       className={cn(
         "group/opt relative flex cursor-pointer flex-col rounded-card border p-4 transition-colors duration-200 ease-atelier",
         compact && "min-w-[6rem] items-center p-3",
-        checked ? "border-accent bg-panel" : "border-rule bg-bg hover:border-accent-decor",
+        checked ? "border-gold bg-panel" : "border-rule bg-bg hover:border-accent-decor",
         bloque && "cursor-not-allowed border-rule bg-bg opacity-55 hover:border-rule",
         "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)]",
       )}

@@ -19,7 +19,7 @@ export function Watchmaker() {
         </Reveal>
 
         <Reveal delay={60}>
-          <h2 className="type-display-2 max-w-[20ch]">Une paire de mains, un établi.</h2>
+          <h2 className="type-display-2 max-w-[20ch]">L&apos;horloger et son atelier</h2>
 
           <div className="measure mt-8 flex flex-col gap-5">
             <FillMe>
@@ -31,9 +31,9 @@ export function Watchmaker() {
               série
             </FillMe>
             <p className="type-body-lg text-fg">
-              Ce que vous pouvez déjà savoir : aucune montre n&apos;est montée à l&apos;avance.
-              L&apos;assemblage commence après votre commande, avec les pièces que vous avez
-              choisies, et se termine par soixante-douze heures de contrôle de marche.
+              Je ne monte aucune montre à l&apos;avance. Je commence l&apos;assemblage après votre
+              commande, avec les pièces que vous avez choisies, et je le termine par
+              soixante-douze heures de contrôle de marche.
             </p>
           </div>
 

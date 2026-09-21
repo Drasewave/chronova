@@ -21,10 +21,10 @@ export function ClosingCta({ catalogue, modele }: { catalogue: Catalogue; modele
     >
       <div className="mx-auto grid max-w-wide items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
         <div>
-          <h2 className="type-display-1 max-w-[12ch]">Commencez par le cadran.</h2>
+          <h2 className="type-display-1 max-w-[12ch]">Composez votre montre</h2>
           <p className="type-lead measure mt-7 max-w-[46ch] text-fg-soft">
-            Le configurateur garde votre choix dans l&apos;adresse de la page : vous pouvez le
-            reprendre plus tard ou l&apos;envoyer à quelqu&apos;un avant de vous décider.
+            Votre configuration est enregistrée dans l&apos;adresse de la page. Vous pouvez la
+            reprendre plus tard, ou envoyer le lien à quelqu&apos;un avant de vous décider.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <ButtonLink href="/composer">

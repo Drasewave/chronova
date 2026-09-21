@@ -30,7 +30,7 @@ export function FormulaireProfil({
         <p className="type-ui text-fg">Adresse e-mail</p>
         <p className="type-body mt-1 text-fg-soft">{email}</p>
         <p className="type-caption mt-2 text-fg-soft">
-          C&apos;est elle qui sert à se connecter. Pour la changer, écrivez à l&apos;atelier :
+          Vous vous connectez avec cette adresse. Pour la changer, écrivez à l&apos;atelier :
           la modifier seul permettrait de détourner un compte.
         </p>
       </div>

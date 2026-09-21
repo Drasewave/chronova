@@ -15,19 +15,19 @@ const PLANS = [
     cle: "cadran",
     crop: "500 250 330 330",
     titre: "Index appliqués",
-    texte: "Chaque index est un bloc de métal biseauté, posé à la main ; le luminova est déposé dans sa cuvette.",
+    texte: "Chaque index est un bloc de métal biseauté que je pose à la main, avec le luminova déposé dans sa cuvette.",
   },
   {
     cle: "lunette",
     crop: "235 165 330 330",
     titre: "Lunette et réhaut",
-    texte: "Cent vingt crans sur la lunette de plongée, un insert gravé, et un réhaut poli qui retombe sur le cadran.",
+    texte: "La lunette de plongée compte cent vingt crans et porte un insert gravé. Le réhaut poli descend jusqu'au cadran.",
   },
   {
     cle: "couronne",
     crop: "575 340 320 320",
     titre: "Couronne vissée",
-    texte: "Vissée contre ses épaulements avant tout contact avec l'eau : c'est elle qui tient l'étanchéité annoncée.",
+    texte: "Vissez-la contre ses épaulements avant tout contact avec l'eau : l'étanchéité annoncée en dépend.",
   },
 ] as const;
 
@@ -44,11 +44,12 @@ export function MacroBand({ catalogue, modele }: { catalogue: Catalogue; modele:
       <div className="mx-auto max-w-wide">
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2 id="titre-macro" className="type-display-2 max-w-[16ch]">
-            De près, tout se voit.
+            Trois détails vus de près
           </h2>
           <p className="type-lead measure text-fg-soft lg:justify-self-end">
-            Ce que vous composez à l&apos;écran est dessiné pièce par pièce, comme la montre sera
-            montée. Approchez-vous : ce sont les mêmes index, la même lunette, la même couronne.
+            Le rendu à l&apos;écran est dessiné pièce par pièce, dans l&apos;ordre du montage. Vous
+            retrouvez ici, en gros plan, les index, la lunette et la couronne de la montre affichée
+            plus haut.
           </p>
         </div>
 
@@ -56,7 +57,7 @@ export function MacroBand({ catalogue, modele }: { catalogue: Catalogue; modele:
           {PLANS.map((plan, index) => (
             <Reveal as="li" key={plan.cle} delay={index * 90}>
               <figure>
-                <div className="overflow-hidden rounded-card bg-[#05080c]">
+                <div className="overflow-hidden rounded-card bg-[var(--color-nuit-profonde)]">
                   <WatchSvg
                     id={`macro-${plan.cle}`}
                     render={render}

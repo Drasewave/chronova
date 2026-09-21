@@ -13,21 +13,30 @@ import { cn } from "@/lib/utils";
 export function Header() {
   const [ouvert, setOuvert] = useState(false);
   const [defile, setDefile] = useState(false);
+  const [surNuit, setSurNuit] = useState(false);
   const chemin = usePathname();
   const panier = useCart();
 
   // Sur l'accueil, l'en-tête flotte sur la scène nuit du héros tant que la page
   // n'a pas défilé : il en prend le thème, sans fond.
   const surScene = chemin === "/" && !defile && !ouvert;
+  // Plus bas, il suit le thème de la section qui passe dessous : un en-tête
+  // clair posé sur une scène nuit couperait la page en deux palettes.
+  const nuit = surScene || (surNuit && !ouvert);
 
   useEffect(() => setOuvert(false), [chemin]);
 
   useEffect(() => {
-    const onScroll = () => setDefile(window.scrollY > 12);
+    const onScroll = () => {
+      setDefile(window.scrollY > 12);
+      // Ce qui se trouve juste sous le bord bas de l'en-tête.
+      const dessous = document.elementFromPoint(window.innerWidth / 2, 88);
+      setSurNuit(Boolean(dessous?.closest('main [data-theme="night"]')));
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [chemin]);
 
   useEffect(() => {
     document.body.style.overflow = ouvert ? "hidden" : "";
@@ -41,7 +50,7 @@ export function Header() {
       // L'en-tête ne bouge pas pendant une transition de page : c'est le seul
       // point fixe qui dit au lecteur que le contenu a changé, pas l'écran.
       style={{ viewTransitionName: "entete-site" }}
-      data-theme={surScene ? "night" : undefined}
+      data-theme={nuit ? "night" : undefined}
       className={cn(
         "sticky top-0 z-40 text-fg transition-[border-color,background-color,color] duration-500 ease-atelier",
         // Le voile ne vaut que menu fermé : ouvert, le panneau mobile doit

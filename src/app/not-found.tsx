@@ -14,14 +14,14 @@ export default function Introuvable() {
       <Header />
       <main
         id="contenu"
-        className="mx-auto flex max-w-content flex-col items-start"
+        className="mx-auto flex max-w-wide flex-col items-start"
         style={{ paddingInline: "var(--gutter)", paddingBlock: "var(--section-y)" }}
       >
         <p className="type-mono text-fg-soft">Erreur 404</p>
         <h1 className="type-display-2 mt-4 max-w-[18ch]">Cette page n&apos;existe pas.</h1>
         <p className="type-lead measure mt-6 text-fg-soft">
-          Le lien est peut-être ancien, ou la page a changé d&apos;adresse. La collection et le
-          configurateur, eux, sont toujours là.
+          Le lien est peut-être ancien, ou la page a changé d&apos;adresse. Vous pouvez repartir de
+          l&apos;accueil ou composer votre montre.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <ButtonLink href="/composer">Composer ma montre</ButtonLink>
