@@ -5,8 +5,6 @@ import { cn } from "@/lib/utils";
 
 export interface EntreeCollection {
   slug: string;
-  style: string;
-  styleLabel: string;
   /** Diamètres proposés par le modèle : un 38/39 apparaît dans les deux filtres. */
   sizes: string[];
   movement: string;
@@ -14,7 +12,8 @@ export interface EntreeCollection {
   carte: ReactNode;
 }
 
-type Filtres = { style: string; taille: string; mouvement: string; prix: string };
+/** Pas de filtre « style » : les gammes ont leur page, au-dessus de cette liste. */
+type Filtres = { taille: string; mouvement: string; prix: string };
 
 const TOUS = "tous";
 
@@ -40,7 +39,6 @@ export function CollectionBrowser({
   initial: Partial<Filtres>;
 }) {
   const [filtres, setFiltres] = useState<Filtres>({
-    style: initial.style ?? TOUS,
     taille: initial.taille ?? TOUS,
     mouvement: initial.mouvement ?? TOUS,
     prix: initial.prix ?? TOUS,
@@ -56,16 +54,13 @@ export function CollectionBrowser({
   }, [filtres]);
 
   const facettes = useMemo(() => {
-    const styles = new Map<string, string>();
     const tailles = new Set<string>();
     const mouvements = new Set<string>();
     for (const entree of entrees) {
-      styles.set(entree.style, entree.styleLabel);
       for (const taille of entree.sizes) tailles.add(taille);
       mouvements.add(entree.movement);
     }
     return {
-      styles: [...styles].map(([key, label]) => ({ key, label })),
       tailles: [...tailles].sort().map((key) => ({ key, label: `${key} mm` })),
       mouvements: [...mouvements].sort().map((key) => ({ key, label: key })),
     };
@@ -74,7 +69,6 @@ export function CollectionBrowser({
   const visibles = useMemo(
     () =>
       entrees.filter((entree) => {
-        if (filtres.style !== TOUS && entree.style !== filtres.style) return false;
         if (filtres.taille !== TOUS && !entree.sizes.includes(filtres.taille)) return false;
         if (filtres.mouvement !== TOUS && entree.movement !== filtres.mouvement) return false;
         if (filtres.prix !== TOUS) {
@@ -90,13 +84,7 @@ export function CollectionBrowser({
 
   return (
     <div>
-      <div className="grid gap-x-14 gap-y-6 border-y border-rule py-7 lg:grid-cols-2">
-        <GroupeFiltre
-          label="Style"
-          valeur={filtres.style}
-          choix={facettes.styles}
-          onChange={(style) => setFiltres((f) => ({ ...f, style }))}
-        />
+      <div className="flex flex-wrap gap-x-14 gap-y-6 border-y border-rule py-7">
         <GroupeFiltre
           label="Diamètre"
           valeur={filtres.taille}
@@ -124,7 +112,7 @@ export function CollectionBrowser({
         {actifs > 0 && (
           <button
             type="button"
-            onClick={() => setFiltres({ style: TOUS, taille: TOUS, mouvement: TOUS, prix: TOUS })}
+            onClick={() => setFiltres({ taille: TOUS, mouvement: TOUS, prix: TOUS })}
             className="link-underline text-gold"
           >
             Tout afficher
@@ -138,7 +126,7 @@ export function CollectionBrowser({
           des variantes ensuite, dans le configurateur.
         </p>
       ) : (
-        <div className="mt-12 grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+        <div className="mt-10 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visibles.map((entree) => (
             <div key={entree.slug}>{entree.carte}</div>
           ))}

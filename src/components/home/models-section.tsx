@@ -24,7 +24,7 @@ export function ModelsSection({
         }
       />
 
-      <div className="mt-16 grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3 xl:gap-x-8">
+      <div className="mt-12 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3 xl:grid-cols-4">
         {modeles.map((modele, index) => (
           <Reveal key={modele.slug} delay={(index % 3) * 90}>
             <ModelCard catalogue={catalogue} modele={modele} priorite={index === 0} />

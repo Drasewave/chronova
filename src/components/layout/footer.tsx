@@ -5,6 +5,7 @@ import { lireIdentiteLegale, mediateurChoisi } from "@/lib/content/legal";
 import { NAV_PIED } from "@/lib/navigation";
 
 const COLONNES = [
+  { titre: "Gammes", liens: NAV_PIED.gammes },
   { titre: "La maison", liens: NAV_PIED.maison },
   { titre: "Aide", liens: NAV_PIED.aide },
   { titre: "Informations", liens: NAV_PIED.legal },
@@ -26,7 +27,7 @@ export async function Footer() {
       style={{ paddingInline: "var(--gutter)" }}
     >
       <div className="mx-auto max-w-wide" style={{ paddingBlock: "clamp(56px, 7vw, 104px)" }}>
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
+        <div className="grid gap-12 lg:grid-cols-[1fr_2.4fr]">
           <div>
             <Wordmark />
             <p className="type-body measure mt-6 text-fg-soft">
@@ -38,7 +39,7 @@ export async function Footer() {
                 défaut et consentement horodaté. */}
           </div>
 
-          <div className="grid gap-10 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
             {COLONNES.map((colonne) => (
               <nav key={colonne.titre} aria-label={colonne.titre}>
                 <h2 className="type-mono mb-5 text-fg-soft">{colonne.titre}</h2>

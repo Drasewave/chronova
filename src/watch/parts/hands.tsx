@@ -1,5 +1,5 @@
 import { LUME_EDGE, LUME_FILL, METALS, rampAt } from "../palette";
-import { C, handAngles } from "../geometry";
+import { C, handAngles, n } from "../geometry";
 import type { HandShape, MetalTone, Movement } from "../types";
 import { studioLum } from "./conic";
 
@@ -18,6 +18,16 @@ const MIN_LEN = 248;
 const SEC_LEN = 262;
 const GMT_LEN = 214;
 
+/** Longueur de l'aiguille des heures, largeur des heures, largeur des minutes. */
+const PROPORTIONS: Record<HandShape, readonly [number, number, number]> = {
+  glaive: [HOUR_LEN, 36, 26],
+  mercedes: [HOUR_LEN, 36, 26],
+  crayon: [HOUR_LEN, 36, 26],
+  fleche: [170, 62, 34],
+  dauphine: [HOUR_LEN - 4, 42, 32],
+  cathedrale: [HOUR_LEN, 54, 28],
+};
+
 /**
  * Aiguilles. Chacune est pliée en deux facettes le long de son axe ; la couleur
  * de chaque facette dépend de l'angle réel de l'aiguille dans le studio, d'où
@@ -30,6 +40,9 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
   const ramp = METALS[metal];
   const low = `url(#${uid}-hand-shadow)`;
   const high = detail === "full" ? `url(#${uid}-hand-shadow-haut)` : undefined;
+  // Chaque jeu a ses proportions : la flèche de plongée est courte et trapue,
+  // la dauphine large à la base, la cathédrale longue et fine.
+  const [hourLen, hourW, minW] = PROPORTIONS[shape];
 
   return (
     <g data-layer="aiguilles" transform={`translate(${C} ${C})`}>
@@ -47,15 +60,15 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
           </g>
         )}
         <g transform={`rotate(${angles.hour})`}>
-          <Hand fill={`url(#${uid}-hand-heure)`} shape={shape} role="heure" length={HOUR_LEN} width={36} metal={metal} lume={lume} />
+          <Hand fill={`url(#${uid}-hand-heure)`} shape={shape} role="heure" length={hourLen} width={hourW} metal={metal} lume={lume} angle={angles.hour} />
         </g>
         {!high && (
           <>
             <g transform={`rotate(${angles.minute})`}>
-              <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={26} metal={metal} lume={lume} />
+              <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
             </g>
             <g transform={`rotate(${angles.second})`}>
-              <SecondHand fill={`url(#${uid}-hand-seconde)`} metal={metal} lume={lume} />
+              <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} />
             </g>
           </>
         )}
@@ -64,10 +77,10 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
       {high && (
         <g filter={high}>
           <g transform={`rotate(${angles.minute})`}>
-            <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={26} metal={metal} lume={lume} />
+            <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
           </g>
           <g transform={`rotate(${angles.second})`}>
-            <SecondHand fill={`url(#${uid}-hand-seconde)`} metal={metal} lume={lume} />
+            <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} />
           </g>
         </g>
       )}
@@ -104,6 +117,7 @@ function Hand({
   width,
   metal,
   lume,
+  angle,
 }: {
   fill: string;
   shape: HandShape;
@@ -112,10 +126,126 @@ function Hand({
   width: number;
   metal: MetalTone;
   lume: boolean;
+  /** Angle réel de l'aiguille dans le studio : décide de la facette éclairée. */
+  angle: number;
 }) {
   const ramp = METALS[metal];
   const lumeFill = lume ? LUME_FILL : ramp.light;
   const edge = { stroke: ramp.edge, strokeOpacity: 0.8, strokeWidth: 1.1, strokeLinejoin: "round" as const };
+  const L = length;
+  const w = width;
+
+  // Jeu de plongeuse japonaise : l'heure est une flèche large et courte, qu'on
+  // ne confond jamais avec la minute, même en eau trouble ; la minute un glaive
+  // large, presque parallèle, qui ne s'effile qu'au dernier cinquième.
+  if (shape === "fleche" && role === "heure") {
+    const col = n(-L * 0.55); // haut du fût
+    const barbe = n(-L * 0.48); // les barbes retombent un peu : la flèche est empennée
+    return (
+      <g>
+        <path
+          d={`M -11 26 L -11 ${col} L ${-w / 2} ${barbe} L 0 ${-L} L ${w / 2} ${barbe} L 11 ${col} L 11 26 Z`}
+          fill={fill}
+          {...edge}
+        />
+        {lume ? (
+          <>
+            <path d={`M 0 ${-L + 27} L ${-w / 2 + 12.5} ${n(-L * 0.565)} L ${w / 2 - 12.5} ${n(-L * 0.565)} Z`} fill={LUME_FILL} stroke={LUME_EDGE} strokeWidth="0.9" strokeLinejoin="round" />
+            <rect x="-5.5" y={n(-L * 0.5)} width="11" height={n(L * 0.5 - 22)} rx="2" fill={LUME_FILL} stroke={LUME_EDGE} strokeWidth="0.9" />
+          </>
+        ) : (
+          <line x1="0" y1="20" x2="0" y2={-L + 6} stroke={ramp.edge} strokeOpacity="0.4" strokeWidth="0.9" />
+        )}
+      </g>
+    );
+  }
+  if (shape === "fleche") {
+    const bas = n(-L * 0.2);
+    const haut = n(-L * 0.79);
+    return (
+      <g>
+        <path d={`M -8 28 L ${-w / 2} ${bas} L ${-w / 2 + 2} ${haut} L 0 ${-L} L ${w / 2 - 2} ${haut} L ${w / 2} ${bas} L 8 28 Z`} fill={fill} {...edge} />
+        {lume ? (
+          <path
+            d={`M ${-w / 2 + 7} ${n(-L * 0.22)} L ${-w / 2 + 8.5} ${n(-L * 0.77)} L 0 ${-L + 30} L ${w / 2 - 8.5} ${n(-L * 0.77)} L ${w / 2 - 7} ${n(-L * 0.22)} Z`}
+            fill={LUME_FILL}
+            stroke={LUME_EDGE}
+            strokeWidth="0.9"
+            strokeLinejoin="round"
+          />
+        ) : (
+          <line x1="0" y1="24" x2="0" y2={-L + 6} stroke={ramp.edge} strokeOpacity="0.4" strokeWidth="0.9" />
+        )}
+      </g>
+    );
+  }
+
+  // Dauphine : un losange très allongé, plié en deux versants polis. Tout son
+  // charme est dans l'écart entre le versant qui prend la lumière et celui qui
+  // renvoie le noir du studio : on le force, comme le ferait un photographe en
+  // tournant la montre d'un degré. Pas de luminova par tradition ; s'il est
+  // demandé, il tient dans une fine rainure.
+  if (shape === "dauphine") {
+    const lumG = studioLum(angle - 90, "poli");
+    const lumD = studioLum(angle + 90, "poli");
+    const gaucheClair = lumG >= lumD;
+    const clair = (l: number) => rampAt(ramp, 0.62 + 0.38 * l);
+    const sombre = (l: number) => rampAt(ramp, 0.1 + 0.26 * l);
+    const epaule = n(-L * 0.12);
+    return (
+      <g>
+        <path d={`M 0 26 L ${-w / 2} ${epaule} L 0 ${-L} Z`} fill={gaucheClair ? clair(lumG) : sombre(lumG)} />
+        <path d={`M 0 26 L ${w / 2} ${epaule} L 0 ${-L} Z`} fill={gaucheClair ? sombre(lumD) : clair(lumD)} />
+        {/* L'arête du pli : un filet d'éclat, le seul trait de l'aiguille. */}
+        <line x1="0" y1="24" x2="0" y2={-L + 2} stroke={ramp.hi} strokeOpacity="0.85" strokeWidth="0.9" />
+        {lume && (
+          <rect x="-2.6" y={n(-L * 0.7)} width="5.2" height={n(L * 0.44)} rx="2.6" fill={LUME_FILL} stroke={LUME_EDGE} strokeWidth="0.7" />
+        )}
+        <path d={`M 0 26 L ${-w / 2} ${epaule} L 0 ${-L} L ${w / 2} ${epaule} Z`} fill="none" {...edge} />
+      </g>
+    );
+  }
+
+  // Cathédrale : l'aiguille est un vitrail. Le métal n'est plus qu'un plomb qui
+  // cerne des cellules de luminova — ou des jours, sans luminova : on voit alors
+  // le cadran au travers. Les cellules sont de vrais trous (`evenodd`), pour que
+  // l'ombre portée soit elle aussi ajourée.
+  if (shape === "cathedrale" && role === "heure") {
+    const y = (k: number) => n(-L * k);
+    const cy = -L * 0.51;
+    const rx = w / 2 - 7;
+    const ry = L * 0.165;
+    const k = ry * Math.sqrt(1 - 9 / (rx * rx));
+    const cellules = [
+      `M -3 ${n(cy - k)} A ${rx} ${n(ry)} 0 0 0 -3 ${n(cy + k)} Z`,
+      `M 3 ${n(cy - k)} A ${rx} ${n(ry)} 0 0 1 3 ${n(cy + k)} Z`,
+      `M 0 ${-L + 17} L -7.5 ${y(0.815)} L 0 ${y(0.75)} L 7.5 ${y(0.815)} Z`,
+    ];
+    const h = w / 2;
+    const contour = `M -6 26 L -6 ${y(0.3)} C -6 ${y(0.36)} ${-h} ${y(0.4)} ${-h} ${y(0.52)} C ${-h} ${y(0.64)} -6 ${y(0.66)} -6 ${y(0.72)} C -6 ${y(0.76)} -13.5 ${y(0.76)} -13.5 ${y(0.815)} C -13.5 ${y(0.88)} -3 ${y(0.95)} 0 ${-L} C 3 ${y(0.95)} 13.5 ${y(0.88)} 13.5 ${y(0.815)} C 13.5 ${y(0.76)} 6 ${y(0.76)} 6 ${y(0.72)} C 6 ${y(0.66)} ${h} ${y(0.64)} ${h} ${y(0.52)} C ${h} ${y(0.4)} 6 ${y(0.36)} 6 ${y(0.3)} L 6 26 Z`;
+    return (
+      <g>
+        <path d={`${contour} ${cellules.join(" ")}`} fillRule="evenodd" fill={fill} {...edge} />
+        {lume && cellules.map((d) => <path key={d} d={d} fill={LUME_FILL} stroke={LUME_EDGE} strokeWidth="0.9" strokeLinejoin="round" />)}
+      </g>
+    );
+  }
+  if (shape === "cathedrale") {
+    const y = (k: number) => n(-L * k);
+    const h = w / 2;
+    const cellules = [
+      `M 0 ${y(0.425)} L ${-h + 5} ${y(0.49)} L ${-h + 5.7} ${y(0.605)} L ${h - 5.7} ${y(0.605)} L ${h - 5} ${y(0.49)} Z`,
+      `M ${-h + 6.4} ${y(0.635)} L ${-h + 9.4} ${y(0.75)} L ${h - 9.4} ${y(0.75)} L ${h - 6.4} ${y(0.635)} Z`,
+      `M -4 ${y(0.78)} L 0 ${y(0.93)} L 4 ${y(0.78)} Z`,
+    ];
+    const contour = `M -5 26 L -5 ${y(0.34)} C -5 ${y(0.4)} ${-h} ${y(0.42)} ${-h} ${y(0.5)} C ${-h} ${y(0.68)} -4 ${y(0.9)} 0 ${-L} C 4 ${y(0.9)} ${h} ${y(0.68)} ${h} ${y(0.5)} C ${h} ${y(0.42)} 5 ${y(0.4)} 5 ${y(0.34)} L 5 26 Z`;
+    return (
+      <g>
+        <path d={`${contour} ${cellules.join(" ")}`} fillRule="evenodd" fill={fill} {...edge} />
+        {lume && cellules.map((d) => <path key={d} d={d} fill={LUME_FILL} stroke={LUME_EDGE} strokeWidth="0.9" strokeLinejoin="round" />)}
+      </g>
+    );
+  }
 
   if (shape === "crayon") {
     return (
@@ -212,8 +342,34 @@ function Hand({
   );
 }
 
-function SecondHand({ fill, metal, lume }: { fill: string; metal: MetalTone; lume: boolean }) {
+function SecondHand({ fill, shape, metal, lume }: { fill: string; shape: HandShape; metal: MetalTone; lume: boolean }) {
   const ramp = METALS[metal];
+
+  // Habillée : une simple aiguille effilée, sans pastille — rien ne doit
+  // distraire des deux dauphines.
+  if (shape === "dauphine") {
+    return (
+      <g>
+        <path d={`M -2.4 58 L -0.7 ${-SEC_LEN} L 0.7 ${-SEC_LEN} L 2.4 58 Z`} fill={fill} stroke={ramp.edge} strokeOpacity="0.6" strokeWidth="0.6" strokeLinejoin="round" />
+        <circle cy="58" r="6.5" fill={fill} stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="0.9" />
+      </g>
+    );
+  }
+
+  // Plongée : la pastille lumineuse est portée tout au bout, là où elle balaie
+  // la minuterie — elle prouve dans le noir que la montre tourne encore.
+  if (shape === "fleche") {
+    return (
+      <g>
+        <rect x="-2.2" y={-SEC_LEN} width="4.4" height={SEC_LEN + 62} rx="2.2" fill={fill} stroke={ramp.edge} strokeOpacity="0.6" strokeWidth="0.6" />
+        <circle cy={-SEC_LEN + 30} r="11.5" fill={fill} stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="1" />
+        <circle cy={-SEC_LEN + 30} r="7.8" fill={lume ? LUME_FILL : ramp.light} stroke={lume ? LUME_EDGE : ramp.dark} strokeWidth="0.9" />
+        {/* Contrepoids en palette. */}
+        <path d="M -3 28 L -7.5 40 L -7.5 64 L 7.5 64 L 7.5 40 L 3 28 Z" fill={fill} stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="0.9" strokeLinejoin="round" />
+      </g>
+    );
+  }
+
   return (
     <g>
       <rect x="-2.2" y={-SEC_LEN} width="4.4" height={SEC_LEN + 66} rx="2.2" fill={fill} stroke={ramp.edge} strokeOpacity="0.6" strokeWidth="0.6" />

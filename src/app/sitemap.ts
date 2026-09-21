@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { gammesAvecModeles } from "@/lib/content/gammes";
 import { getModels } from "@/lib/data/queries";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
@@ -32,6 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: maintenant,
       changeFrequency: page.frequence,
       priority: page.priorite,
+    })),
+    // Une page par gamme, tant qu'elle a au moins un modèle publié.
+    ...gammesAvecModeles(modeles).map((gamme) => ({
+      url: `${BASE}${gamme.href}`,
+      lastModified: maintenant,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
     })),
     // Les configurations partagées vivent dans la chaîne de requête : elles ne
     // sont pas des pages à indexer, seules les fiches modèle le sont.

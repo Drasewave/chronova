@@ -3,6 +3,7 @@ import { INK, METALS, PAPER, isLight, mix, rampAt, type MetalRamp } from "../pal
 import { C, R_CASE, n, polar } from "../geometry";
 import type { WatchRender } from "../types";
 import { ConicDisk, Ring, annulus, jitter } from "./conic";
+import { CushionBody } from "./cushion";
 
 /**
  * Vue de dos.
@@ -33,6 +34,7 @@ const RUBIS_ECLAT = "#FFC9D8";
 export function BackView({ uid, render }: { uid: string; render: WatchRender }) {
   const ramp = METALS[render.caseMetal];
   const transparent = render.caseback === "transparent";
+  const coussin = render.caseShape === "coussin";
   // Sur un traitement noir, la gravure laser ressort en clair ; ailleurs elle
   // se lit en creux sombre, avec une lèvre éclairée côté bas-droit.
   const surSombre = !isLight(ramp.mid);
@@ -57,17 +59,25 @@ export function BackView({ uid, render }: { uid: string; render: WatchRender }) 
         </filter>
       </defs>
 
-      {/* Dos de carrure : même finition que les flancs, chanfrein poli au bord. */}
-      <circle cx={C} cy={C} r={R_CASE - 1} fill={ramp.mid} />
-      <Ring id={`${uid}-dos-clip-carrure`} disk={`${uid}-conic-case`} rOut={R_CASE} rIn={R_FOND - 2} />
-      {render.caseFinish === "microbille" && <circle cx={C} cy={C} r={R_CASE} fill={`url(#${uid}-beaded)`} />}
-      <Ring
-        id={`${uid}-dos-clip-carrure-chanfrein`}
-        disk={`${uid}-conic-poli`}
-        rOut={R_CASE}
-        rIn={R_CASE - 3.5}
-        opacity={render.caseFinish === "microbille" ? 0.45 : 0.95}
-      />
+      {coussin ? (
+        // Coussin : le dos montre la même silhouette que la face, et le fond
+        // vissé rond s'y inscrit largement.
+        <CushionBody uid={uid} metal={render.caseMetal} finish={render.caseFinish} prefix="dos-" />
+      ) : (
+        <>
+          {/* Dos de carrure : même finition que les flancs, chanfrein poli au bord. */}
+          <circle cx={C} cy={C} r={R_CASE - 1} fill={ramp.mid} />
+          <Ring id={`${uid}-dos-clip-carrure`} disk={`${uid}-conic-case`} rOut={R_CASE} rIn={R_FOND - 2} />
+          {render.caseFinish === "microbille" && <circle cx={C} cy={C} r={R_CASE} fill={`url(#${uid}-beaded)`} />}
+          <Ring
+            id={`${uid}-dos-clip-carrure-chanfrein`}
+            disk={`${uid}-conic-poli`}
+            rOut={R_CASE}
+            rIn={R_CASE - 3.5}
+            opacity={render.caseFinish === "microbille" ? 0.45 : 0.95}
+          />
+        </>
+      )}
       {/* Le fond dépasse de la carrure : il y porte son ombre. */}
       <circle cx={C + 2} cy={C + 3} r={R_FOND + 1} fill="none" stroke={INK} strokeOpacity="0.42" strokeWidth="4" />
 
@@ -134,7 +144,7 @@ export function BackView({ uid, render }: { uid: string; render: WatchRender }) 
       {[R_GLACE, R_PLAT_IN, R_PLAT_OUT, R_FOND].map((r) => (
         <circle key={r} cx={C} cy={C} r={r} fill="none" stroke={ramp.edge} strokeOpacity={r === R_FOND ? 0.9 : 0.55} strokeWidth={r === R_FOND ? 1.5 : 1} />
       ))}
-      <circle cx={C} cy={C} r={R_CASE} fill="none" stroke={ramp.edge} strokeOpacity="0.9" strokeWidth="1.6" />
+      {!coussin && <circle cx={C} cy={C} r={R_CASE} fill="none" stroke={ramp.edge} strokeOpacity="0.9" strokeWidth="1.6" />}
     </g>
   );
 }

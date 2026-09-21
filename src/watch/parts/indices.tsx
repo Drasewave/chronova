@@ -118,10 +118,12 @@ function Batons({
 }
 
 /**
- * Index de plongeuse : un triangle à midi, des bâtons aux quarts, des ronds
- * ailleurs. Trois formes pour s'orienter dans le noir sans lire un chiffre —
- * le code de toutes les montres de plongée depuis les années cinquante.
- * Chaque plot est une cuvette de métal poli remplie de luminova.
+ * Index de plongeuse : trois formes pour s'orienter dans le noir sans lire un
+ * chiffre. Le dessin suit les plongeuses japonaises : un trapèze à midi, de
+ * longs ovales à 6 h et 9 h (et à 3 h s'il n'y a pas de guichet), de gros ronds
+ * ailleurs — des plots généreux, presque jointifs avec la minuterie, parce que
+ * la surface de luminova fait la lisibilité. Chaque plot est une cuvette de
+ * métal poli remplie de luminova.
  */
 function Plongee({
   metal,
@@ -139,8 +141,12 @@ function Plongee({
   const ramp = METALS[metal];
   const fill = lume ? LUME_FILL : rampAt(ramp, 0.72);
   const stroke = lume ? LUME_EDGE : ramp.dark;
-  const mid = (outer + inner) / 2;
-  const r = Math.min(19, (outer - inner) / 2 + 1);
+  // Un cadran GMT ou boussole resserre ses index : on garde alors des plots sages.
+  const large = outer >= 250;
+  const mid = (outer + inner) / 2 - (large ? 2 : 0);
+  const r = (outer - inner) / 2 + (large ? 5 : 1);
+  const b = 4.4; // largeur du sertissage
+  const cadre = { stroke: ramp.edge, strokeOpacity: 0.75, strokeWidth: 0.9, strokeLinejoin: "round" as const };
 
   return (
     <g data-layer="index" transform={`translate(${C} ${C})`}>
@@ -154,33 +160,47 @@ function Plongee({
         const shaded = facet(ramp, angle + 120);
 
         if (i === 0) {
-          const h = outer - inner + 4;
+          // Trapèze, grande base vers l'extérieur : il pointe le centre.
+          const y0 = -outer - (large ? 4 : 2);
+          const y1 = -inner + (large ? 6 : 2);
+          const a = large ? 31 : 25; // demi-grande base
+          const c = large ? 13 : 10; // demi-petite base
+          const pente = (a - c) / (y1 - y0);
           return (
             <g key={i} transform={`rotate(${angle})`}>
-              <path d={`M -27 ${-outer - 2} L 27 ${-outer - 2} L 0 ${-outer - 2 + h} Z`} fill={shaded} stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="0.9" strokeLinejoin="round" />
-              <path d={`M -27 ${-outer - 2} L 0 ${-outer - 2 + h} L -22.5 ${-outer + 2.4} Z`} fill={lit} />
-              <path d={`M -19.5 ${-outer + 2.6} L 19.5 ${-outer + 2.6} L 0 ${-outer + h - 9} Z`} fill={fill} stroke={stroke} strokeWidth="0.8" strokeLinejoin="round" />
+              <path d={`M ${-a} ${y0} L ${a} ${y0} L ${c} ${y1} L ${-c} ${y1} Z`} fill={shaded} {...cadre} />
+              <path d={`M ${-a} ${y0} L ${-c} ${y1} L ${n(-c + b)} ${n(y1 - b)} L ${n(-a + b + pente * b)} ${n(y0 + b)} Z`} fill={lit} />
+              <path
+                d={`M ${n(-a + b + pente * b + 1)} ${n(y0 + b)} L ${n(a - b - pente * b - 1)} ${n(y0 + b)} L ${n(c - b + 1)} ${n(y1 - b)} L ${n(-c + b - 1)} ${n(y1 - b)} Z`}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth="0.8"
+                strokeLinejoin="round"
+              />
             </g>
           );
         }
 
         if (i % 3 === 0) {
-          const w = 25;
-          const b = 4.2;
+          // Ovale allongé : un bâton aux bouts ronds, plus long à 6 h et 9 h.
+          const w = large ? 30 : 25;
+          const y0 = -outer - (large ? 3 : 0);
+          const y1 = -inner + (large ? (i === 3 ? 2 : 9) : 0);
+          const h = w / 2;
           return (
             <g key={i} transform={`rotate(${angle})`}>
-              <rect x={-w / 2} y={-outer} width={w} height={outer - inner} rx="2" fill={shaded} stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="0.9" />
-              <path d={`M ${-w / 2} ${-outer} L ${-w / 2 + b} ${-outer + b} L ${-w / 2 + b} ${-inner - b} L ${-w / 2} ${-inner} Z`} fill={lit} />
-              <rect x={-w / 2 + b} y={-outer + b} width={w - b * 2} height={outer - inner - b * 2} fill={fill} stroke={stroke} strokeWidth="0.8" />
+              <rect x={-h} y={y0} width={w} height={y1 - y0} rx={h} fill={shaded} {...cadre} />
+              <path d={`M 0 ${y0} A ${h} ${h} 0 0 0 ${-h} ${y0 + h} L ${-h} ${y1 - h} A ${h} ${h} 0 0 0 0 ${y1} Z`} fill={lit} />
+              <rect x={-h + b} y={y0 + b} width={w - b * 2} height={y1 - y0 - b * 2} rx={h - b} fill={fill} stroke={stroke} strokeWidth="0.8" />
             </g>
           );
         }
 
         return (
           <g key={i} transform={`rotate(${angle})`}>
-            <circle cy={-mid} r={r} fill={shaded} stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="0.9" />
+            <circle cy={-mid} r={r} fill={shaded} {...cadre} />
             <path d={`M ${-r} ${-mid} A ${r} ${r} 0 0 1 0 ${-mid - r} L 0 ${-mid} Z`} fill={lit} />
-            <circle cy={-mid} r={r - 4.2} fill={fill} stroke={stroke} strokeWidth="0.8" />
+            <circle cy={-mid} r={r - b} fill={fill} stroke={stroke} strokeWidth="0.8" />
           </g>
         );
       })}
@@ -207,26 +227,33 @@ function Arabes({
   const light = isLight(dialColor);
   const ink = lume ? LUME_FILL : light ? shade(dialColor, 0.82) : tint(dialColor, 0.86);
   const ramp = METALS[metal];
+  // Échelle 24 h ou réhaut boussole : la couronne d'index se resserre. Les
+  // chiffres rapetissent et rentrent, pour que leur plot ne morde ni sur eux ni
+  // sur la minuterie.
+  const serre = outer < 250;
+  const rChiffre = inner + (serre ? 17 : 26);
+  const corps = serre ? 40 : 48;
+  const rPlot = serre ? 6 : 7.5;
 
   return (
     <g data-layer="index">
       {Array.from({ length: 12 }, (_, i) => {
         const hour = i === 0 ? 12 : i;
-        const p = polar(inner + 26, i * 30);
-        const dot = polar(outer + 4, i * 30);
+        const p = polar(rChiffre, i * 30);
+        const dot = polar(outer + (serre ? 3 : 4), i * 30);
         return (
           <g key={i}>
             {hour !== skipHour && (
               <text
                 x={n(p.x)}
-                y={n(p.y + 17)}
+                y={n(p.y + corps * 0.355)}
                 textAnchor="middle"
                 fill={ink}
                 stroke={lume ? LUME_EDGE : "none"}
                 strokeWidth="0.9"
                 style={{
                   fontFamily: "var(--font-ui)",
-                  fontSize: hour === 12 ? 54 : 48,
+                  fontSize: hour === 12 ? corps + 6 : corps,
                   fontWeight: 600,
                   letterSpacing: "-0.02em",
                 }}
@@ -235,11 +262,11 @@ function Arabes({
               </text>
             )}
             {/* Plot luminescent serti, au droit de chaque heure. */}
-            <circle cx={n(dot.x)} cy={n(dot.y)} r="7.5" fill={facet(ramp, i * 30 + 140)} stroke={ramp.edge} strokeWidth="0.8" />
+            <circle cx={n(dot.x)} cy={n(dot.y)} r={rPlot} fill={facet(ramp, i * 30 + 140)} stroke={ramp.edge} strokeWidth="0.8" />
             <circle
               cx={n(dot.x)}
               cy={n(dot.y)}
-              r="5"
+              r={rPlot - 2.5}
               fill={lume ? LUME_FILL : ramp.light}
               stroke={lume ? LUME_EDGE : ramp.dark}
               strokeWidth="0.8"

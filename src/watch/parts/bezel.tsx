@@ -129,7 +129,7 @@ function DiveInsert({
   detail: "full" | "compact";
 }) {
   const ramp = METALS[metal];
-  const rGrip = R_BEZEL_OUT - 10; // pourtour cranté
+  const rGrip = R_BEZEL_OUT - 13; // pourtour cranté, large : on le saisit avec des gants
   const rInsertOut = rGrip - 1;
   const rInsertIn = R_BEZEL_IN + CHAMFER;
   const rMid = (rInsertOut + rInsertIn) / 2;
@@ -138,36 +138,55 @@ function DiveInsert({
   const step = 360 / ticks;
   // Gravure remplie : platine sur céramique, peinture claire sur aluminium.
   const engraved = material === "ceramique" ? mix(PAPER, color, 0.08) : tint(color, 0.78);
-  const notches = detail === "full" ? 120 : 60;
+  const teeth = detail === "full" ? 60 : 36;
+  const w = 360 / teeth;
+  const pt = (r: number, a: number) => {
+    const p = polar(r, a);
+    return `${n(p.x)} ${n(p.y)}`;
+  };
 
   return (
     <g>
-      {/* Pourtour cranté : le métal poli, entaillé. Chaque cran a son flanc
-          sombre et son arête vive, modulée par le studio. */}
+      {/* Crantage « pièce de monnaie » : de larges dents carrées séparées par
+          des gorges franches, et non un moletage fin. Chaque dent a un plat et
+          deux flancs ; chacun prend la couleur de ce qu'il regarde, si bien que
+          le pourtour scintille dent par dent. Les gorges mordent la silhouette :
+          c'est ce qui se lit encore en vignette. */}
       <Ring id={`${uid}-clip-crans`} disk={`${uid}-conic-poli`} rOut={R_BEZEL_OUT} rIn={rGrip} />
-      {Array.from({ length: notches }, (_, i) => {
-        const angle = (360 / notches) * i;
-        const a = polar(rGrip + 0.5, angle);
-        const b = polar(R_BEZEL_OUT - 0.5, angle);
-        const a2 = polar(rGrip + 0.5, angle + 0.9);
-        const b2 = polar(R_BEZEL_OUT - 0.5, angle + 0.9);
+      {Array.from({ length: teeth }, (_, i) => {
+        const a = w * i;
+        const rA = rGrip + 0.5;
+        const rB = R_BEZEL_OUT - 0.3;
+        const g = a + w / 2; // axe de la gorge
         return (
           <g key={`cran-${i}`}>
-            <line x1={n(a.x)} y1={n(a.y)} x2={n(b.x)} y2={n(b.y)} stroke={INK} strokeOpacity="0.62" strokeWidth="2.6" />
+            <path
+              d={`M ${pt(rA, a - w * 0.3)} L ${pt(rB, a - w * 0.3)} L ${pt(rB, a + w * 0.3)} L ${pt(rA, a + w * 0.3)} Z`}
+              fill={rampAt(ramp, 0.3 + 0.66 * studioLum(a, "poli"))}
+            />
             {detail === "full" && (
-              <line
-                x1={n(a2.x)}
-                y1={n(a2.y)}
-                x2={n(b2.x)}
-                y2={n(b2.y)}
-                stroke={ramp.hi}
-                strokeOpacity={n(0.15 + 0.75 * studioLum(angle, "poli"))}
-                strokeWidth="1.1"
-              />
+              <>
+                <path
+                  d={`M ${pt(rA, a - w * 0.41)} L ${pt(rB - 2.5, a - w * 0.41)} L ${pt(rB, a - w * 0.3)} L ${pt(rA, a - w * 0.3)} Z`}
+                  fill={rampAt(ramp, 0.12 + 0.7 * studioLum(a - 58, "poli"))}
+                />
+                <path
+                  d={`M ${pt(rA, a + w * 0.3)} L ${pt(rB, a + w * 0.3)} L ${pt(rB - 2.5, a + w * 0.41)} L ${pt(rA, a + w * 0.41)} Z`}
+                  fill={rampAt(ramp, 0.12 + 0.7 * studioLum(a + 58, "poli"))}
+                />
+              </>
             )}
+            {/* Gorge : fond dans l'ombre, et l'entaille qu'elle fait dans la silhouette. */}
+            <path
+              d={`M ${pt(rA, g - w * 0.09)} L ${pt(R_BEZEL_OUT + 1.2, g - w * 0.12)} L ${pt(R_BEZEL_OUT + 1.2, g + w * 0.12)} L ${pt(rA, g + w * 0.09)} Z`}
+              fill={INK}
+              fillOpacity={detail === "full" ? 0.72 : 0.6}
+            />
           </g>
         );
       })}
+      {/* Gorge tournée entre le crantage et l'insert. */}
+      <circle cx="500" cy="500" r={rGrip + 0.8} fill="none" stroke={ramp.hi} strokeOpacity="0.5" strokeWidth="0.9" />
 
       <Ring id={`${uid}-clip-insert`} disk={`${uid}-conic-insert`} rOut={rInsertOut} rIn={rInsertIn} />
       {dayColor && (
@@ -202,11 +221,11 @@ function DiveInsert({
               key={i}
               x={n(p.x)}
               y={n(p.y)}
-              dy="8.5"
+              dy="8"
               textAnchor="middle"
               fill={engraved}
               transform={`rotate(${upright} ${n(p.x)} ${n(p.y)})`}
-              style={{ fontFamily: "var(--font-ui)", fontSize: 25, fontWeight: 600, letterSpacing: "0.01em" }}
+              style={{ fontFamily: "var(--font-ui)", fontSize: 23.5, fontWeight: 600, letterSpacing: "0.01em" }}
             >
               {(angle / 6).toString()}
             </text>
@@ -216,7 +235,7 @@ function DiveInsert({
         const major = angle % 30 === 0;
         // Minuterie détaillée sur le premier quart d'heure, comme sur une plongeuse.
         if (!major && !(angle % 6 === 0 && angle <= 90)) return null;
-        const long = major ? width - 12 : 10;
+        const long = major ? width - 11 : 9;
         const a = polar(rInsertOut - 5, angle);
         const b = polar(rInsertOut - 5 - long, angle);
         return (

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
 import { WatchSvg } from "@/watch/watch-svg";
 import { IconCroix } from "@/components/ui/icons";
+import { VueMontre } from "@/components/motion/vue-montre";
 import type { WatchRender, WatchView } from "@/watch/types";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,10 @@ const VUES: { key: WatchView; label: string }[] = [
 
 /**
  * Scène de la montre : les trois vues, et le zoom.
+ *
+ * Changer de vue retourne la montre (`VueMontre`) : le rendu reste monté, seule
+ * sa prop `view` change quand l'objet est sur la tranche. Le même sélecteur est
+ * repris dans le zoom, où il pilote la même vue.
  *
  * Le zoom utilise l'élément `<dialog>` natif — piégeage du focus, fermeture par
  * Échap et retour du focus au bouton sont gérés par le navigateur, sans une
@@ -53,36 +58,27 @@ export function WatchStage({
       >
         {/* La hauteur doit traverser tous les conteneurs intermédiaires : un div
             en hauteur automatique annulerait le `h-full` du SVG. */}
-        <InteractiveWatch
-          id="configurateur"
-          render={render}
-          view={vue}
-          label={label}
-          className="flex h-full w-full items-center justify-center"
-          svgClassName="h-full w-auto lg:h-auto lg:w-full"
-        />
+        <VueMontre vue={vue} className="flex h-full w-full items-center justify-center">
+          {(vueAffichee) => (
+            <InteractiveWatch
+              id="configurateur"
+              render={render}
+              view={vueAffichee}
+              label={label}
+              className="flex h-full w-full items-center justify-center"
+              svgClassName="h-full w-auto lg:h-auto lg:w-full"
+            />
+          )}
+        </VueMontre>
       </button>
 
-      <div
-        className="mx-auto mt-4 flex w-fit items-center gap-1 rounded-pill border border-rule bg-panel p-1"
-        role="group"
-        aria-label="Vue de la montre"
-      >
-        {VUES.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => setVue(item.key)}
-            aria-pressed={vue === item.key}
-            className={cn(
-              "type-mono min-h-11 rounded-pill px-5 transition-colors duration-200 ease-atelier",
-              vue === item.key ? "bg-accent text-on-accent" : "text-fg-soft hover:text-fg",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <SelecteurVue vue={vue} surChoix={setVue} className="mt-4" />
+
+      {/* Annonce discrète : le rendu garde le même intitulé d'une vue à l'autre,
+          un lecteur d'écran ne saurait pas autrement que l'image a changé. */}
+      <p className="sr-only" aria-live="polite">
+        Vue affichée : {VUES.find((v) => v.key === vue)?.label}
+      </p>
 
       <dialog
         ref={dialogue}
@@ -101,10 +97,50 @@ export function WatchStage({
           >
             <IconCroix />
           </button>
-          {zoom && <WatchSvg id="zoom" render={render} view={vue} label={label} className="h-auto w-full" />}
-          <p className="type-mono mt-4 text-center text-fg-soft">{VUES.find((v) => v.key === vue)?.label}</p>
+          {zoom && (
+            <VueMontre vue={vue} carre>
+              {(vueAffichee) => (
+                <WatchSvg id="zoom" render={render} view={vueAffichee} label={label} className="h-auto w-full" />
+              )}
+            </VueMontre>
+          )}
+          <SelecteurVue vue={vue} surChoix={setVue} className="mt-4" />
         </div>
       </dialog>
+    </div>
+  );
+}
+
+/** Face / Profil / Dos : trois boutons à bascule, un seul enfoncé. */
+function SelecteurVue({
+  vue,
+  surChoix,
+  className,
+}: {
+  vue: WatchView;
+  surChoix: (vue: WatchView) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("mx-auto flex w-fit items-center gap-1 rounded-pill border border-rule bg-panel p-1", className)}
+      role="group"
+      aria-label="Vue de la montre"
+    >
+      {VUES.map((item) => (
+        <button
+          key={item.key}
+          type="button"
+          onClick={() => surChoix(item.key)}
+          aria-pressed={vue === item.key}
+          className={cn(
+            "type-mono min-h-11 rounded-pill px-5 transition-colors duration-200 ease-atelier",
+            vue === item.key ? "bg-accent text-on-accent" : "text-fg-soft hover:text-fg",
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
     </div>
   );
 }

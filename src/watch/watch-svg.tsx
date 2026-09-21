@@ -10,8 +10,36 @@ import { Strap } from "./parts/strap";
 import { Pushers } from "./parts/pushers";
 import { ProfileView } from "./parts/profile";
 import { BackView } from "./parts/back";
-import { DEFAULT_TIME, FRAME_SCALE, SIZE_SCALE } from "./geometry";
+import { cushionRadius } from "./parts/cushion";
+import { DEFAULT_TIME, FRAME_SCALE, R_CASE, SIZE_SCALE } from "./geometry";
 import type { WatchRender, WatchView } from "./types";
+
+/**
+ * Pièces de flanc déduites de la configuration, communes aux vues de face et
+ * de dos. Le rendu ne ment jamais sur une option : une couronne à 4 h n'est
+ * dessinée que si elle est choisie, la seconde couronne que si le réhaut
+ * boussole l'est.
+ */
+export function flankLayout(render: WatchRender) {
+  const coussin = render.caseShape === "coussin";
+  const crownAt: 3 | 4 = render.crownAt === 4 ? 4 : 3;
+  // Le réhaut boussole cède la place à l'échelle 24 h d'un GMT et aux compteurs
+  // d'un chronographe (les règles du catalogue l'interdisent déjà).
+  const boussole = render.innerRing === "boussole" && render.movement !== "NH34" && render.movement !== "VK64";
+  // Sa couronne se loge à 4 h ; si la couronne de remontage y est déjà, à 2 h.
+  const secondCrownAt: 2 | 4 | null = boussole ? (crownAt === 4 ? 2 : 4) : null;
+  // Le flanc d'un coussin est plus loin du centre, et il enveloppe la couronne :
+  // elle s'y enfonce à demi, ce qui dispense de protège-couronne rapportés.
+  const offsetAt = (at: 2 | 3 | 4) => (coussin ? cushionRadius(at * 30) - R_CASE - 9 : 0);
+  return {
+    coussin,
+    crownAt,
+    boussole,
+    secondCrownAt,
+    offsetAt,
+    guards: render.bezelStyle === "plongee" && !coussin,
+  };
+}
 
 export interface WatchSvgProps {
   /** Identifiant stable : préfixe tous les `id` internes du SVG. */
@@ -43,7 +71,7 @@ export interface WatchSvgProps {
 export function WatchSvg({ id, render, view = "face", detail = "full", sheen, crop, className, label }: WatchSvgProps) {
   const scale = (SIZE_SCALE[render.caseSize] ?? 1) * (view === "profil" ? 1 : FRAME_SCALE);
   const time = render.time ?? DEFAULT_TIME;
-  const guards = render.bezelStyle === "plongee";
+  const flank = flankLayout(render);
   const isGmt = render.movement === "NH34";
   const isChrono = render.movement === "VK64";
   const showDate = (render.showDate ?? true) && render.movement !== "NH38" && render.movement !== "VK64";
@@ -70,8 +98,8 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
         <>
           {/* La lumière vient du haut-gauche : la nappe d'ombre glisse en bas à
               droite, l'occlusion de contact reste sous la carrure. */}
-          <ellipse cx="518" cy="534" rx={440 * scale} ry={430 * scale} fill={`url(#${id}-shadow)`} />
-          <circle cx="506" cy="510" r={392 * scale} fill={`url(#${id}-shadow-contact)`} />
+          <ellipse cx="518" cy="534" rx={(flank.coussin ? 470 : 440) * scale} ry={430 * scale} fill={`url(#${id}-shadow)`} />
+          <ellipse cx="506" cy="510" rx={(flank.coussin ? 432 : 392) * scale} ry={(flank.coussin ? 420 : 392) * scale} fill={`url(#${id}-shadow-contact)`} />
         </>
       )}
 
@@ -88,7 +116,15 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
               detail={detail}
               frame={500 / scale}
             />
-            <Lugs uid={id} metal={render.caseMetal} finish={render.caseFinish} />
+            {/* De dos, couronne et poussoirs passent à gauche : la montre est retournée. */}
+            <Crown uid={id} style="lisse" metal={render.crownMetal} at={flank.crownAt} offset={flank.offsetAt(flank.crownAt)} mirror />
+            {flank.secondCrownAt && (
+              <Crown uid={id} style="lisse" metal={render.crownMetal} at={flank.secondCrownAt} offset={flank.offsetAt(flank.secondCrownAt)} size={0.8} mirror />
+            )}
+            {isChrono && <Pushers uid={id} metal={render.caseMetal} mirror />}
+            {!flank.coussin && <Lugs uid={id} metal={render.caseMetal} finish={render.caseFinish} />}
+            {/* Les épaulements passent sous le fond vissé : seul leur débord se voit. */}
+            {flank.guards && <CrownGuards uid={id} metal={render.caseMetal} at={flank.crownAt} mirror />}
             <BackView uid={id} render={render} />
           </>
         ) : (
@@ -99,7 +135,7 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
             frame={500 / scale}
             sheen={sheen}
             time={time}
-            guards={guards}
+            flank={flank}
             isGmt={isGmt}
             isChrono={isChrono}
             showDate={showDate}
@@ -118,7 +154,7 @@ function FaceView({
   frame,
   sheen,
   time,
-  guards,
+  flank,
   isGmt,
   isChrono,
   showDate,
@@ -129,12 +165,15 @@ function FaceView({
   frame: number;
   sheen?: { x: number; y: number };
   time: { hours: number; minutes: number; seconds: number };
-  guards: boolean;
+  flank: ReturnType<typeof flankLayout>;
   isGmt: boolean;
   isChrono: boolean;
   showDate: boolean;
 }) {
   const id = uid;
+  // La minuterie d'une plongeuse vit sur son réhaut : elle suit les index de
+  // plongée. Le réhaut boussole, lui, est une option à part entière.
+  const rehaut = flank.boussole ? "boussole" : render.indexStyle === "plongee" ? "minuterie" : "poli";
   return (
     <>
         <Strap
@@ -146,10 +185,27 @@ function FaceView({
           frame={frame}
         />
 
-        <Crown uid={id} style={render.crownStyle} metal={render.crownMetal} />
+        <Crown
+          uid={id}
+          style={render.crownStyle}
+          metal={render.crownMetal}
+          at={flank.crownAt}
+          offset={flank.offsetAt(flank.crownAt)}
+        />
+        {/* Couronne du réhaut boussole : plus menue, jamais signée. */}
+        {flank.secondCrownAt && (
+          <Crown
+            uid={id}
+            style="lisse"
+            metal={render.crownMetal}
+            at={flank.secondCrownAt}
+            offset={flank.offsetAt(flank.secondCrownAt)}
+            size={0.8}
+          />
+        )}
         {isChrono && <Pushers uid={id} metal={render.caseMetal} />}
-        <Case uid={id} metal={render.caseMetal} finish={render.caseFinish} />
-        {guards && <CrownGuards uid={id} metal={render.caseMetal} />}
+        <Case uid={id} metal={render.caseMetal} finish={render.caseFinish} shape={render.caseShape} />
+        {flank.guards && <CrownGuards uid={id} metal={render.caseMetal} at={flank.crownAt} />}
 
         <Bezel
           uid={id}
@@ -171,6 +227,8 @@ function FaceView({
           showDate={showDate}
           detail={detail}
           subdialColor={render.subdialColor}
+          dateWindow={render.dateWindow}
+          rehaut={rehaut}
         />
 
         <g filter={`url(#${id}-contact-shadow)`}>
@@ -179,8 +237,8 @@ function FaceView({
             metal={render.caseMetal}
             dialColor={render.dialColor}
             lume={render.lume}
-            outerRadius={isGmt ? 230 : undefined}
-            innerRadius={isGmt ? 196 : undefined}
+            outerRadius={flank.boussole ? 227 : isGmt ? 230 : undefined}
+            innerRadius={flank.boussole ? 194 : isGmt ? 196 : undefined}
             skipHour={showDate ? 3 : undefined}
           />
         </g>

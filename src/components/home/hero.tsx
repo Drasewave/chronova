@@ -32,21 +32,30 @@ export function Hero({ catalogue, vedette }: { catalogue: Catalogue; vedette: Wa
       style={{ paddingInline: "var(--gutter)" }}
       aria-labelledby="titre-accueil"
     >
-      <div className="mx-auto grid max-w-wide gap-x-10 gap-y-8 pb-10 pt-8 lg:min-h-[min(calc(100svh-5rem),54rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:grid-rows-[1fr_auto] lg:items-center lg:pb-0 lg:pt-4">
+      <div className="mx-auto grid max-w-wide gap-x-10 gap-y-8 pb-10 pt-8 lg:min-h-[min(calc(100svh-5rem),46rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:grid-rows-[1fr_auto] lg:items-center lg:pb-0 lg:pt-4">
         <div className="lg:col-start-1 lg:row-start-1 lg:self-end lg:pb-2">
-          <h1 id="titre-accueil" className="type-display-1 entree-texte" style={rang(0)}>
-            Vous composez
+          {/* Chaque ligne sort de son masque, l'une après l'autre (`.ligne-titre`). */}
+          <h1 id="titre-accueil" className="type-display-1">
+            <span className="ligne-titre" style={rang(0)}>
+              Vous composez
+            </span>
             <br />
-            la montre.
+            <span className="ligne-titre" style={rang(1)}>
+              la montre.
+            </span>
             <br />
-            <span className="text-gold">Je l&apos;assemble,</span>
+            <span className="ligne-titre text-gold" style={rang(2)}>
+              Je l&apos;assemble,
+            </span>
             <br />
-            pièce par pièce.
+            <span className="ligne-titre" style={rang(3)}>
+              pièce par pièce.
+            </span>
           </h1>
         </div>
 
         <div className="entree-montre lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
-          <div className="relative mx-auto w-[min(92%,30rem)] lg:w-[min(100%,46rem)]">
+          <div className="relative mx-auto w-[min(92%,30rem)] lg:w-[min(100%,38rem)]">
             <Graduation />
             <InteractiveWatch
               id="hero"
@@ -107,7 +116,7 @@ function Graduation() {
       viewBox="0 0 1000 1000"
       aria-hidden="true"
       focusable="false"
-      className="pointer-events-none absolute inset-0 -z-10 size-full scale-[1.08] text-gold"
+      className="entree-graduation pointer-events-none absolute inset-0 -z-10 size-full scale-[1.08] text-gold"
     >
       <circle cx="500" cy="500" r="478" fill="none" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1" />
       {Array.from({ length: 60 }, (_, i) => (

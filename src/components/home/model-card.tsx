@@ -71,11 +71,11 @@ export function ModelCard({
           </ViewTransition>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-4">
+        <div className="mt-4 flex items-center justify-between gap-4">
           {niveau === 2 ? (
-            <h2 className="type-title-1 text-fg">{modele.name}</h2>
+            <h2 className="type-title-2 text-fg">{modele.name}</h2>
           ) : (
-            <h3 className="type-title-1 text-fg">{modele.name}</h3>
+            <h3 className="type-title-2 text-fg">{modele.name}</h3>
           )}
           <IconFleche className="fleche-glisse shrink-0 text-gold opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
         </div>

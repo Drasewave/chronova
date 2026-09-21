@@ -10,7 +10,7 @@ const X1 = C + R_CASE + 26;
  * pour que leur pied disparaisse sous le flanc. Deux tubes courts, symétriques
  * de part et d'autre de la couronne (VK64 uniquement).
  */
-export function Pushers({ uid, metal }: { uid: string; metal: MetalTone }) {
+export function Pushers({ uid, metal, mirror = false }: { uid: string; metal: MetalTone; mirror?: boolean }) {
   const ramp = METALS[metal];
 
   const pusher = (centerY: number) => (
@@ -27,7 +27,8 @@ export function Pushers({ uid, metal }: { uid: string; metal: MetalTone }) {
   );
 
   return (
-    <g data-layer="poussoirs">
+    // De dos la montre est retournée : les poussoirs passent à gauche.
+    <g data-layer="poussoirs" transform={mirror ? `translate(${2 * C} 0) scale(-1 1)` : undefined}>
       {pusher(C - 80)}
       {pusher(C + 80)}
     </g>

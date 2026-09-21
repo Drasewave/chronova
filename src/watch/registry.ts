@@ -23,6 +23,9 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
     { key: "brosse", label: "Acier brossé" },
     { key: "poli", label: "Acier poli" },
     { key: "microbille", label: "Acier microbillé" },
+    // Forme de la carrure (`caseShape`) : indépendante de la finition.
+    { key: "rond", label: "Carrure ronde" },
+    { key: "coussin", label: "Carrure coussin, cornes courtes" },
   ],
   lunette: [
     { key: "lisse", label: "Lisse" },
@@ -38,19 +41,30 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
     { key: "emaille", label: "Émail" },
     { key: "soleille", label: "Soleillé" },
     { key: "mat", label: "Mat" },
+    { key: "soleil-profond", label: "Soleil profond, fumé et gaufré" },
   ],
-  minuterie: [],
+  // Réhaut (`innerRing`) : la bague inclinée qui entoure le cadran.
+  minuterie: [
+    { key: "aucun", label: "Réhaut simple" },
+    { key: "boussole", label: "Réhaut boussole, seconde couronne à 4 h" },
+  ],
   index: [
     { key: "batons", label: "Index bâtons" },
     { key: "arabes", label: "Chiffres arabes" },
     { key: "plongee", label: "Ronds et triangle, plongée" },
   ],
   signature: [],
-  "guichet-date": [],
+  "guichet-date": [
+    { key: "date", label: "Quantième" },
+    { key: "jour-date", label: "Jour et quantième" },
+  ],
   aiguilles: [
     { key: "glaive", label: "Glaive" },
     { key: "mercedes", label: "Mercedes" },
     { key: "crayon", label: "Crayon" },
+    { key: "fleche", label: "Flèche et glaive large, plongée" },
+    { key: "dauphine", label: "Dauphine, deux facettes polies" },
+    { key: "cathedrale", label: "Cathédrale, ajourées" },
   ],
   axe: [],
   verre: [
@@ -61,5 +75,8 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
   couronne: [
     { key: "signee", label: "Signée Chronova" },
     { key: "lisse", label: "Lisse" },
+    // Position horaire (`crownAt`).
+    { key: "3", label: "À 3 h" },
+    { key: "4", label: "À 4 h, déportée" },
   ],
 };

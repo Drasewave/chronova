@@ -1,7 +1,13 @@
 import { INK, isLight, shade, tint } from "../palette";
-import { Ring } from "./conic";
+import { Ring, annulus } from "./conic";
 import { C, R_DIAL, R_MINUTE_TRACK, n, polar } from "../geometry";
-import type { DialTexture, Movement } from "../types";
+import type { DateWindow as DateWindowKind, DialTexture, Movement } from "../types";
+
+/** Bord intérieur du réhaut imprimé d'une plongeuse, et du réhaut boussole. */
+export const R_CHAPTER_IN = 263;
+export const R_COMPASS_IN = 252;
+/** Minuterie repoussée vers le centre quand le réhaut boussole prend sa place. */
+const R_TRACK_BOUSSOLE = 236;
 
 interface DialProps {
   uid: string;
@@ -11,9 +17,15 @@ interface DialProps {
   showDate: boolean;
   detail: "full" | "compact";
   subdialColor?: string;
+  dateWindow?: DateWindowKind;
+  /**
+   * Réhaut : `minuterie` reporte la minuterie sur la bague inclinée, comme sur
+   * une plongeuse ; `boussole` y imprime les points cardinaux.
+   */
+  rehaut?: "poli" | "minuterie" | "boussole";
 }
 
-export function Dial({ uid, color, texture, movement, showDate, detail, subdialColor }: DialProps) {
+export function Dial({ uid, color, texture, movement, showDate, detail, subdialColor, dateWindow = "date", rehaut = "poli" }: DialProps) {
   const light = isLight(color);
   const printed = light ? shade(color, 0.78) : tint(color, 0.82);
   const hasDate = showDate && movement !== "NH38" && movement !== "VK64";
@@ -28,6 +40,23 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
             <use href={`#${uid}-conic-dial`} />
             {/* La tombée de lumière du studio reste lisible sous le soleillage. */}
             <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial)`} opacity="0.18" />
+          </>
+        )}
+        {texture === "soleil-profond" && (
+          <>
+            <use href={`#${uid}-conic-dial`} />
+            {/* Fumé : la laque s'épaissit vers le bord, la teinte s'y noie. */}
+            <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial-fume)`} />
+            {/* Sous sa laque transparente, le cadran brille comme un émail. */}
+            <ellipse
+              cx={C - 84}
+              cy={C - 104}
+              rx="250"
+              ry="180"
+              fill={`url(#${uid}-gloss)`}
+              opacity="0.3"
+              transform={`rotate(-24 ${C - 84} ${C - 104})`}
+            />
           </>
         )}
         {texture === "emaille" && (
@@ -52,13 +81,18 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
       <circle cx={C} cy={C} r={R_DIAL - 5} fill="none" stroke={INK} strokeOpacity="0.4" strokeWidth="10" />
       <circle cx={C} cy={C} r={R_DIAL - 10} fill="none" stroke={INK} strokeOpacity="0.55" strokeWidth="1.2" />
 
-      <MinuteTrack color={printed} detail={detail} />
+      {rehaut === "poli" ? (
+        <MinuteTrack color={printed} detail={detail} />
+      ) : (
+        <PrintedRehaut uid={uid} color={color} printed={printed} kind={rehaut} detail={detail} />
+      )}
+      {rehaut === "boussole" && <MinuteTrack color={printed} detail={detail} radius={R_TRACK_BOUSSOLE} />}
       {movement === "NH34" && <GmtRing color={printed} detail={detail} />}
       {movement === "NH38" && <OpenHeart uid={uid} color={color} printed={printed} />}
       {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} printed={printed} />}
       {hasDate && (
         <g filter={`url(#${uid}-contact-shadow)`}>
-          <DateWindow uid={uid} color={color} />
+          <DateWindow uid={uid} color={color} kind={dateWindow} />
         </g>
       )}
 
@@ -96,7 +130,7 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
   );
 }
 
-function MinuteTrack({ color, detail }: { color: string; detail: "full" | "compact" }) {
+function MinuteTrack({ color, detail, radius = R_MINUTE_TRACK }: { color: string; detail: "full" | "compact"; radius?: number }) {
   const count = detail === "full" ? 60 : 12;
   const step = 360 / count;
   return (
@@ -104,7 +138,7 @@ function MinuteTrack({ color, detail }: { color: string; detail: "full" | "compa
       <circle
         cx={C}
         cy={C}
-        r={R_MINUTE_TRACK + 12}
+        r={radius + 12}
         fill="none"
         stroke={color}
         strokeOpacity="0.3"
@@ -113,8 +147,8 @@ function MinuteTrack({ color, detail }: { color: string; detail: "full" | "compa
       {Array.from({ length: count }, (_, i) => {
         const angle = step * i;
         const major = angle % 30 === 0;
-        const a = polar(R_MINUTE_TRACK + 11, angle);
-        const b = polar(R_MINUTE_TRACK + (major ? 0 : 4), angle);
+        const a = polar(radius + 11, angle);
+        const b = polar(radius + (major ? 0 : 4), angle);
         return (
           <line
             key={i}
@@ -129,6 +163,113 @@ function MinuteTrack({ color, detail }: { color: string; detail: "full" | "compa
           />
         );
       })}
+    </g>
+  );
+}
+
+/**
+ * Réhaut imprimé. Sur une plongeuse japonaise la minuterie ne vit pas sur le
+ * cadran mais sur la bague inclinée qui l'entoure : le cadran reste libre pour
+ * de gros index, et la pente ramène les graduations vers l'œil. Sur une montre
+ * de montagne, la même bague tourne (seconde couronne) et porte une rose des
+ * vents : pointée sur le soleil avec l'aiguille des heures, elle donne le sud.
+ * La pente regarde le centre : elle est sombre du côté de la lumière, claire à
+ * l'opposé — l'inverse d'un flanc de boîtier.
+ */
+function PrintedRehaut({
+  uid,
+  color,
+  printed,
+  kind,
+  detail,
+}: {
+  uid: string;
+  color: string;
+  printed: string;
+  kind: "minuterie" | "boussole";
+  detail: "full" | "compact";
+}) {
+  const rOut = R_DIAL - 4;
+  const rIn = kind === "boussole" ? R_COMPASS_IN : R_CHAPTER_IN;
+  const rMid = (rOut + rIn) / 2;
+  const full = detail === "full";
+  // La rose des vents doit rester lisible : sa bague est à peine plus sombre
+  // que le cadran, là où celle d'une plongeuse peut s'enfoncer dans l'ombre.
+  const base = kind === "boussole" ? (isLight(color) ? shade(color, 0.04) : shade(color, 0.1)) : isLight(color) ? shade(color, 0.1) : shade(color, 0.22);
+  const cardinaux = ["N", "E", "S", "O"];
+
+  return (
+    <g data-layer={kind === "boussole" ? "rehaut-boussole" : "rehaut-minuterie"}>
+      <path d={annulus(rOut, rIn)} fillRule="evenodd" fill={base} />
+      <path d={annulus(rOut, rIn)} fillRule="evenodd" fill={`url(#${uid}-rehaut-pente)`} opacity={kind === "boussole" ? 0.6 : 1} />
+      {/* La bague surplombe le cadran : elle y porte une ombre, en bas à droite de son bord éclairé. */}
+      <circle cx={C + 1.5} cy={C + 2.5} r={rIn - 3} fill="none" stroke={INK} strokeOpacity="0.34" strokeWidth="6" />
+      <circle cx={C} cy={C} r={rIn} fill="none" stroke={INK} strokeOpacity="0.55" strokeWidth="1.2" />
+      <circle cx={C} cy={C} r={rOut} fill="none" stroke={INK} strokeOpacity="0.5" strokeWidth="1.2" />
+
+      {kind === "minuterie" &&
+        Array.from({ length: full ? 60 : 12 }, (_, i) => {
+          const angle = (360 / (full ? 60 : 12)) * i;
+          const major = angle % 30 === 0;
+          const a = polar(rOut - 3.5, angle);
+          const b = polar(major ? rIn + 3.5 : rMid - 1, angle);
+          return (
+            <line
+              key={i}
+              x1={n(a.x)}
+              y1={n(a.y)}
+              x2={n(b.x)}
+              y2={n(b.y)}
+              stroke={printed}
+              strokeOpacity={major ? 0.95 : 0.7}
+              strokeWidth={major ? 4.2 : 2}
+            />
+          );
+        })}
+
+      {kind === "boussole" && (
+        <>
+          {Array.from({ length: full ? 72 : 12 }, (_, i) => {
+            const angle = (360 / (full ? 72 : 12)) * i;
+            if (angle % 90 === 0) return null;
+            const inter = angle % 45 === 0; // NE, SE, SO, NO
+            const trente = angle % 30 === 0;
+            const a = polar(rOut - 4, angle);
+            const b = polar(inter ? rIn + 5 : trente ? rMid - 3 : rMid + 4, angle);
+            return (
+              <line
+                key={i}
+                x1={n(a.x)}
+                y1={n(a.y)}
+                x2={n(b.x)}
+                y2={n(b.y)}
+                stroke={printed}
+                strokeOpacity={inter ? 1 : trente ? 0.9 : 0.7}
+                strokeWidth={inter ? 3.6 : trente ? 2.6 : 1.7}
+              />
+            );
+          })}
+          {cardinaux.map((lettre, i) => {
+            const angle = i * 90;
+            const p = polar(rMid, angle);
+            // Chaque lettre se lit depuis le centre, comme sur une rose des vents.
+            return (
+              <text
+                key={lettre}
+                x={n(p.x)}
+                y={n(p.y)}
+                dy="8.5"
+                textAnchor="middle"
+                fill={lettre === "N" ? "#E2543A" : printed}
+                transform={`rotate(${angle} ${n(p.x)} ${n(p.y)})`}
+                style={{ fontFamily: "var(--font-ui)", fontSize: 24, fontWeight: 700 }}
+              >
+                {lettre}
+              </text>
+            );
+          })}
+        </>
+      )}
     </g>
   );
 }
@@ -273,24 +414,34 @@ function ChronoSubdials({ color, printed }: { color: string; printed: string }) 
   );
 }
 
-function DateWindow({ uid, color }: { uid: string; color: string }) {
-  const x = C + 164;
+function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: DateWindowKind }) {
+  // Jour et date : le guichet s'élargit vers le centre, le jour à gauche du
+  // quantième. Deux disques superposés tournent dessous, d'où le filet qui les
+  // sépare.
+  const jour = kind === "jour-date";
+  const w = jour ? 136 : 68;
+  const x = C + 232 - w;
   const y = C - 25;
   const light = isLight(color);
+  const disque = light ? "#F7F5EF" : "#15171A";
+  const encre = light ? "#15171A" : "#F1F2F4";
+  const police = { fontFamily: "var(--font-ui)", fontWeight: 600 };
   return (
     <g data-layer="guichet-date">
       {/* Cadre appliqué, poli, puis le disque de quantième en retrait. */}
-      <rect x={x} y={y} width="68" height="50" rx="3" fill={`url(#${uid}-case)`} stroke={INK} strokeOpacity="0.6" strokeWidth="0.9" />
-      <rect x={x + 5} y={y + 5} width="58" height="40" rx="1.5" fill={light ? "#F7F5EF" : "#15171A"} />
+      <rect x={x} y={y} width={w} height="50" rx="3" fill={`url(#${uid}-case)`} stroke={INK} strokeOpacity="0.6" strokeWidth="0.9" />
+      <rect x={x + 5} y={y + 5} width={w - 10} height="40" rx="1.5" fill={disque} />
       {/* Le cadre porte son ombre sur le disque, du côté de la lumière. */}
-      <path d={`M ${x + 5} ${y + 45} L ${x + 5} ${y + 5} L ${x + 63} ${y + 5}`} fill="none" stroke={INK} strokeOpacity={light ? 0.3 : 0.7} strokeWidth="3" />
-      <text
-        x={x + 34}
-        y={y + 36}
-        textAnchor="middle"
-        fill={light ? "#15171A" : "#F1F2F4"}
-        style={{ fontFamily: "var(--font-ui)", fontSize: 30, fontWeight: 600 }}
-      >
+      <path d={`M ${x + 5} ${y + 45} L ${x + 5} ${y + 5} L ${x + w - 5} ${y + 5}`} fill="none" stroke={INK} strokeOpacity={light ? 0.3 : 0.7} strokeWidth="3" />
+      {jour && (
+        <>
+          <line x1={x + 78} y1={y + 6} x2={x + 78} y2={y + 44} stroke={encre} strokeOpacity="0.35" strokeWidth="1.2" />
+          <text x={x + 42} y={y + 35} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 26, letterSpacing: "0.02em" }}>
+            LUN
+          </text>
+        </>
+      )}
+      <text x={x + w - 34} y={y + 36} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 30 }}>
         11
       </text>
     </g>

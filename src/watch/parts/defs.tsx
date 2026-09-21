@@ -88,6 +88,25 @@ export function Defs({
         />
       )}
 
+      {/* Soleil profond : le cadran des habillées japonaises. Même papillon de
+          lumière, mais poussé — les rayons clairs flambent, les sombres tombent
+          presque au noir — et gaufré : un rayon sur deux est en relief, ce qui
+          hache le reflet en fines lames quand le poignet tourne. */}
+      {render.dialTexture === "soleil-profond" && (
+        <ConicDisk
+          id={`${uid}-conic-dial`}
+          count={full ? 360 : 120}
+          radius={300}
+          colorAt={(angle, i) => {
+            const bow = 0.5 + 0.5 * Math.cos((2 * (angle - 318) * Math.PI) / 180);
+            const pli = full ? (i % 6 < 3 ? 0.085 : -0.085) : i % 2 ? 0.05 : -0.05;
+            const lum = bow ** 2.1 + pli + (jitter(i) - 0.5) * 0.07;
+            const bright = isLight(dial) ? tint(dial, 0.62) : glow(dial, 1.55);
+            return mix(shade(dial, isLight(dial) ? 0.4 : 0.66), bright, Math.max(0, Math.min(1, lum)));
+          }}
+        />
+      )}
+
       {/* Cornes : un seul dégradé dans le repère de la montre, pour que les
           quatre partagent la même lumière — la corne haut-gauche est la plus
           claire, la corne bas-droite la plus sombre. */}
@@ -129,6 +148,23 @@ export function Defs({
         <stop offset="0.5" stopColor={dial} />
         <stop offset="1" stopColor={shade(dial, 0.34)} />
       </radialGradient>
+
+      {/* Fumé du soleil profond : la teinte s'assombrit vers le réhaut. */}
+      {render.dialTexture === "soleil-profond" && (
+        <radialGradient id={`${uid}-dial-fume`} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0.38" stopColor={shade(dial, 0.8)} stopOpacity="0" />
+          <stop offset="0.74" stopColor={shade(dial, 0.8)} stopOpacity="0.42" />
+          <stop offset="1" stopColor={shade(dial, 0.88)} stopOpacity="0.86" />
+        </radialGradient>
+      )}
+
+      {/* Pente d'un réhaut imprimé : tournée vers le centre, elle est dans
+          l'ombre en haut à gauche et reçoit la lumière en bas à droite. */}
+      <linearGradient id={`${uid}-rehaut-pente`} gradientUnits="userSpaceOnUse" x1="296" y1="296" x2="704" y2="704">
+        <stop offset="0" stopColor={INK} stopOpacity="0.5" />
+        <stop offset="0.5" stopColor={INK} stopOpacity="0.12" />
+        <stop offset="1" stopColor={PAPER} stopOpacity="0.16" />
+      </linearGradient>
 
       {/* Ombre du réhaut sur le pourtour du cadran. */}
       <radialGradient id={`${uid}-dial-vignette`} cx="0.5" cy="0.5" r="0.5">

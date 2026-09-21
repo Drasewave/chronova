@@ -1,7 +1,8 @@
 import { INK, METALS, rampAt } from "../palette";
 import { C, R_BEZEL_OUT, R_CASE, R_LUG_TIP as LUG_TIP } from "../geometry";
-import type { CaseFinish, MetalTone } from "../types";
+import type { CaseFinish, CaseShape, MetalTone } from "../types";
 import { Ring } from "./conic";
+import { CushionBody } from "./cushion";
 
 /**
  * Cornes. Elles prolongent la carrure au lieu d'en rayonner : flanc extérieur
@@ -108,12 +109,25 @@ export function Case({
   uid,
   metal,
   finish,
+  shape = "rond",
 }: {
   uid: string;
   metal: MetalTone;
   finish: CaseFinish;
+  shape?: CaseShape;
 }) {
   const ramp = METALS[metal];
+
+  // Coussin : carrure et cornes ne font qu'une pièce, la lunette se pose dessus.
+  if (shape === "coussin") {
+    return (
+      <g data-layer="boitier">
+        <CushionBody uid={uid} metal={metal} finish={finish} />
+        {/* La lunette déborde largement du plat : son ombre y est plus longue. */}
+        <circle cx="503" cy="505" r={R_BEZEL_OUT + 2} fill="none" stroke={INK} strokeOpacity="0.4" strokeWidth="7" />
+      </g>
+    );
+  }
 
   return (
     <g data-layer="boitier">

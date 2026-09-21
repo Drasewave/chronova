@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSampleModel, excludedOptionsFor } from "@/lib/data/models";
+import { SAMPLE_MODELS, getSampleModel, excludedOptionsFor } from "@/lib/data/models";
 import { SAMPLE_CATALOGUE as catalogue } from "@/lib/data/catalogue";
 import { buildConfiguration, defaultConfiguration } from "./configuration";
 import { buildBom, partsCost } from "./bom";
@@ -85,6 +85,24 @@ describe("règles de compatibilité", () => {
   it("l'émail ne se fait que sur les teintes claires", () => {
     expect(evaluateOption(catalogue, "cadran-finition:emaille", { "cadran-teinte": "noir-mat" }).selectable).toBe(false);
     expect(evaluateOption(catalogue, "cadran-finition:emaille", { "cadran-teinte": "creme" }).selectable).toBe(true);
+  });
+
+  it("le jour-date suit le quantième : ni NH38 ni VK64", () => {
+    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "nh38" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "vk64" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "date:avec", { mouvement: "vk64" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "date:jour-date", { mouvement: "nh35" }).selectable).toBe(true);
+  });
+
+  it("la carrure coussin n'existe qu'en 40 mm", () => {
+    expect(evaluateOption(catalogue, "boitier-forme:coussin", { taille: "39" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "boitier-forme:coussin", { taille: "40" }).selectable).toBe(true);
+  });
+
+  it("le réhaut boussole garde 4 h pour sa couronne", () => {
+    expect(evaluateOption(catalogue, "rehaut:boussole", { "couronne-position": "4h" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "rehaut:boussole", { "couronne-position": "3h" }).selectable).toBe(true);
+    expect(evaluateOption(catalogue, "couronne-position:4h", { mouvement: "vk64" }).selectable).toBe(false);
   });
 
   it("un modèle n'offre que ses propres diamètres", () => {
@@ -204,9 +222,29 @@ describe("rendu déduit des sélections", () => {
       dialColor: "#1E3448",
       bezelStyle: "plongee",
       insertMaterial: "ceramique",
-      handShape: "mercedes",
+      handShape: "fleche",
       movement: "NH35",
     });
+  });
+
+  it("l'Abysse 40 est une plongeuse japonaise : coussin, couronne à 4 h, jour-date", () => {
+    const render = resolveRender(catalogue, abysse.defaultSelections);
+    expect(render).toMatchObject({
+      caseShape: "coussin",
+      crownAt: 4,
+      showDate: true,
+      dateWindow: "jour-date",
+      indexStyle: "plongee",
+      crownStyle: "lisse",
+    });
+  });
+
+  it("une configuration sans les nouveaux choix garde le rendu d'avant", () => {
+    const render = resolveRender(catalogue, { "cadran-teinte": "creme", date: "avec" });
+    expect(render.caseShape).toBeUndefined();
+    expect(render.crownAt).toBeUndefined();
+    expect(render.dateWindow).toBeUndefined();
+    expect(render.innerRing).toBeUndefined();
   });
 
   it("la Soirée 37 est sans date, sans luminova, fond transparent", () => {
@@ -214,12 +252,26 @@ describe("rendu déduit des sélections", () => {
     expect(render.showDate).toBe(false);
     expect(render.lume).toBe(false);
     expect(render.caseback).toBe("transparent");
-    expect(render.handMetal).toBe("bleui");
+    expect(render.handShape).toBe("dauphine");
+    expect(render.dialTexture).toBe("soleil-profond");
   });
 
   it("reporte la gravure sur le rendu", () => {
     expect(resolveRender(catalogue, { gravure: "Pour Jean" }).engraving).toBe("Pour Jean");
   });
+});
+
+describe("modèles d'exemple", () => {
+  it.each(SAMPLE_MODELS.map((m) => [m.slug, m] as const))(
+    "%s : la configuration de départ et le second coloris respectent les règles",
+    (_slug, modele) => {
+      const exclus = excludedOptionsFor(modele);
+      const depart = modele.defaultSelections;
+      const second = { ...modele.defaultSelections, ...modele.altSelections };
+      expect(normalizeSelections(catalogue, depart, exclus)).toEqual(depart);
+      expect(normalizeSelections(catalogue, second, exclus)).toEqual(second);
+    },
+  );
 });
 
 describe("configuration complète", () => {

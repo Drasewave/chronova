@@ -61,6 +61,12 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
   // La lunette GMT a le même profil cranté et le même insert, sans protège-couronne.
   const insert = plongee || render.bezelStyle === "gmt";
   const chrono = render.movement === "VK64";
+  const coussin = render.caseShape === "coussin";
+  const crownAt: 3 | 4 = render.crownAt === 4 ? 4 : 3;
+  // Mêmes arbitrages que la vue de face (`flankLayout`) : le réhaut boussole
+  // amène sa couronne à 4 h, ou à 2 h si celle de remontage y est déjà.
+  const boussole = render.innerRing === "boussole" && render.movement !== "NH34" && render.movement !== "VK64";
+  const secondCrownAt: 2 | 4 | null = boussole ? (crownAt === 4 ? 2 : 4) : null;
   const yLunette = insert ? 420 : 424;
   const yBas = render.caseback === "plein" ? 542 : 539;
   const grain =
@@ -152,6 +158,10 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
         })}
       </g>
 
+      {coussin ? (
+        <CushionFlank uid={uid} ramp={ramp} grain={grain} mat={sheen === "mat"} />
+      ) : (
+      <>
       {/* Carrure : flanc dans sa finition, chanfreins polis en haut et en bas. */}
       <g data-layer="boitier">
         <path d={carrure} fill={`url(#${uid}-pf-flanc)`} />
@@ -166,6 +176,8 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
 
       <Lug uid={uid} sx={-1} ramp={ramp} grain={grain} mat={sheen === "mat"} />
       <Lug uid={uid} sx={1} ramp={ramp} grain={grain} mat={sheen === "mat"} />
+      </>
+      )}
 
       <BezelProfile uid={uid} render={render} ramp={ramp} y={yLunette} />
       <CrystalProfile uid={uid} render={render} ramp={ramp} y={yLunette} />
@@ -173,9 +185,11 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
       {/* La lunette déborde : trait d'ombre au plan de joint. */}
       <line x1={CX - HB} y1={Y_CARRURE} x2={CX + HB} y2={Y_CARRURE} stroke={INK} strokeOpacity="0.6" strokeWidth="1.6" />
 
-      {plongee && <GuardsProfile ramp={ramp} />}
+      {/* Un coussin enveloppe sa couronne dans le flanc : pas d'épaulements rapportés. */}
+      {plongee && !coussin && <GuardsProfile ramp={ramp} at={crownAt} />}
       {chrono && [-46, 46].map((dx) => <PusherProfile key={dx} uid={uid} x={CX + dx} ramp={ramp} />)}
-      <CrownProfile uid={uid} render={render} />
+      {secondCrownAt && <CrownProfile uid={uid} render={render} at={secondCrownAt} size={0.8} signed={false} />}
+      <CrownProfile uid={uid} render={render} at={crownAt} signed={render.crownStyle === "signee"} />
     </g>
   );
 }
@@ -215,16 +229,17 @@ function BezelProfile({ uid, render, ramp, y }: { uid: string; render: WatchRend
   if (style === "plongee" || style === "gmt") {
     // Pourtour cranté pour la prise en main, puis la pente de l'insert : sa
     // couleur se voit sur la tranche, sous le verre.
-    const pas = 4.5;
+    // Même crantage « pièce de monnaie » que de face : soixante dents larges.
+    const pas = 6;
     return (
       <g data-layer="lunette">
         <path d={`M ${CX - 196} ${y + 12} L ${CX - 180} ${y} H ${CX + 180} L ${CX + 196} ${y + 12} Z`} fill={`url(#${uid}-pf-insert)`} />
         <line x1={CX - 170} y1={y + 3} x2={CX - 66} y2={y + 3} stroke={PAPER} strokeOpacity={(render.insertMaterial ?? "ceramique") === "ceramique" ? 0.55 : 0.18} strokeWidth="1.6" strokeLinecap="round" />
         <rect x={CX - HB - 2} y={y + 12} width={(HB + 2) * 2} height={Y_CARRURE - y - 12} rx="2" fill={`url(#${uid}-pf-poli)`} />
-        {Array.from({ length: 39 }, (_, i) => {
-          const t = -85.5 + i * pas;
+        {Array.from({ length: 30 }, (_, i) => {
+          const t = -87 + i * pas;
           const x = n(CX + (HB + 2) * Math.sin(t * rad));
-          return <line key={i} x1={x} y1={y + 14.5} x2={x} y2={Y_CARRURE - 2} stroke={INK} strokeOpacity="0.55" strokeWidth={n(Math.max(0.7, 4.2 * Math.cos(t * rad)))} />;
+          return <line key={i} x1={x} y1={y + 14.5} x2={x} y2={Y_CARRURE - 2} stroke={INK} strokeOpacity="0.55" strokeWidth={n(Math.max(0.8, 4.6 * Math.cos(t * rad)))} />;
         })}
         <line x1={CX - HB} y1={y + 13} x2={CX + HB} y2={y + 13} stroke={ramp.hi} strokeOpacity="0.85" strokeWidth="1.2" />
         <path d={`M ${CX - 196} ${y + 12} L ${CX - 180} ${y} H ${CX + 180} L ${CX + 196} ${y + 12}`} fill="none" stroke={ramp.edge} strokeOpacity="0.7" strokeWidth="1.1" />
@@ -302,12 +317,47 @@ function CrystalProfile({ uid, render, ramp, y }: { uid: string; render: WatchRe
   );
 }
 
-/** Couronne vue de bout : jante cannelée, tête polie, signature. */
-function CrownProfile({ uid, render }: { uid: string; render: WatchRender }) {
+/**
+ * Couronne. À 3 h elle nous fait face : on la voit de bout, jante cannelée, tête
+ * polie, signature. À 4 h (ou 2 h) son axe part de 30° vers 6 h (ou 12 h) : la
+ * tête s'écrase en ellipse et l'on découvre un peu de son fût cannelé. Vu de ce
+ * côté de la montre, 6 h est à gauche et 12 h à droite.
+ */
+function CrownProfile({ uid, render, at, size = 1, signed }: { uid: string; render: WatchRender; at: 2 | 3 | 4; size?: number; signed: boolean }) {
   const ramp = METALS[render.crownMetal];
-  const r = 23;
+  const r = 23 * size;
   const dents = 24;
   const pas = n((2 * Math.PI * (r - 2)) / dents);
+
+  if (at !== 3) {
+    const sx = at === 4 ? -1 : 1;
+    const xPied = CX + sx * HW * 0.5; // là où le tube sort du flanc
+    const xTete = xPied + sx * 17 * size; // trois millimètres de saillie, vus de biais
+    const rx = n(r * 0.87);
+    const x0 = Math.min(xPied, xTete);
+    return (
+      <g data-layer="couronne">
+        <ellipse cx={xTete + 4} cy={Y_COURONNE + 7} rx={rx + 8} ry={r + 2} fill={INK} fillOpacity="0.5" filter={`url(#${uid}-pf-flou)`} />
+        {/* Fût : un cylindre fuyant, cannelé dans le sens de son axe. */}
+        <ellipse cx={xPied} cy={Y_COURONNE} rx={rx} ry={r} fill={ramp.dark} />
+        <rect x={x0} y={n(Y_COURONNE - r)} width={n(Math.abs(xTete - xPied))} height={n(r * 2)} fill={ramp.mid} />
+        <ellipse cx={xPied} cy={Y_COURONNE} rx={rx} ry={r} fill={`url(#${uid}-pf-dessous)`} />
+        {Array.from({ length: 9 }, (_, i) => {
+          const y = n(Y_COURONNE + (r - 1.5) * Math.sin(((-72 + i * 18) * Math.PI) / 180));
+          return <line key={i} x1={xPied} y1={y} x2={xTete} y2={y} stroke={i < 4 ? ramp.hi : ramp.edge} strokeOpacity={i < 4 ? 0.85 : 0.55} strokeWidth="1.3" />;
+        })}
+        <ellipse cx={xTete} cy={Y_COURONNE} rx={rx} ry={r} fill={ramp.edge} />
+        <ellipse cx={xTete} cy={Y_COURONNE} rx={n(rx - 1.8)} ry={r - 2} fill="none" stroke={`url(#${uid}-pf-tete-couronne)`} strokeWidth="4.2" strokeDasharray={`${n(pas * 0.55)} ${n(pas * 0.4)}`} />
+        <ellipse cx={xTete} cy={Y_COURONNE} rx={n(rx - 4.4)} ry={r - 5} fill={`url(#${uid}-pf-tete-couronne)`} stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="1" />
+        {signed && (
+          <text x={xTete} y={Y_COURONNE + 5.4} textAnchor="middle" fill={ramp.edge} fillOpacity="0.8" transform={`translate(${xTete} 0) scale(0.87 1) translate(${-xTete} 0)`} style={{ fontFamily: "var(--font-title)", fontSize: 15, fontWeight: 600 }}>
+            C
+          </text>
+        )}
+      </g>
+    );
+  }
+
   return (
     <g data-layer="couronne">
       {/* Elle dépasse du flanc de trois bons millimètres : l'ombre le dit. */}
@@ -316,7 +366,7 @@ function CrownProfile({ uid, render }: { uid: string; render: WatchRender }) {
       <circle cx={CX} cy={Y_COURONNE} r={r - 2} fill="none" stroke={`url(#${uid}-pf-tete-couronne)`} strokeWidth="4.4" strokeDasharray={`${n(pas * 0.58)} ${n(pas * 0.42)}`} />
       <circle cx={CX} cy={Y_COURONNE} r={r - 5} fill={`url(#${uid}-pf-tete-couronne)`} stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="1" />
       <circle cx={CX} cy={Y_COURONNE} r={r - 8.5} fill="none" stroke={ramp.hi} strokeOpacity="0.4" strokeWidth="0.8" />
-      {render.crownStyle === "signee" && (
+      {signed && (
         <>
           <text x={CX + 0.7} y={Y_COURONNE + 6.4} textAnchor="middle" fill={ramp.hi} fillOpacity="0.6" style={{ fontFamily: "var(--font-title)", fontSize: 16, fontWeight: 600 }}>
             C
@@ -326,6 +376,46 @@ function CrownProfile({ uid, render }: { uid: string; render: WatchRender }) {
           </text>
         </>
       )}
+    </g>
+  );
+}
+
+/**
+ * Flanc d'une carrure coussin : plus de cylindre ni de cornes distinctes, mais
+ * un seul galet qui va d'une pointe à l'autre et retombe vers le poignet. Le
+ * flanc est large et bombé, d'où sa ressemblance avec une carapace.
+ */
+function CushionFlank({ uid, ramp, grain, mat }: { uid: string; ramp: MetalRamp; grain: string | null; mat: boolean }) {
+  const demi = (sx: 1 | -1) => {
+    const X = (dx: number) => n(CX + sx * dx);
+    return {
+      descente: `C ${X(233)} 451 ${X(246)} 478 ${X(249)} 522 Q ${X(251)} 541 ${X(241)} 546 L ${X(226)} 548 C ${X(212)} 531 ${X(190)} 516 ${X(158)} ${Y_FOND}`,
+      montee: `C ${X(190)} 516 ${X(212)} 531 ${X(226)} 548 L ${X(241)} 546 Q ${X(251)} 541 ${X(249)} 522 C ${X(246)} 478 ${X(233)} 451 ${X(212)} ${Y_CARRURE}`,
+      dos: `M ${X(150)} ${Y_CARRURE + 1.2} H ${X(212)} C ${X(232)} 452 ${X(244.5)} 478 ${X(247.5)} 521`,
+    };
+  };
+  const d = demi(1);
+  const g = demi(-1);
+  const galet = `M ${CX - 212} ${Y_CARRURE} H ${CX + 212} ${d.descente} H ${CX - 158} ${g.montee} Z`;
+  return (
+    <g data-layer="boitier">
+      <path d={galet} fill={`url(#${uid}-pf-flanc)`} />
+      {grain && <path d={galet} fill={grain} />}
+      {/* Le galbe : le flanc se dérobe vers le bas, il y perd la lumière. */}
+      <path d={galet} fill={`url(#${uid}-pf-dessous)`} opacity="0.55" />
+      {/* Chanfrein poli du dessus, d'une pointe à l'autre. */}
+      <path d={`${g.dos}`} fill="none" stroke={ramp.hi} strokeOpacity={mat ? 0.45 : 0.95} strokeWidth="3" strokeLinecap="round" />
+      <path d={`${d.dos}`} fill="none" stroke={ramp.light} strokeOpacity={mat ? 0.4 : 0.75} strokeWidth="3" strokeLinecap="round" />
+      <line x1={CX - 150} y1={Y_CARRURE + 1.2} x2={CX + 150} y2={Y_CARRURE + 1.2} stroke={ramp.hi} strokeOpacity={mat ? 0.4 : 0.85} strokeWidth="2.4" />
+      <line x1={CX - 205} y1={Y_CARRURE + 5.8} x2={CX + 205} y2={Y_CARRURE + 5.8} stroke={INK} strokeOpacity="0.25" strokeWidth="0.9" />
+      <path d={galet} fill="none" stroke={ramp.edge} strokeOpacity="0.85" strokeWidth="1.4" strokeLinejoin="round" />
+      {/* Perçages des barrettes. */}
+      {([-1, 1] as const).map((sx) => (
+        <g key={sx}>
+          <circle cx={CX + sx * 237 + 0.7} cy="532.8" r="3.4" fill={ramp.hi} fillOpacity="0.6" />
+          <circle cx={CX + sx * 237} cy="532" r="3.3" fill={INK} fillOpacity="0.85" />
+        </g>
+      ))}
     </g>
   );
 }
@@ -342,9 +432,11 @@ function PusherProfile({ uid, x, ramp }: { uid: string; x: number; ramp: MetalRa
 }
 
 /** Épaulements du protège-couronne, de part et d'autre de la couronne. */
-function GuardsProfile({ ramp }: { ramp: MetalRamp }) {
+function GuardsProfile({ ramp, at }: { ramp: MetalRamp; at: 3 | 4 }) {
+  // À 4 h, les épaulements suivent la couronne vers 6 h et se tassent avec elle.
+  const biais = at === 4 ? `translate(${n(CX - HW * 0.5 - 8)} 0) scale(0.87 1) translate(${-CX} 0)` : undefined;
   return (
-    <g data-layer="protege-couronne">
+    <g data-layer="protege-couronne" transform={biais}>
       {([-1, 1] as const).map((sx) => {
         const X = (dx: number) => CX + sx * dx;
         const d = `M ${X(8)} 462 H ${X(28)} Q ${X(40)} 463 ${X(40)} 474 V 488 Q ${X(40)} 499 ${X(28)} 500 H ${X(8)} Z`;
