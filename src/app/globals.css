@@ -45,8 +45,8 @@
   --radius-pill: 999px;
 
   /* Une seule ombre, teintée nuit, réservée aux éléments flottants. */
-  --shadow-lift: 0 18px 48px -20px rgb(11 17 24 / 0.38);
-  --shadow-sheet: 0 -12px 40px -18px rgb(11 17 24 / 0.36);
+  --shadow-lift: 0 18px 48px -20px rgb(10 11 13 / 0.38);
+  --shadow-sheet: 0 -12px 40px -18px rgb(10 11 13 / 0.36);
 
   --ease-atelier: cubic-bezier(0.16, 1, 0.3, 1);
 
