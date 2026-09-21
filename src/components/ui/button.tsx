@@ -6,12 +6,12 @@ type Variant = "primaire" | "contour" | "discret";
 type Size = "md" | "sm";
 
 const BASE =
-  "type-ui inline-flex items-center justify-center gap-2.5 rounded-pill transition-[background-color,color,border-color,transform] duration-200 ease-atelier active:translate-y-px disabled:pointer-events-none disabled:opacity-45";
+  "type-ui inline-flex items-center justify-center gap-2.5 rounded-pill transition-[background-color,color,border-color,transform] duration-(--d-base) ease-atelier active:scale-[0.98] active:duration-(--d-press) disabled:pointer-events-none disabled:opacity-45";
 
 const VARIANTS: Record<Variant, string> = {
   primaire: "bg-accent text-on-accent hover:bg-accent-hover",
-  contour: "border border-fg/70 text-fg hover:border-gold hover:bg-accent hover:text-on-accent",
-  discret: "text-fg underline decoration-gold decoration-1 underline-offset-[6px] hover:text-gold",
+  contour: "border border-fg/70 text-fg hover:border-accent-ink hover:bg-accent hover:text-on-accent",
+  discret: "text-fg underline decoration-accent-ink decoration-1 underline-offset-[6px] hover:text-accent-ink",
 };
 
 const SIZES: Record<Size, string> = {

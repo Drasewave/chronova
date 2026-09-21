@@ -63,7 +63,9 @@ export function buildConfiguration(
   return {
     modelSlug: model.slug,
     selections,
-    render: resolveRender(catalogue, selections),
+    // L'étanchéité imprimée sur le cadran est celle du boîtier : une donnée du
+    // modèle, pas une option.
+    render: { ...resolveRender(catalogue, selections), waterResistM: model.waterResistM },
     price: computePrice(catalogue, model.basePriceCents, selections),
     leadTime: computeLeadTime(catalogue, model.assemblyDays, selections),
     bom,

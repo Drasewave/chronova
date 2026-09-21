@@ -50,7 +50,7 @@ export function TitrePage({ children, className }: { children: ReactNode; classN
 export function FilAriane({ href, children }: { href: string; children: ReactNode }) {
   return (
     <nav aria-label="Fil d'Ariane" className="mb-1">
-      <Link href={href} className="type-caption lien-atelier link-underline text-fg-soft hover:text-gold">
+      <Link href={href} className="type-caption lien-atelier link-underline text-fg-soft hover:text-accent-ink">
         ← {children}
       </Link>
     </nav>
@@ -82,7 +82,7 @@ export function Filtre({
       className={cn(
         "type-ui flex min-h-11 items-center rounded-pill border px-4 transition-colors duration-200",
         actif
-          ? "border-gold bg-accent text-on-accent"
+          ? "border-accent-ink bg-accent text-on-accent"
           : "border-rule text-fg hover:border-fg-soft hover:bg-bg-alt",
       )}
     >

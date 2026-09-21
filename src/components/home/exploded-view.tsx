@@ -981,7 +981,7 @@ export function ExplodedView() {
                 sur l&apos;autre.
               </p>
               {anime && (
-                <p className="type-caption mt-6 hidden border-l border-gold pl-3 text-fg-soft lg:block">
+                <p className="type-caption mt-6 hidden border-l border-accent-ink pl-3 text-fg-soft lg:block">
                   Faites défiler la page pour séparer les pièces.
                 </p>
               )}
@@ -1048,19 +1048,19 @@ export function ExplodedView() {
                 return (
                   <li
                     key={couche.cle}
-                    className="absolute inset-x-0 flex -translate-y-1/2 items-start gap-4 transition-opacity duration-300 ease-atelier"
+                    className="absolute inset-x-0 flex -translate-y-1/2 items-start gap-4 transition-opacity duration-(--d-base) ease-atelier"
                     style={{ top: `${haut}%`, opacity: visible ? 1 : 0 }}
                   >
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "mt-[0.55rem] block h-px shrink-0 transition-all duration-300 ease-atelier",
-                        enCours ? "w-10 bg-gold" : anime ? "w-6 bg-rule" : "w-6 bg-gold",
+                        "mt-[0.55rem] block h-px shrink-0 transition-all duration-(--d-base) ease-atelier",
+                        enCours ? "w-10 bg-accent-ink" : anime ? "w-6 bg-rule" : "w-6 bg-accent-ink",
                       )}
                     />
                     <div>
-                      <p className={cn("type-mono transition-colors duration-300", enCours ? "text-gold" : "text-fg")}>
-                        <span className={enCours ? "text-gold" : "text-fg-soft"}>{String(index + 1).padStart(2, "0")}</span>
+                      <p className={cn("type-mono transition-colors duration-(--d-base) ease-atelier", enCours ? "text-accent-ink" : "text-fg")}>
+                        <span className={enCours ? "text-accent-ink" : "text-fg-soft"}>{String(index + 1).padStart(2, "0")}</span>
                         <span className="ml-3">{couche.titre}</span>
                       </p>
                       <p className="type-caption mt-0.5 text-fg-soft">{couche.detail}</p>
@@ -1078,7 +1078,7 @@ export function ExplodedView() {
                   {PLANS.map((couche, index) => (
                     <span
                       key={couche.cle}
-                      className={cn("h-0.5 flex-1 transition-colors duration-300", index === actif ? "bg-gold" : "bg-rule")}
+                      className={cn("h-0.5 flex-1 transition-colors duration-(--d-base) ease-atelier", index === actif ? "bg-accent-ink" : "bg-rule")}
                     />
                   ))}
                 </div>
@@ -1087,7 +1087,7 @@ export function ExplodedView() {
                 {PLANS.map((couche, index) => (
                   <li key={couche.cle} className={cn(anime && index !== actif && "sr-only")}>
                     <p className="type-mono text-fg">
-                      <span className="text-gold">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="text-accent-ink">{String(index + 1).padStart(2, "0")}</span>
                       <span className="ml-3">{couche.titre}</span>
                     </p>
                     <p className="type-caption mt-1 text-fg-soft">{couche.detail}</p>

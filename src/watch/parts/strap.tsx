@@ -199,6 +199,10 @@ function StrapDefs({ uid, kind, metal, detail, frame }: StrapProps) {
             <rect y="3" width="8" height="1" fill={PAPER} fillOpacity="0.12" />
             <line x1="4" y1="0" x2="4" y2="6" stroke={INK} strokeOpacity="0.07" strokeWidth="1" />
           </pattern>
+          {/* Bord adouci du reflet d'un cuir glacé. */}
+          <filter id={`${uid}-pf-flou-brin`} x="-50%" y="-5%" width="200%" height="110%">
+            <feGaussianBlur stdDeviation="3 0" />
+          </filter>
           {/* Grain du cuir. */}
           <filter id={`${uid}-strap-grain`} x="0" y="0" width="100%" height="100%">
             <feTurbulence type="fractalNoise" baseFrequency="0.55 0.7" numOctaves="2" seed="7" result="bruit" />
@@ -246,6 +250,7 @@ function Band(props: BandProps) {
           <SteelBracelet {...props} pitch={58} columns={[0.26, 0.16, 0.16, 0.16, 0.26]} />
         )}
         {kind === "cuir" && <Leather {...props} />}
+        {kind === "cuir-glace" && <Leather {...props} glace />}
         {kind === "caoutchouc" && <Rubber {...props} />}
         {kind === "nato" && <Nato {...props} />}
 
@@ -294,18 +299,26 @@ function SteelBracelet({
 
   const xAt = (d: number, fraction: number) => C - halfAt(d) + halfAt(d) * 2 * fraction;
 
-  const link = (key: string, col: number, d0: number) => {
-    const d1 = d0 + pitch - gap;
+  // Jubilé : les trois rangs centraux sont des grains courts et bombés, deux par
+  // maillon de rive. C'est ce rythme serré de petits galets polis entre deux
+  // rives brossées qui fait reconnaître le bracelet.
+  const grain = pitch / 2;
+  const link = (key: string, col: number, d0: number, length = pitch) => {
+    const d1 = d0 + length - (jubilee ? 3 : gap);
     const mid = (d0 + d1) / 2;
     const x = xAt(mid, edge(col)) + 1.5;
     const width = xAt(mid, edge(col + 1)) - 1.5 - x;
     const polished = jubilee && isCentre(col);
-    const box = { x: n(x), width: n(width), rx: polished ? 9 : 6, ...span(dir, d0, d1) };
+    const box = { x: n(x), width: n(width), rx: polished ? 11 : jubilee ? 10 : 6, ...span(dir, d0, d1) };
     return (
       <g key={key}>
         <rect {...box} fill={polished ? ramp.mid : metalFill} />
         {brush && !polished && <rect {...box} fill={brush} />}
         <rect {...box} fill={`url(#${uid}-link-${polished ? "polished" : "round"})`} />
+        {/* Grain poli : un éclat ponctuel en haut à gauche, comme sur une perle. */}
+        {polished && detail === "full" && (
+          <ellipse cx={n(x + width * 0.34)} cy={n(box.y + box.height * 0.3)} rx={n(width * 0.2)} ry="2.6" fill={PAPER} fillOpacity="0.85" />
+        )}
         <rect {...box} fill="none" stroke={ramp.edge} strokeOpacity="0.55" strokeWidth="1.2" />
       </g>
     );
@@ -320,7 +333,14 @@ function SteelBracelet({
 
       {Array.from({ length: rows }, (_, row) =>
         columns.map((_, col) =>
-          link(`${row}-${col}`, col, (isCentre(col) ? dCentre : D_END_LINK) + gap + row * pitch),
+          jubilee && isCentre(col) ? (
+            <Fragment key={`${row}-${col}`}>
+              {link(`${row}-${col}-a`, col, dCentre + gap + row * pitch, grain)}
+              {link(`${row}-${col}-b`, col, dCentre + grain + gap + row * pitch, grain)}
+            </Fragment>
+          ) : (
+            link(`${row}-${col}`, col, (isCentre(col) ? dCentre : D_END_LINK) + gap + row * pitch)
+          ),
         ),
       )}
 
@@ -358,11 +378,18 @@ function SteelBracelet({
 
 /* ───────────────────────────────── Cuir ────────────────────────────────── */
 
-function Leather({ uid, color, detail, dir, half }: BandProps) {
+/**
+ * `glace` : veau glacé des habillées. Pas de grain visible, un rembordé net, une
+ * surpiqûre fine ton sur ton, et surtout un long reflet de boîte à lumière qui
+ * court sur le bombé du brin — c'est lui qui dit « brillant ».
+ */
+function Leather({ uid, color, detail, dir, half, glace = false }: BandProps & { glace?: boolean }) {
   const full = { x: C - HALF, width: HALF * 2, ...span(dir, D_LOOP, D_EDGE) };
   const dSeam = D_LOOP + 34;
-  const inset = 17;
-  const thread = tint(color, 0.62);
+  const inset = glace ? 13 : 17;
+  const thread = glace ? tint(color, 0.2) : tint(color, 0.62);
+  const point = glace ? "7 6" : "13 9";
+  const fil = glace ? 1.8 : 3.2;
 
   const stitch = (side: -1 | 1, offset: number, stroke: string, width: number) => (
     <line
@@ -372,7 +399,7 @@ function Leather({ uid, color, detail, dir, half }: BandProps) {
       y2={y(dir, D_EDGE) + offset}
       stroke={stroke}
       strokeWidth={width}
-      strokeDasharray="13 9"
+      strokeDasharray={point}
       strokeLinecap="round"
     />
   );
@@ -380,8 +407,40 @@ function Leather({ uid, color, detail, dir, half }: BandProps) {
   return (
     <g>
       <rect {...full} fill={color} />
-      {detail === "full" && <rect {...full} fill={color} filter={`url(#${uid}-strap-grain)`} />}
+      {detail === "full" && !glace && <rect {...full} fill={color} filter={`url(#${uid}-strap-grain)`} />}
       <rect {...full} fill={`url(#${uid}-strap-dome)`} />
+      {glace && (
+        <>
+          {/* Reflet de la boîte à lumière sur le bombé, à gauche de l'axe, et
+              son rappel plus faible à droite. */}
+          <path
+            d={`M ${C - 96} ${y(dir, D_LOOP + 40)} L ${C - 58} ${y(dir, D_LOOP + 40)} L ${C - 54} ${y(dir, D_EDGE)} L ${C - 88} ${y(dir, D_EDGE)} Z`}
+            fill={PAPER}
+            fillOpacity="0.2"
+            filter={detail === "full" ? `url(#${uid}-soft)` : undefined}
+          />
+          <path
+            d={`M ${C - 84} ${y(dir, D_LOOP + 44)} L ${C - 72} ${y(dir, D_LOOP + 44)} L ${C - 68} ${y(dir, D_EDGE)} L ${C - 78} ${y(dir, D_EDGE)} Z`}
+            fill={PAPER}
+            fillOpacity={detail === "full" ? 0.16 : 0.3}
+            filter={detail === "full" ? `url(#${uid}-pf-flou-brin)` : undefined}
+          />
+          <rect x={C + 92} width="10" {...span(dir, D_LOOP + 44, D_EDGE)} fill={PAPER} fillOpacity="0.08" />
+          {/* Rembordé : le bord du brin est replié, il forme un bourrelet. */}
+          {([-1, 1] as const).map((side) => (
+            <line
+              key={side}
+              x1={C + side * (HALF - 6)}
+              y1={y(dir, D_LOOP + 10)}
+              x2={C + side * (HALF_AT_EDGE - 6)}
+              y2={y(dir, D_EDGE)}
+              stroke={side === -1 ? PAPER : INK}
+              strokeOpacity={side === -1 ? 0.22 : 0.3}
+              strokeWidth="3"
+            />
+          ))}
+        </>
+      )}
 
       {/* Le cuir roulé et collé autour de la barrette. */}
       <rect x={C - HALF} width={HALF * 2} {...span(dir, D_LOOP, dSeam)} fill={`url(#${uid}-strap-roll-${half})`} />
@@ -395,12 +454,12 @@ function Leather({ uid, color, detail, dir, half }: BandProps) {
             x2={C + HALF - inset}
             y2={y(dir, dSeam) + 1.5}
             stroke={shade(color, 0.55)}
-            strokeWidth="5"
-            strokeDasharray="13 9"
+            strokeWidth={fil + 1.8}
+            strokeDasharray={point}
             strokeLinecap="round"
           />
-          {stitch(-1, 1.5, shade(color, 0.55), 5)}
-          {stitch(1, 1.5, shade(color, 0.55), 5)}
+          {stitch(-1, 1.5, shade(color, 0.55), fil + 1.8)}
+          {stitch(1, 1.5, shade(color, 0.55), fil + 1.8)}
         </>
       )}
       <line
@@ -409,12 +468,12 @@ function Leather({ uid, color, detail, dir, half }: BandProps) {
         x2={C + HALF - inset}
         y2={y(dir, dSeam)}
         stroke={thread}
-        strokeWidth="3.2"
-        strokeDasharray="13 9"
+        strokeWidth={fil}
+        strokeDasharray={point}
         strokeLinecap="round"
       />
-      {stitch(-1, 0, thread, 3.2)}
-      {stitch(1, 0, thread, 3.2)}
+      {stitch(-1, 0, thread, fil)}
+      {stitch(1, 0, thread, fil)}
     </g>
   );
 }
@@ -423,7 +482,8 @@ function Leather({ uid, color, detail, dir, half }: BandProps) {
 
 function Rubber({ uid, color, detail, dir, half }: BandProps) {
   const full = { x: C - HALF, width: HALF * 2, ...span(dir, D_LOOP, D_EDGE) };
-  const dFirst = D_LOOP + 58;
+  // En plein détail le gaufrage occupe le départ du brin : les évents commencent après lui.
+  const dFirst = detail === "full" ? D_LOOP + 140 : D_LOOP + 58;
   const pitch = detail === "full" ? 36 : 54;
   const count = Math.ceil((D_EDGE - dFirst) / pitch);
 
@@ -455,6 +515,25 @@ function Rubber({ uid, color, detail, dir, half }: BandProps) {
           />
         </g>
       ))}
+
+      {/* Gaufrage : près du boîtier, le plat central est moulé en tablette, de
+          petits pavés en relief séparés par des sillons. C'est le brin des
+          plongeuses japonaises des années 70 : il laisse l'eau s'écouler et la
+          peau respirer. Chaque pavé a son arête claire en haut à gauche. */}
+      {detail === "full" &&
+        Array.from({ length: 4 }, (_, rangee) =>
+          Array.from({ length: 9 }, (_, colonne) => {
+            const box = span(dir, D_LOOP + 50 + rangee * 19, D_LOOP + 50 + rangee * 19 + 14);
+            const x = C - 85.5 + colonne * 19;
+            return (
+              <g key={`${rangee}-${colonne}`}>
+                <rect x={x} y={box.y} width="15" height={box.height} rx="2" fill={shade(color, 0.42)} />
+                <rect x={x + 1.4} y={box.y + 1.6} width="13" height={box.height - 2} rx="1.6" fill={tint(color, 0.07)} />
+                <path d={`M ${x + 1.4} ${box.y + box.height - 1} V ${box.y + 1.6} H ${x + 14}`} fill="none" stroke={PAPER} strokeOpacity="0.2" strokeWidth="1" />
+              </g>
+            );
+          }),
+        )}
 
       {/* Évents en travers : une fente sombre, son arête basse accroche la lumière. */}
       {Array.from({ length: count }, (_, i) => {

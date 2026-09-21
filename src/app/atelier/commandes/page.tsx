@@ -37,7 +37,7 @@ export default async function Kanban() {
             prévient le client.
           </p>
         </div>
-        <Link href="/atelier/commandes/liste" className="type-ui lien-atelier link-underline text-gold">
+        <Link href="/atelier/commandes/liste" className="type-ui lien-atelier link-underline text-accent-ink">
           Vue liste et export
         </Link>
       </header>
@@ -80,7 +80,7 @@ export default async function Kanban() {
                         <div className="flex items-center justify-between gap-3">
                           <Link
                             href={`/atelier/commandes/${commande.number}`}
-                            className="type-mono lien-atelier link-underline text-gold"
+                            className="type-mono lien-atelier link-underline text-accent-ink"
                           >
                             {commande.number}
                           </Link>
@@ -109,7 +109,7 @@ export default async function Kanban() {
                             <input type="hidden" name="etape" value={suivante.statut} />
                             <button
                               type="submit"
-                              className="type-ui flex min-h-11 w-full items-center justify-center rounded-pill border border-field px-3 text-fg transition-colors duration-200 hover:border-gold hover:bg-accent hover:text-on-accent"
+                              className="type-ui flex min-h-11 w-full items-center justify-center rounded-pill border border-field px-3 text-fg transition-colors duration-200 hover:border-accent-ink hover:bg-accent hover:text-on-accent"
                             >
                               → {suivante.label}
                             </button>

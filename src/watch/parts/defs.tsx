@@ -52,11 +52,12 @@ export function Defs({
         count={full ? 120 : 60}
         colorAt={(angle) => rampAt(ramp, studioLum(angle, "poli"))}
       />
-      {(render.bezelStyle === "plongee" || render.bezelStyle === "gmt") &&
+      {(render.bezelStyle === "plongee" || render.bezelStyle === "gmt" || render.bezelStyle === "tachymetre") &&
         [
-          [`${uid}-conic-insert`, insert] as const,
-          // Un insert GMT bicolore : la demi-lunette de jour a son propre éventail.
-          ...(render.bezelStyle === "gmt" && render.insertColor2
+          [`${uid}-conic-insert`, render.bezelStyle === "tachymetre" ? (render.insertColor ?? "#17191C") : insert] as const,
+          // Insert bicolore (demi-lunette de jour d'un GMT, secteur des vingt
+          // minutes d'une plongeuse) : la seconde teinte a son propre éventail.
+          ...(render.bezelStyle !== "tachymetre" && render.insertColor2
             ? [[`${uid}-conic-insert-jour`, render.insertColor2] as const]
             : []),
         ].map(([id, teinte]) => (

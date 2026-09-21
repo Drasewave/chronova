@@ -27,7 +27,7 @@ export function Testimonials() {
       <SectionHeader titre="Ce qu'en disent les clients" />
       <ul className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
         {AVIS_PUBLIES.map((avis) => (
-          <li key={avis.auteur} className="border-t border-gold pt-6">
+          <li key={avis.auteur} className="border-t border-accent-ink pt-6">
             <blockquote className="type-body-lg text-fg">{avis.texte}</blockquote>
             <p className="type-mono mt-5 text-fg-soft">
               {avis.auteur}

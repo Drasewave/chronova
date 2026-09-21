@@ -106,13 +106,13 @@ export function Configurator({
       <nav aria-label="Fil d'Ariane" className="py-5">
         <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
           <li>
-            <Link href="/collection" className="link-underline hover:text-gold">
+            <Link href="/collection" className="link-underline hover:text-accent-ink">
               Collection
             </Link>
           </li>
           <li aria-hidden="true">·</li>
           <li>
-            <Link href={`/collection/${model.slug}`} className="link-underline hover:text-gold">
+            <Link href={`/collection/${model.slug}`} className="link-underline hover:text-accent-ink">
               {model.name}
             </Link>
           </li>
@@ -255,7 +255,7 @@ function Resume({
         type="button"
         onClick={() => setDetail((v) => !v)}
         aria-expanded={detail}
-        className="type-caption link-underline mt-4 text-fg-soft hover:text-gold"
+        className="type-caption link-underline mt-4 text-fg-soft hover:text-accent-ink"
       >
         {detail ? "Masquer le détail" : `Détail des suppléments (${configuration.price.lines.length})`}
       </button>

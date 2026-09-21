@@ -74,7 +74,7 @@ export default async function PageGamme(props: PageProps<"/gammes/[style]">) {
             <nav aria-label="Fil d'Ariane">
               <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
                 <li>
-                  <Link href="/collection" className="link-underline hover:text-gold">
+                  <Link href="/collection" className="link-underline hover:text-accent-ink">
                     Collection
                   </Link>
                 </li>
@@ -97,7 +97,7 @@ export default async function PageGamme(props: PageProps<"/gammes/[style]">) {
               label={`${phare.name}, configuration de départ`}
             />
             <figcaption className="type-mono -mt-2 text-center text-fg-soft">
-              <Link href={`/collection/${phare.slug}`} className="link-underline inline-flex min-h-11 items-center hover:text-gold">
+              <Link href={`/collection/${phare.slug}`} className="link-underline inline-flex min-h-11 items-center hover:text-accent-ink">
                 {phare.name}
               </Link>
             </figcaption>

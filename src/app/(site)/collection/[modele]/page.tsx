@@ -203,13 +203,13 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
             <nav aria-label="Fil d'Ariane">
               <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
                 <li>
-                  <Link href="/collection" className="link-underline hover:text-gold">
+                  <Link href="/collection" className="link-underline hover:text-accent-ink">
                     Collection
                   </Link>
                 </li>
                 <li aria-hidden="true">›</li>
                 <li>
-                  <Link href={hrefGamme} className="link-underline hover:text-gold">
+                  <Link href={hrefGamme} className="link-underline hover:text-accent-ink">
                     {model.styleLabel}
                   </Link>
                 </li>
@@ -265,10 +265,10 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
               const lignes = bloc.lignes.filter((entree) => entree.valeur);
               if (lignes.length === 0) return null;
               return (
-                <details key={bloc.titre} open={index === 0} className="group border-t border-rule">
-                  <summary className="type-title-2 flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 text-fg transition-colors duration-200 hover:text-gold [&::-webkit-details-marker]:hidden">
+                <details key={bloc.titre} open={index === 0} className="accordeon group border-t border-rule">
+                  <summary className="type-title-2 flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink [&::-webkit-details-marker]:hidden">
                     {bloc.titre}
-                    <IconChevron className="shrink-0 text-gold transition-transform duration-200 ease-atelier group-open:rotate-180 motion-reduce:transition-none" />
+                    <IconChevron className="chevron shrink-0 text-accent-ink" />
                   </summary>
                   <dl className="grid gap-x-10 pb-5 sm:grid-cols-2">
                     {lignes.map((entree) => (

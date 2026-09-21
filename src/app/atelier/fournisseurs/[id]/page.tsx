@@ -178,7 +178,7 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
                           <Td>
                             <Link
                               href={`/atelier/stock/${piece.reference}`}
-                              className="type-mono lien-atelier link-underline text-gold"
+                              className="type-mono lien-atelier link-underline text-accent-ink"
                             >
                               {piece.reference}
                             </Link>
@@ -285,7 +285,7 @@ export default async function FicheFournisseur(props: PageProps<"/atelier/fourni
                   <li key={piece.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <Link
                       href={`/atelier/stock/${piece.reference}`}
-                      className="type-mono lien-atelier link-underline text-gold"
+                      className="type-mono lien-atelier link-underline text-accent-ink"
                     >
                       {piece.reference}
                     </Link>

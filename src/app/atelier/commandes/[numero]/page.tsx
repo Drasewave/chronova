@@ -77,7 +77,7 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
           </TitrePage>
           <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {commande.user ? (
-              <Link href={`/atelier/clients/${commande.user.id}`} className="link-underline text-gold">
+              <Link href={`/atelier/clients/${commande.user.id}`} className="link-underline text-accent-ink">
                 {commande.user.name ?? commande.email}
               </Link>
             ) : (
@@ -243,7 +243,7 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
                         <td className="h-12 px-2 py-1">
                           <Link
                             href={`/atelier/stock/${piece.partId}`}
-                            className="type-mono lien-atelier link-underline text-gold"
+                            className="type-mono lien-atelier link-underline text-accent-ink"
                           >
                             {piece.part.reference}
                           </Link>
@@ -287,7 +287,7 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
                           aria-hidden="true"
                           className={
                             tache.isDone
-                              ? "type-caption grid size-6 shrink-0 place-items-center rounded-[6px] border border-gold bg-accent text-on-accent"
+                              ? "type-caption grid size-6 shrink-0 place-items-center rounded-[6px] border border-accent-ink bg-accent text-on-accent"
                               : "size-6 shrink-0 rounded-[6px] border border-field"
                           }
                         >

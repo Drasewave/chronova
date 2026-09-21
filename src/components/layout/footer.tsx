@@ -48,7 +48,7 @@ export async function Footer() {
                     <li key={lien.href}>
                       <Link
                         href={lien.href}
-                        className="type-body link-underline text-fg transition-colors duration-200 hover:text-gold"
+                        className="type-body link-underline text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
                       >
                         {lien.label}
                       </Link>
@@ -80,7 +80,7 @@ export async function Footer() {
             {identite.email ? (
               <a
                 href={`mailto:${identite.email}`}
-                className="type-caption link-underline self-start text-fg hover:text-gold"
+                className="type-caption link-underline self-start text-fg hover:text-accent-ink"
               >
                 {identite.email}
               </a>
@@ -109,7 +109,7 @@ export async function Footer() {
                 <a
                   href={identite.mediateurSite}
                   rel="noopener noreferrer"
-                  className="link-underline text-fg hover:text-gold"
+                  className="link-underline text-fg hover:text-accent-ink"
                 >
                   {identite.mediateurNom}
                 </a>

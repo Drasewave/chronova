@@ -70,7 +70,7 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
           <TitrePage className="mt-1">{demande.name}</TitrePage>
           <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
             {demande.user ? (
-              <Link href={`/atelier/clients/${demande.user.id}`} className="link-underline text-gold">
+              <Link href={`/atelier/clients/${demande.user.id}`} className="link-underline text-accent-ink">
                 {demande.email}
               </Link>
             ) : (
@@ -223,7 +223,7 @@ export default async function FicheDemande(props: PageProps<"/atelier/demandes/[
                   Sur la base de{" "}
                   <Link
                     href={`/collection/${demande.configuration.model.slug}`}
-                    className="link-underline text-gold"
+                    className="link-underline text-accent-ink"
                   >
                     {demande.configuration.model.name}
                   </Link>

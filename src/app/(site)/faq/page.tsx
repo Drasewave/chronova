@@ -46,11 +46,11 @@ export default async function Faq() {
 
       <div className="mt-14 border-t border-rule">
         {entrees.map((entree) => (
-          <details key={entree.id} className="group border-b border-rule">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-fg marker:content-none">
+          <details key={entree.id} className="accordeon group border-b border-rule">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-fg transition-colors duration-(--d-fast) ease-atelier marker:content-none hover:text-accent-ink">
               <h2 className="type-title-2">{entree.question}</h2>
               <IconChevron
-                className="shrink-0 text-gold transition-transform duration-300 ease-atelier group-open:rotate-180"
+                className="chevron shrink-0 text-accent-ink"
                 width={22}
                 height={22}
               />

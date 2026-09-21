@@ -4,39 +4,37 @@
 @custom-variant night (&:where([data-theme="night"], [data-theme="night"] *));
 
 /* ─────────────────────────── Palette de marque ───────────────────────────
-   « Vitrine » : le standard des grandes maisons, joué sans détour. Deux
-   familles seulement, partout : l'encre (du papier clair à la nuit bleu-noir,
-   une seule teinte à 212°) et l'or. L'or est l'unique accent du site — boutons,
-   liens, repères — sur papier comme sur nuit ; seule sa clarté change pour
-   garder le contraste.
+   « Vitrine » : le standard des grandes maisons, joué sans détour. Noir, blanc
+   et un bleu profond : des pages blanches où la montre est photographiée, des
+   scènes noires où l'acier brille, et le bleu comme unique accent — boutons,
+   liens, repères — profond sur le blanc, clair sur le noir.
    Valeurs brutes. Les composants ne les utilisent JAMAIS directement :
    ils passent par les tokens sémantiques plus bas, qui basculent avec le thème.
    Contrastes vérifiés par `src/design/tokens.test.ts`. */
 @theme {
-  --color-papier: #f5f5f3;
-  --color-papier-alt: #ebebe8;
-  --color-panneau: #fdfdfc;
-  --color-encre: #111417;
-  --color-encre-douce: #555b63;
-  --color-filet: #dadad6;
-  /* L'or, du plus profond (texte sur papier) au plus pâle (survol sur nuit). */
-  --color-or-profond: #7d5e27;
-  --color-or: #a47f32;
-  --color-or-vif: #9a762c;
-  --color-or-clair: #d9bc7a;
-  --color-or-pale: #ead7a6;
+  --color-papier: #ffffff;
+  --color-papier-alt: #f2f3f5;
+  --color-panneau: #ffffff;
+  --color-encre: #0a0a0a;
+  --color-encre-douce: #4b5058;
+  --color-filet: #dfe1e5;
+  /* Le bleu, unique accent : profond sur le blanc, clair sur le noir. */
+  --color-bleu: #0b3d91;
+  --color-bleu-vif: #0a2f70;
+  --color-bleu-clair: #6fa3ff;
+  --color-bleu-pale: #9bbfff;
   --color-sapin: #1e6b4c;
   --color-sapin-clair: #7fd0a8;
   --color-grenat: #a12a3c;
   --color-grenat-clair: #f09aaa;
-  --color-nuit: #0b1118;
-  --color-nuit-profonde: #070b10;
-  --color-nuit-scene: #223246;
-  --color-nuit-alt: #111923;
-  --color-nuit-panneau: #16202c;
-  --color-nuit-encre: #eef0f2;
-  --color-nuit-douce: #a3abb5;
-  --color-nuit-filet: #263241;
+  --color-nuit: #0a0b0d;
+  --color-nuit-profonde: #000000;
+  --color-nuit-scene: #1a2942;
+  --color-nuit-alt: #0d0f12;
+  --color-nuit-panneau: #15181d;
+  --color-nuit-encre: #f2f3f5;
+  --color-nuit-douce: #a0a6b0;
+  --color-nuit-filet: #262a31;
 
   --font-title: var(--font-jost), "Futura", "Century Gothic", "Helvetica Neue", Arial, sans-serif;
   --font-ui: var(--font-hanken), "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -71,36 +69,52 @@
   --rule: var(--color-filet);
   /* Contour des champs de saisie : 3:1 au moins sur tous les fonds (WCAG
      1.4.11). Le filet `--rule` reste réservé aux séparateurs décoratifs. */
-  --field: #767c84;
-  /* `--accent` est un APLAT (bouton, puce active, barre de graphique) : l'or,
-     avec un texte nuit dessus. `--gold` est l'or qui s'écrit : liens, survols,
-     repères, filets — plus profond sur papier pour tenir 4,5:1. */
-  --accent: var(--color-or);
-  --accent-hover: var(--color-or-vif);
-  --accent-decor: var(--color-or-clair);
-  --on-accent: var(--color-nuit);
-  --gold: var(--color-or-profond);
+  --field: #767b83;
+  /* `--accent` est l'APLAT (bouton, puce active, barre de graphique), avec
+     `--on-accent` dessus. `--accent-ink` est l'accent qui s'écrit : liens,
+     survols, repères, filets. */
+  --accent: var(--color-bleu);
+  --accent-hover: var(--color-bleu-vif);
+  --accent-decor: var(--color-bleu-clair);
+  --on-accent: var(--color-panneau);
+  --accent-ink: var(--color-bleu);
   --positive: var(--color-sapin);
   --alert: var(--color-grenat);
-  --focus: var(--color-encre);
+  --focus: var(--color-bleu);
 
   /* La scène d'une montre : le dégradé d'un fond de studio. */
   --stage-in: var(--color-panneau);
-  --stage-out: #e2e3e5;
+  --stage-out: #e4e6ea;
 
+  /* ── Mouvement ──────────────────────────────────────────────────────────
+     Une seule famille de courbes, sans rebond ni élastique :
+       --ease         ce qui ENTRE ou se pose : sortie exponentielle douce
+       --ease-sortie  ce qui SORT : accélération courte, puis disparaît
+       --ease-passage ce qui va d'un point à un autre sans quitter la scène
+     Cinq durées, plus l'appui. Les états (survol, pastille, chevron) vivent
+     entre 240 et 350 ms ; les panneaux à 500 ms ; les changements de scène
+     (vues de la montre, apparitions, survol des cartes) entre 700 et 900 ms.
+     Aucune durée en dur dans les composants : tout passe par ces tokens. */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --d-fast: 200ms;
-  --d-base: 280ms;
-  --d-slow: 400ms;
+  --ease-sortie: cubic-bezier(0.5, 0, 0.9, 0.4);
+  --ease-passage: cubic-bezier(0.6, 0, 0.2, 1);
+  --d-press: 120ms;
+  --d-fast: 240ms;
+  --d-base: 350ms;
+  --d-slow: 500ms;
   --d-reveal: 700ms;
   --d-long: 900ms;
+  /* Écart entre deux voisins qui entrent l'un après l'autre. */
+  --d-decalage: 90ms;
+  /* La lumière d'un reflet : claire sur papier comme sur nuit. */
+  --lueur: light-dark(var(--panel), var(--fg));
 
   --gutter: clamp(20px, 4vw, 48px);
   --section-y: clamp(56px, 6.5vw, 104px);
   --measure: 68ch;
 }
 
-/* Sur la nuit, le même or, éclairci : l'aplat comme le texte passent à l'or clair. */
+/* Sur le noir, le même bleu, éclairci : l'aplat comme le texte passent au bleu clair. */
 [data-theme="night"] {
   color-scheme: dark;
 
@@ -111,14 +125,14 @@
   --fg-soft: var(--color-nuit-douce);
   --rule: var(--color-nuit-filet);
   --field: #78828e;
-  --accent: var(--color-or-clair);
-  --accent-hover: var(--color-or-pale);
-  --accent-decor: var(--color-or);
+  --accent: var(--color-bleu-clair);
+  --accent-hover: var(--color-bleu-pale);
+  --accent-decor: var(--color-bleu);
   --on-accent: var(--color-nuit);
-  --gold: var(--color-or-clair);
+  --accent-ink: var(--color-bleu-clair);
   --positive: var(--color-sapin-clair);
   --alert: var(--color-grenat-clair);
-  --focus: var(--color-or-clair);
+  --focus: var(--color-bleu-clair);
 
   --stage-in: var(--color-nuit-scene);
   --stage-out: var(--color-nuit);
@@ -138,7 +152,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-decor: var(--accent-decor);
   --color-on-accent: var(--on-accent);
-  --color-gold: var(--gold);
+  --color-accent-ink: var(--accent-ink);
   --color-positive: var(--positive);
   --color-alert: var(--alert);
 }
@@ -161,7 +175,7 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    caret-color: var(--gold);
+    caret-color: var(--accent-ink);
   }
 
   h1,
@@ -187,8 +201,8 @@
   }
 
   ::selection {
-    background-color: var(--color-or-clair);
-    color: var(--color-nuit);
+    background-color: var(--color-bleu);
+    color: var(--color-panneau);
   }
 
   /* Les prix, quantités et mesures s'alignent en colonne. */
@@ -329,12 +343,12 @@
   .prose-atelier a {
     color: var(--fg);
     text-decoration: underline;
-    text-decoration-color: var(--gold);
+    text-decoration-color: var(--accent-ink);
     text-underline-offset: 3px;
   }
 
   .prose-atelier a:hover {
-    color: var(--gold);
+    color: var(--accent-ink);
   }
 
   .prose-atelier ul,
@@ -351,7 +365,7 @@
   }
 
   .prose-atelier ul > li::marker {
-    color: var(--gold);
+    color: var(--accent-ink);
   }
 
   .prose-atelier ol > li {
@@ -420,7 +434,7 @@
      sinon qu'il reste des colonnes à droite. */
   .defilement-atelier {
     scroll-snap-type: x proximity;
-    scrollbar-color: var(--gold) var(--rule);
+    scrollbar-color: var(--accent-ink) var(--rule);
     scrollbar-width: thin;
   }
 
@@ -434,7 +448,7 @@
   }
 
   .defilement-atelier::-webkit-scrollbar-thumb {
-    background: var(--gold);
+    background: var(--accent-ink);
     border-radius: 999px;
   }
 }
@@ -454,7 +468,7 @@
     background-color: var(--color-nuit);
     background-image:
       radial-gradient(ellipse 46% 58% at 70% 46%, color-mix(in srgb, var(--color-nuit-scene) 85%, transparent) 0%, transparent 70%),
-      radial-gradient(ellipse 90% 60% at 50% 118%, color-mix(in srgb, var(--color-or-clair) 10%, transparent) 0%, transparent 60%),
+      radial-gradient(ellipse 90% 60% at 50% 118%, color-mix(in srgb, var(--color-bleu-clair) 10%, transparent) 0%, transparent 60%),
       linear-gradient(180deg, var(--color-nuit-profonde) 0%, var(--color-nuit) 46%, var(--color-nuit-alt) 100%);
   }
 
@@ -487,7 +501,7 @@
   .filet-or {
     height: 1px;
     border: 0;
-    background-image: linear-gradient(90deg, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+    background-image: linear-gradient(90deg, transparent, var(--accent-ink) 18%, var(--accent-ink) 82%, transparent);
     opacity: 0.55;
   }
 }
@@ -518,7 +532,7 @@
   display: none;
   place-items: center;
   background-color: var(--color-nuit);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-or-clair) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-bleu-clair) 55%, transparent);
   animation: intro-leve 600ms cubic-bezier(0.76, 0, 0.24, 1) 800ms forwards;
 }
 
@@ -693,7 +707,7 @@
 
 .carte-montre:hover [data-sheen],
 .carte-montre:focus-within [data-sheen] {
-  animation: reflet-balayage 1100ms var(--ease);
+  animation: reflet-balayage calc(var(--d-long) * 1.3) var(--ease-passage);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -701,6 +715,328 @@
   .carte-montre:focus-within [data-sheen] {
     animation: none;
   }
+}
+
+/* Défilé des modèles du héros (`defile-modeles.tsx`). `--sens` vaut 1 quand on
+   avance, -1 quand on recule : la sortante part du côté d'où l'on vient,
+   l'entrante arrive de l'autre, floue au départ seulement. 850 ms en tout. */
+@keyframes defile-sort {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--sens, 1) * -40px)) scale(0.96);
+  }
+}
+
+@keyframes defile-entre {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--sens, 1) * 48px)) scale(0.97);
+    filter: blur(6px);
+  }
+  55% {
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes defile-progression {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* `will-change` : la montre (≈ 1 500 nœuds) est tramée une fois, puis déplacée
+   par le compositeur ; il disparaît avec la classe, à la fin de la transition. */
+.defile-sort {
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: defile-sort 700ms var(--ease) forwards;
+}
+
+.defile-entre {
+  will-change: transform, opacity, filter;
+  animation: defile-entre 850ms var(--ease) backwards;
+}
+
+.defile-progression {
+  animation: defile-progression 5000ms linear forwards;
+}
+
+/* Le balayage d'aiguilles de l'ouverture ne rejoue pas à chaque modèle. */
+.entree-montre .defile-suite [data-layer="aiguilles"] g {
+  animation: none !important;
+}
+
+/* Textes superposés du défilé : seul l'actif est visible, fondu enchaîné. */
+.defile-texte {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 800ms var(--ease),
+    visibility 0s linear 800ms;
+}
+
+.defile-texte[data-actif="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* ─────────────────────────────── Mouvement ────────────────────────────────
+   Le vocabulaire commun du site public. Partout la même grammaire : ce qui
+   entre se pose sur `--ease`, ce qui sort accélère sur `--ease-sortie` et dure
+   un cran de moins, ce qui se déplace suit `--ease-passage`. Rien que des
+   transitions CSS : elles repartent toujours de l'état courant, un clic en
+   cours de route ne fait donc jamais sauter quoi que ce soit. */
+
+/* Passage de lumière du fondu de studio (`vue-montre.tsx`) : une bande claire,
+   inclinée, presque transparente. Le masque l'éteint vers les bords : elle ne
+   se lit que sur la pièce, jamais comme un rectangle qui traverse le cadre. */
+.passage-lumiere {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 66% 66% at 50% 50%, black 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 66% 66% at 50% 50%, black 55%, transparent 100%);
+}
+
+.passage-lumiere > span {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 46%;
+  opacity: 0;
+  background-image: linear-gradient(
+    90deg,
+    transparent 12%,
+    color-mix(in srgb, var(--lueur) 14%, transparent) 50%,
+    transparent 88%
+  );
+}
+
+/* Contrôle segmenté : des options de même largeur, et UNE pastille qui glisse
+   de l'une à l'autre. `--n` options, `--i` rang de l'option active. */
+.segmente {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  isolation: isolate;
+}
+
+.segmente-pastille {
+  position: absolute;
+  z-index: -1;
+  inset-block: 0.25rem;
+  left: 0.25rem;
+  width: calc((100% - 0.5rem) / var(--n, 1));
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform var(--d-base) var(--ease-passage);
+}
+
+/* Rail d'un repère qui glisse le long d'une rangée (ou d'une colonne, avec
+   `data-axe="y"`) de cases égales séparées par `--ecart`. On translate le rail,
+   qui a la taille du groupe : un pas vaut (100 % + écart) / n. */
+.rail-repere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translateX(calc(var(--i, 0) * (100% + var(--ecart, 0px)) / var(--n, 1)));
+  transition: transform var(--d-base) var(--ease-passage);
+}
+
+.rail-repere > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc((100% - (var(--n, 1) - 1) * var(--ecart, 0px)) / var(--n, 1));
+  aspect-ratio: 1;
+}
+
+@media (min-width: 1024px) {
+  .rail-repere[data-axe-lg="y"] {
+    transform: translateY(calc(var(--i, 0) * (100% + var(--ecart, 0px)) / var(--n, 1)));
+  }
+
+  .rail-repere[data-axe-lg="y"] > * {
+    width: 100%;
+  }
+}
+
+/* Volet : panneau déroulant de l'en-tête, tiroir mobile. Toujours dans le DOM,
+   retiré de la tabulation et de l'arbre d'accessibilité par `visibility` quand
+   il est fermé. Entrée et sortie symétriques : fondu + quelques pixels. */
+.volet {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(var(--volet-y, -8px));
+  transition:
+    opacity var(--d-base) var(--ease-sortie),
+    transform var(--d-base) var(--ease-sortie),
+    visibility 0s linear var(--d-base);
+}
+
+.volet[data-ouvert="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--d-slow) var(--ease),
+    transform var(--d-slow) var(--ease),
+    visibility 0s;
+}
+
+.volet .volet-contenu {
+  transform: translateY(12px);
+  transition: transform var(--d-base) var(--ease-sortie);
+}
+
+.volet[data-ouvert="true"] .volet-contenu {
+  transform: none;
+  transition: transform var(--d-reveal) var(--ease);
+}
+
+/* Dialogues natifs (tiroir panier, zoom). `@starting-style` donne l'état de
+   départ à l'ouverture ; `allow-discrete` garde `display` et la couche
+   supérieure le temps de la sortie. Un navigateur qui ne connaît pas
+   `allow-discrete` rejette toute la déclaration `transition` : il ouvre et
+   ferme sans animation, proprement. */
+.dialogue-anime {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity var(--d-base) var(--ease-sortie),
+    transform var(--d-base) var(--ease-sortie),
+    overlay var(--d-base) allow-discrete,
+    display var(--d-base) allow-discrete;
+}
+
+.dialogue-anime[data-cote="droite"] {
+  transform: translateX(16px);
+}
+
+.dialogue-anime[open] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--d-slow) var(--ease),
+    transform var(--d-slow) var(--ease),
+    overlay var(--d-slow) allow-discrete,
+    display var(--d-slow) allow-discrete;
+}
+
+.dialogue-anime::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--d-base) var(--ease-sortie),
+    overlay var(--d-base) allow-discrete,
+    display var(--d-base) allow-discrete;
+}
+
+.dialogue-anime[open]::backdrop {
+  opacity: 1;
+  transition:
+    opacity var(--d-slow) var(--ease),
+    overlay var(--d-slow) allow-discrete,
+    display var(--d-slow) allow-discrete;
+}
+
+@starting-style {
+  .dialogue-anime[open] {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  .dialogue-anime[data-cote="droite"][open] {
+    transform: translateX(16px);
+  }
+
+  .dialogue-anime[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* Accordéon <details> : la hauteur s'interpole jusqu'à `auto`, sans mesure ni
+   valeur figée, et le contenu entre en fondu, un temps après. Le tout vit sur
+   `::details-content` : sans ce pseudo-élément le bloc entier est ignoré, et
+   l'accordéon s'ouvre d'un coup, comme sans JavaScript il s'ouvre quand même.
+   Là où `interpolate-size` manque, seule la hauteur perd son animation. */
+.accordeon > summary .chevron {
+  transition: transform var(--d-base) var(--ease);
+}
+
+.accordeon[open] > summary .chevron {
+  transform: rotate(180deg);
+}
+
+@supports selector(::details-content) {
+  .accordeon {
+    interpolate-size: allow-keywords;
+  }
+
+  .accordeon::details-content {
+    block-size: 0;
+    overflow: clip;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      block-size var(--d-slow) var(--ease-passage),
+      opacity var(--d-base) var(--ease-sortie),
+      transform var(--d-base) var(--ease-sortie),
+      content-visibility var(--d-slow) allow-discrete;
+  }
+
+  .accordeon[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+    transform: none;
+    transition:
+      block-size var(--d-slow) var(--ease-passage),
+      opacity var(--d-slow) var(--ease) var(--d-decalage),
+      transform var(--d-reveal) var(--ease) var(--d-decalage),
+      content-visibility var(--d-slow) allow-discrete;
+  }
+}
+
+/* Repli piloté par un bouton (étapes du configurateur) : même geste que
+   l'accordéon. La rangée de grille passe de 0fr à 1fr — aucune hauteur à
+   connaître. Fermé, `visibility` le sort de la tabulation. */
+.repli {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--d-slow) var(--ease-passage),
+    opacity var(--d-base) var(--ease-sortie),
+    visibility 0s linear var(--d-slow);
+}
+
+.repli[data-ouvert="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
+  transition:
+    grid-template-rows var(--d-slow) var(--ease-passage),
+    opacity var(--d-slow) var(--ease) var(--d-decalage),
+    visibility 0s;
+}
+
+/* `clip` plutôt que `hidden` : la marge laisse vivre les contours de focus des
+   options placées au bord. */
+.repli > * {
+  min-height: 0;
+  overflow: clip;
+  overflow-clip-margin: 6px;
 }
 
 /* ───────────────────────── Transitions de page ────────────────────────── */
@@ -711,16 +1047,31 @@
   pointer-events: none;
 }
 
-/* Fondu court et léger décalage vertical : la page se pose, elle ne glisse
-   pas. 250 ms, le temps d'être remarqué sans retarder la lecture. */
-::view-transition-old(root) {
-  animation: 160ms var(--ease) both fondu-page reverse;
+/* Fondu enchaîné et 6 px de montée : la page se pose, elle ne glisse pas.
+   L'ancienne s'éteint en `--d-fast`, la nouvelle arrive en `--d-base`, un
+   temps après, pour que les deux se croisent sans jamais laisser un blanc. */
+::view-transition-old(root),
+::view-transition-old(.page) {
+  animation: var(--d-fast) var(--ease-sortie) both fondu-page-sortie;
 }
 
-::view-transition-new(root) {
+::view-transition-new(root),
+::view-transition-new(.page) {
   animation:
-    250ms var(--ease) 80ms both fondu-page,
-    300ms var(--ease) both montee-page;
+    var(--d-base) var(--ease) var(--d-decalage) both fondu-page,
+    var(--d-slow) var(--ease) both montee-page;
+}
+
+/* La page change de hauteur d'une route à l'autre : son groupe ne s'étire pas,
+   il prend d'emblée sa taille d'arrivée. */
+::view-transition-group(.page) {
+  animation-duration: 0s;
+}
+
+@keyframes fondu-page-sortie {
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes fondu-page {
@@ -734,7 +1085,7 @@
 
 @keyframes montee-page {
   from {
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     transform: translateY(0);
@@ -758,8 +1109,16 @@
 /* La montre passe de la carte à la fiche. Un flou léger à mi-parcours masque
    l'interpolation pixel à pixel d'un SVG qui change de taille. */
 ::view-transition-group(.morph) {
-  animation-duration: 420ms;
-  animation-timing-function: var(--ease);
+  animation-duration: var(--d-reveal);
+  animation-timing-function: var(--ease-passage);
+}
+
+/* Les deux images du morphing se croisent sur toute sa durée, pas sur celle
+   du fondu de page. */
+::view-transition-old(.morph),
+::view-transition-new(.morph) {
+  animation-duration: var(--d-reveal);
+  animation-timing-function: var(--ease-passage);
 }
 
 ::view-transition-image-pair(.morph) {
@@ -767,8 +1126,8 @@
 }
 
 @keyframes flou-morph {
-  30% {
-    filter: blur(3px);
+  40% {
+    filter: blur(2px);
   }
 }
 
@@ -785,7 +1144,17 @@
     animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /* Les retards (fondus décalés, `visibility` différée) tombent aussi. */
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Ni `::backdrop` ni `::details-content` ne sont atteints par le sélecteur
+     universel. */
+  .dialogue-anime::backdrop,
+  .accordeon::details-content {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 
   /* Les pseudo-éléments de transition de vue ne sont pas atteints par le

@@ -1,4 +1,4 @@
-import { LUME_EDGE, LUME_FILL, METALS, rampAt } from "../palette";
+import { LUME_EDGE, LUME_FILL, METALS, rampAt, shade } from "../palette";
 import { C, handAngles, n } from "../geometry";
 import type { HandShape, MetalTone, Movement } from "../types";
 import { studioLum } from "./conic";
@@ -11,6 +11,8 @@ interface HandsProps {
   movement: Movement;
   time: { hours: number; minutes: number; seconds: number };
   detail?: "full" | "compact";
+  /** Teinte laquée de l'aiguille de fonction (GMT, trotteuse de chronographe). */
+  accent?: string;
 }
 
 const HOUR_LEN = 182;
@@ -35,7 +37,7 @@ const PROPORTIONS: Record<HandShape, readonly [number, number, number]> = {
  * sont appliquées hors rotation, pour tomber toutes du même côté, et
  * s'allongent avec la hauteur de l'aiguille sur le canon.
  */
-export function Hands({ uid, shape, metal, lume, movement, time, detail = "full" }: HandsProps) {
+export function Hands({ uid, shape, metal, lume, movement, time, detail = "full", accent }: HandsProps) {
   const angles = handAngles(time);
   const ramp = METALS[metal];
   const low = `url(#${uid}-hand-shadow)`;
@@ -56,7 +58,7 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
       <g filter={low}>
         {movement === "NH34" && (
           <g transform={`rotate(${angles.gmt})`}>
-            <GmtHand fill={`url(#${uid}-hand-gmt)`} metal={metal} lume={lume} />
+            <GmtHand fill={accent ?? `url(#${uid}-hand-gmt)`} metal={metal} lume={lume} laquee={Boolean(accent)} />
           </g>
         )}
         <g transform={`rotate(${angles.hour})`}>
@@ -68,7 +70,7 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
               <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
             </g>
             <g transform={`rotate(${angles.second})`}>
-              <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} />
+              <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
             </g>
           </>
         )}
@@ -80,7 +82,7 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
             <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
           </g>
           <g transform={`rotate(${angles.second})`}>
-            <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} />
+            <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
           </g>
         </g>
       )}
@@ -342,8 +344,37 @@ function Hand({
   );
 }
 
-function SecondHand({ fill, shape, metal, lume }: { fill: string; shape: HandShape; metal: MetalTone; lume: boolean }) {
+function SecondHand({
+  fill,
+  shape,
+  metal,
+  lume,
+  chrono = false,
+  accent,
+}: {
+  fill: string;
+  shape: HandShape;
+  metal: MetalTone;
+  lume: boolean;
+  chrono?: boolean;
+  accent?: string;
+}) {
   const ramp = METALS[metal];
+
+  // Chronographe : la grande aiguille centrale est celle du chrono. Longue,
+  // fine comme un fil pour pointer l'échelle au cinquième de seconde, souvent
+  // laquée d'une couleur vive ; son contrepoids est une petite palette.
+  if (chrono) {
+    const corps = accent ?? fill;
+    const filet = accent ? shade(accent, 0.45) : ramp.edge;
+    return (
+      <g>
+        <path d={`M -2.6 0 L -0.8 ${-SEC_LEN - 6} L 0.8 ${-SEC_LEN - 6} L 2.6 0 Z`} fill={corps} stroke={filet} strokeOpacity="0.7" strokeWidth="0.6" strokeLinejoin="round" />
+        <path d="M -2.6 0 L -5 48 Q 0 58 5 48 L 2.6 0 Z" fill={corps} stroke={filet} strokeOpacity="0.7" strokeWidth="0.7" strokeLinejoin="round" />
+        <circle r="9" fill={corps} stroke={filet} strokeOpacity="0.8" strokeWidth="0.9" />
+      </g>
+    );
+  }
 
   // Habillée : une simple aiguille effilée, sans pastille — rien ne doit
   // distraire des deux dauphines.
@@ -382,8 +413,9 @@ function SecondHand({ fill, shape, metal, lume }: { fill: string; shape: HandSha
 }
 
 /** Aiguille GMT : une flèche, pour ne pas la confondre avec l'heure locale. */
-function GmtHand({ fill, metal, lume }: { fill: string; metal: MetalTone; lume: boolean }) {
-  const ramp = METALS[metal];
+function GmtHand({ fill, metal, lume, laquee = false }: { fill: string; metal: MetalTone; lume: boolean; laquee?: boolean }) {
+  // Laquée, l'aiguille 24 h ne se confond plus avec rien : son filet prend la teinte de la laque.
+  const ramp = laquee ? { ...METALS[metal], edge: shade(fill, 0.5) } : METALS[metal];
   return (
     <g>
       <rect x="-3.5" y={-GMT_LEN + 44} width="7" height={GMT_LEN + 4} rx="3.5" fill={fill} stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="0.8" />

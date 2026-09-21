@@ -1,7 +1,7 @@
-import { INK, isLight, shade, tint } from "../palette";
+import { INK, METALS, isLight, rampAt, shade, tint } from "../palette";
 import { Ring, annulus } from "./conic";
 import { C, R_DIAL, R_MINUTE_TRACK, n, polar } from "../geometry";
-import type { DateWindow as DateWindowKind, DialTexture, Movement } from "../types";
+import type { DateWindow as DateWindowKind, DialTexture, MetalTone, Movement } from "../types";
 
 /** Bord intérieur du réhaut imprimé d'une plongeuse, et du réhaut boussole. */
 export const R_CHAPTER_IN = 263;
@@ -23,9 +23,28 @@ interface DialProps {
    * une plongeuse ; `boussole` y imprime les points cardinaux.
    */
   rehaut?: "poli" | "minuterie" | "boussole";
+  /** Échelle 24 h imprimée du GMT. Une lunette 24 h la rend inutile : on la retire. */
+  gmtScale?: boolean;
+  /** Étanchéité réelle du modèle, en mètres ; absente, la ligne de calibre reste. */
+  waterResistM?: number;
+  /** Métal du cerclage rapporté (cœur ouvert). */
+  metal?: MetalTone;
 }
 
-export function Dial({ uid, color, texture, movement, showDate, detail, subdialColor, dateWindow = "date", rehaut = "poli" }: DialProps) {
+export function Dial({
+  uid,
+  color,
+  texture,
+  movement,
+  showDate,
+  detail,
+  subdialColor,
+  dateWindow = "date",
+  rehaut = "poli",
+  gmtScale = true,
+  waterResistM,
+  metal = "acier",
+}: DialProps) {
   const light = isLight(color);
   const printed = light ? shade(color, 0.78) : tint(color, 0.82);
   const hasDate = showDate && movement !== "NH38" && movement !== "VK64";
@@ -82,14 +101,14 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
       <circle cx={C} cy={C} r={R_DIAL - 10} fill="none" stroke={INK} strokeOpacity="0.55" strokeWidth="1.2" />
 
       {rehaut === "poli" ? (
-        <MinuteTrack color={printed} detail={detail} />
+        <MinuteTrack color={printed} detail={detail} fine={movement === "VK64"} />
       ) : (
         <PrintedRehaut uid={uid} color={color} printed={printed} kind={rehaut} detail={detail} />
       )}
       {rehaut === "boussole" && <MinuteTrack color={printed} detail={detail} radius={R_TRACK_BOUSSOLE} />}
-      {movement === "NH34" && <GmtRing color={printed} detail={detail} />}
-      {movement === "NH38" && <OpenHeart uid={uid} color={color} printed={printed} />}
-      {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} printed={printed} />}
+      {movement === "NH34" && gmtScale && <GmtRing color={printed} detail={detail} />}
+      {movement === "NH38" && <OpenHeart uid={uid} color={color} metal={metal} detail={detail} />}
+      {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} detail={detail} />}
       {hasDate && (
         <g filter={`url(#${uid}-contact-shadow)`}>
           <DateWindow uid={uid} color={color} kind={dateWindow} />
@@ -116,21 +135,34 @@ export function Dial({ uid, color, texture, movement, showDate, detail, subdialC
       >
         {movement === "VK64" ? "CHRONOGRAPHE" : "AUTOMATIQUE"}
       </text>
+      {/* Seconde ligne : l'étanchéité de la fiche du modèle quand le rendu la
+          connaît, comme sur une plongeuse ; sinon le calibre. */}
       <text
         x={C}
         y={C + 174}
         textAnchor="middle"
         fill={printed}
-        fillOpacity="0.6"
-        style={{ fontFamily: "var(--font-ui)", fontSize: 13, letterSpacing: "0.3em" }}
+        fillOpacity={waterResistM ? 0.78 : 0.6}
+        style={{ fontFamily: "var(--font-ui)", fontSize: waterResistM ? 14.5 : 13, fontWeight: waterResistM ? 500 : 400, letterSpacing: waterResistM ? "0.22em" : "0.3em" }}
       >
-        {movement}
+        {waterResistM ? `${waterResistM} m` : movement}
       </text>
     </g>
   );
 }
 
-function MinuteTrack({ color, detail, radius = R_MINUTE_TRACK }: { color: string; detail: "full" | "compact"; radius?: number }) {
+function MinuteTrack({
+  color,
+  detail,
+  radius = R_MINUTE_TRACK,
+  fine = false,
+}: {
+  color: string;
+  detail: "full" | "compact";
+  radius?: number;
+  /** Chronographe : chaque seconde est recoupée, la trotteuse s'arrête entre deux traits. */
+  fine?: boolean;
+}) {
   const count = detail === "full" ? 60 : 12;
   const step = 360 / count;
   return (
@@ -144,6 +176,14 @@ function MinuteTrack({ color, detail, radius = R_MINUTE_TRACK }: { color: string
         strokeOpacity="0.3"
         strokeWidth="1.5"
       />
+      {fine &&
+        detail === "full" &&
+        Array.from({ length: 180 }, (_, i) => {
+          if (i % 3 === 0) return null;
+          const a = polar(radius + 11, i * 2);
+          const b = polar(radius + 7, i * 2);
+          return <line key={`f${i}`} x1={n(a.x)} y1={n(a.y)} x2={n(b.x)} y2={n(b.y)} stroke={color} strokeOpacity="0.45" strokeWidth="1" />;
+        })}
       {Array.from({ length: count }, (_, i) => {
         const angle = step * i;
         const major = angle % 30 === 0;
@@ -330,29 +370,87 @@ function GmtRing({ color, detail }: { color: string; detail: "full" | "compact" 
   );
 }
 
-/** Cœur ouvert du NH38 : on voit le balancier travailler. */
-function OpenHeart({ uid, color, printed }: { uid: string; color: string; printed: string }) {
-  const cx = C - 148;
+/** Spirale d'Archimède, pour le spiral du balancier. */
+function spirale(cx: number, cy: number, r0: number, r1: number, tours: number): string {
+  const pas = 96;
+  return Array.from({ length: pas + 1 }, (_, i) => {
+    const t = i / pas;
+    const a = t * tours * 2 * Math.PI;
+    const r = r0 + (r1 - r0) * t;
+    return `${i ? "L" : "M"} ${n(cx + r * Math.cos(a))} ${n(cy + r * Math.sin(a))}`;
+  }).join(" ");
+}
+
+/**
+ * Cœur ouvert du NH38 : une lucarne à 9 h, cerclée d'un jonc poli rapporté,
+ * au fond de laquelle on voit le balancier, son spiral et le pont qui le tient.
+ * La platine est perlée, comme sous le cadran ; le pont traverse l'ouverture en
+ * biais, tenu par une vis bleuie, le rubis du contre-pivot en son centre.
+ */
+function OpenHeart({ uid, color, metal, detail }: { uid: string; color: string; metal: MetalTone; detail: "full" | "compact" }) {
+  const cx = C - 146;
   const cy = C;
+  const r = 60;
+  const ramp = METALS[metal];
+  const acier = METALS.acier;
+  const laiton = METALS.dore;
+  const full = detail === "full";
+  const clip = `${uid}-clip-lucarne`;
+  // La lucarne occupe un bon quart du cadran : on la dessine à l'échelle du
+  // balancier, puis on l'agrandit d'un bloc autour de son centre.
+  const k = 1.24;
   return (
-    <g data-layer="coeur-ouvert">
-      <circle cx={cx} cy={cy} r="62" fill={shade(color, 0.6)} />
-      <circle cx={cx} cy={cy} r="62" fill="none" stroke={printed} strokeOpacity="0.5" strokeWidth="3" />
-      {/* Balancier stylisé : anneau, bras, plateau. */}
-      <circle cx={cx} cy={cy} r="40" fill="none" stroke="#B9B3A8" strokeOpacity="0.8" strokeWidth="6" />
-      <line x1={cx - 40} y1={cy} x2={cx + 40} y2={cy} stroke="#D2CCC1" strokeOpacity="0.75" strokeWidth="4" />
-      <line
-        x1={cx}
-        y1={cy - 40}
-        x2={cx}
-        y2={cy + 40}
-        stroke="#D2CCC1"
-        strokeOpacity="0.45"
-        strokeWidth="3"
-        transform={`rotate(34 ${cx} ${cy})`}
-      />
-      <circle cx={cx} cy={cy} r="9" fill="#C09755" />
-      <circle cx={cx} cy={cy} r="62" fill={`url(#${uid}-ar)`} />
+    <g data-layer="coeur-ouvert" transform={`translate(${14 + cx * (1 - k)} ${cy * (1 - k)}) scale(${k})`}>
+      <clipPath id={clip}>
+        <circle cx={cx} cy={cy} r={r} />
+      </clipPath>
+      <circle cx={cx} cy={cy} r={r} fill={shade(acier.dark, 0.35)} />
+      <g clipPath={`url(#${clip})`}>
+        {/* Platine perlée : des pastilles qui se chevauchent. */}
+        {full &&
+          Array.from({ length: 30 }, (_, i) => {
+            const px = cx - r + 12 + (i % 6) * 22 + (Math.floor(i / 6) % 2) * 11;
+            const py = cy - r + 10 + Math.floor(i / 6) * 25;
+            return <circle key={i} cx={px} cy={py} r="13" fill="none" stroke={acier.light} strokeOpacity="0.2" strokeWidth="1.2" />;
+          })}
+        {/* L'ouverture est profonde : son bord éclairé porte une ombre au fond. */}
+        <circle cx={cx + 3} cy={cy + 5} r={r + 2} fill="none" stroke={INK} strokeOpacity="0.55" strokeWidth="16" />
+
+        {/* Balancier : serge dorée, deux bras, vu sous le pont. */}
+        <circle cx={cx + 2} cy={cy + 3} r="40" fill="none" stroke={INK} strokeOpacity="0.4" strokeWidth="8" />
+        <circle cx={cx} cy={cy} r="40" fill="none" stroke={laiton.mid} strokeWidth="7" />
+        <circle cx={cx} cy={cy} r="43" fill="none" stroke={laiton.hi} strokeOpacity="0.7" strokeWidth="1" strokeDasharray="60 210" transform={`rotate(200 ${cx} ${cy})`} />
+        <circle cx={cx} cy={cy} r="36.5" fill="none" stroke={laiton.edge} strokeOpacity="0.55" strokeWidth="1" />
+        <line x1={cx - 37} y1={cy} x2={cx + 37} y2={cy} stroke={laiton.mid} strokeWidth="6" transform={`rotate(24 ${cx} ${cy})`} />
+        <line x1={cx - 37} y1={cy - 1.4} x2={cx + 37} y2={cy - 1.4} stroke={laiton.hi} strokeOpacity="0.6" strokeWidth="1" transform={`rotate(24 ${cx} ${cy})`} />
+        {/* Spiral : bleui, serré autour de la virole. */}
+        <path d={spirale(cx, cy, 6, 27, full ? 6 : 3)} fill="none" stroke={METALS.bleui.light} strokeOpacity="0.9" strokeWidth={full ? 1.1 : 1.8} />
+
+        {/* Pont de balancier : il traverse la lucarne en biais. */}
+        <g transform={`rotate(-38 ${cx} ${cy})`}>
+          <path d={`M ${cx - r - 6} ${cy - 13} L ${cx + 8} ${cy - 11} Q ${cx + 20} ${cy} ${cx + 8} ${cy + 11} L ${cx - r - 6} ${cy + 13} Z`} fill={INK} fillOpacity="0.4" transform="translate(3 5)" />
+          <path d={`M ${cx - r - 6} ${cy - 13} L ${cx + 8} ${cy - 11} Q ${cx + 20} ${cy} ${cx + 8} ${cy + 11} L ${cx - r - 6} ${cy + 13} Z`} fill={rampAt(acier, 0.62)} stroke={acier.edge} strokeOpacity="0.7" strokeWidth="1" />
+          {full && <line x1={cx - r} y1={cy - 10.5} x2={cx + 7} y2={cy - 9} stroke={acier.hi} strokeOpacity="0.85" strokeWidth="1.4" />}
+          {/* Vis bleuie, fente comprise. */}
+          <circle cx={cx - 38} cy={cy} r="7" fill={METALS.bleui.mid} stroke={METALS.bleui.edge} strokeWidth="1" />
+          <line x1={cx - 43} y1={cy} x2={cx - 33} y2={cy} stroke={METALS.bleui.edge} strokeWidth="1.8" transform={`rotate(58 ${cx - 38} ${cy})`} />
+          <circle cx={cx - 40} cy={cy - 2.4} r="1.6" fill={METALS.bleui.hi} fillOpacity="0.8" />
+        </g>
+        {/* Contre-pivot : chaton doré, rubis, et le ressort antichoc en lyre. */}
+        <circle cx={cx} cy={cy} r="10" fill={laiton.light} stroke={laiton.edge} strokeOpacity="0.7" strokeWidth="1" />
+        <circle cx={cx} cy={cy} r="5.6" fill="#B3204C" />
+        <circle cx={cx - 1.6} cy={cy - 1.8} r="1.6" fill="#FFC9D8" />
+        {full && <path d={`M ${cx - 8} ${cy + 3} Q ${cx} ${cy - 12} ${cx + 8} ${cy + 3}`} fill="none" stroke={laiton.edge} strokeOpacity="0.7" strokeWidth="1.2" />}
+      </g>
+
+      {/* Jonc rapporté, poli : il borde l'ouverture comme un cadre de guichet. */}
+      <g transform={`translate(${cx - C} ${cy - C})`}>
+        <Ring id={`${uid}-clip-jonc-lucarne`} disk={`${uid}-conic-poli`} rOut={r + 8} rIn={r} />
+      </g>
+      <circle cx={cx} cy={cy} r={r + 8} fill="none" stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="1" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={ramp.edge} strokeOpacity="0.85" strokeWidth="1.2" />
+      {/* La glace qui ferme l'ouverture n'existe pas : seul le verre de la montre la couvre. */}
+      <circle cx={cx} cy={cy} r={r} fill={isLight(color) ? "none" : `url(#${uid}-ar)`} />
     </g>
   );
 }
@@ -360,21 +458,34 @@ function OpenHeart({ uid, color, printed }: { uid: string; color: string; printe
 /**
  * Compteurs du VK64 : deux totalisateurs de part et d'autre du centre — 60
  * secondes à 9 h, 30 minutes à 3 h — dans l'axe des poussoirs. Aiguilles fixes,
- * décoratives : ce n'est pas un vrai module chronographe qui décompte.
+ * décoratives : ce n'est pas un vrai module chronographe qui décompte. Chaque
+ * compteur est une cuvette azurée (sillons concentriques) légèrement en creux,
+ * cerclée d'un filet : c'est ce contraste franc qui fait le « panda ».
  */
-function ChronoSubdials({ color, printed }: { color: string; printed: string }) {
+function ChronoSubdials({ color, detail }: { color: string; detail: "full" | "compact" }) {
   const light = isLight(color);
   const ink = light ? shade(color, 0.7) : tint(color, 0.75);
   const offset = 128;
-  const radius = 76;
+  const radius = 78;
+  const full = detail === "full";
 
-  const subdial = (cx: number, angleDeg: number, label: string) => (
+  const subdial = (cx: number, angleDeg: number, label: string, chiffres: string[]) => (
     <g key={cx} transform={`translate(${cx} ${C})`}>
-      <circle r={radius} fill={color} stroke={ink} strokeOpacity="0.55" strokeWidth="2" />
-      <circle r={radius - 10} fill="none" stroke={ink} strokeOpacity="0.35" strokeWidth="1" />
-      {Array.from({ length: 12 }, (_, i) => {
-        const a = polar(radius - 8, i * 30);
-        const b = polar(radius - (i % 3 === 0 ? 17 : 12), i * 30);
+      {/* Cuvette : l'arête haute-gauche est dans l'ombre, la basse-droite éclairée. */}
+      <circle r={radius + 2.5} fill={INK} fillOpacity="0.55" />
+      <circle r={radius} fill={color} />
+      {full &&
+        Array.from({ length: 12 }, (_, i) => (
+          <circle key={`az${i}`} r={8 + i * 5.6} fill="none" stroke={light ? INK : "#FFFFFF"} strokeOpacity={light ? 0.07 : 0.06} strokeWidth="1.2" />
+        ))}
+      <circle r={radius - 1} fill="none" stroke={INK} strokeOpacity="0.35" strokeWidth="3" transform="translate(1.2 1.8)" />
+      <circle r={radius} fill="none" stroke={ink} strokeOpacity="0.5" strokeWidth="1.6" />
+      {Array.from({ length: full ? 60 : 12 }, (_, i) => {
+        const pas = full ? 6 : 30;
+        const major = (i * pas) % 30 === 0;
+        const quart = (i * pas) % 90 === 0;
+        const a = polar(radius - 6, i * pas);
+        const b = polar(radius - (quart ? 17 : major ? 14 : 10), i * pas);
         return (
           <line
             key={i}
@@ -383,33 +494,35 @@ function ChronoSubdials({ color, printed }: { color: string; printed: string }) 
             x2={n(b.x - C)}
             y2={n(b.y - C)}
             stroke={ink}
-            strokeOpacity={i % 3 === 0 ? 0.75 : 0.45}
-            strokeWidth={i % 3 === 0 ? 2.5 : 1.5}
-            strokeLinecap="round"
+            strokeOpacity={major ? 0.85 : 0.5}
+            strokeWidth={major ? 2.4 : 1.1}
           />
         );
       })}
-      <line
-        x1="0"
-        y1="0"
-        x2="0"
-        y2={-(radius - 22)}
-        stroke={ink}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        transform={`rotate(${angleDeg})`}
-      />
-      <circle r="4" fill={ink} />
-      <text y={radius + 26} textAnchor="middle" fill={ink} fillOpacity="0.7" style={{ fontFamily: "var(--font-ui)", fontWeight: 500, fontSize: 13, letterSpacing: "0.06em" }}>
-        {label}
-      </text>
+      {full &&
+        chiffres.map((chiffre, i) => {
+          const p = polar(radius - 30, (i + 1) * 90);
+          return (
+            <text key={i} x={n(p.x - C)} y={n(p.y - C + 6)} textAnchor="middle" fill={ink} fillOpacity="0.9" style={{ fontFamily: "var(--font-ui)", fontWeight: 600, fontSize: 17 }}>
+              {chiffre}
+            </text>
+          );
+        })}
+      <path d={`M -2.6 12 L -0.8 ${-(radius - 16)} L 0.8 ${-(radius - 16)} L 2.6 12 Z`} fill={ink} transform={`rotate(${angleDeg})`} />
+      <circle r="5" fill={ink} />
+      <circle r="1.6" fill={color} />
+      {full && (
+        <text y={radius * 0.46} textAnchor="middle" fill={ink} fillOpacity="0.55" style={{ fontFamily: "var(--font-ui)", fontWeight: 500, fontSize: 9.5, letterSpacing: "0.12em" }}>
+          {label}
+        </text>
+      )}
     </g>
   );
 
   return (
     <g data-layer="compteurs">
-      {subdial(C - offset, 55, "60 SEC")}
-      {subdial(C + offset, 205, "30 MIN")}
+      {subdial(C - offset, 55, "SEC", ["15", "30", "45", "60"])}
+      {subdial(C + offset, 205, "MIN", ["", "15", "", "30"])}
     </g>
   );
 }

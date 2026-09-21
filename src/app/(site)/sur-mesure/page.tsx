@@ -48,7 +48,7 @@ export default function SurMesure() {
         <ol className="grid gap-px bg-rule lg:grid-cols-3">
           {ETAPES.map((etape) => (
             <li key={etape.numero} className="bg-bg-alt p-7">
-              <span className="type-mono text-gold">{etape.numero}</span>
+              <span className="type-mono text-accent-ink">{etape.numero}</span>
               <h2 className="type-title-2 mt-5">{etape.titre}</h2>
               <p className="type-body mt-3 text-fg-soft">{etape.texte}</p>
             </li>

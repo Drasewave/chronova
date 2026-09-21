@@ -16,6 +16,7 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
     { key: "acier-3-maillons", label: "Acier, trois maillons" },
     { key: "acier-jubile", label: "Acier, jubilé" },
     { key: "cuir", label: "Cuir" },
+    { key: "cuir-glace", label: "Cuir glacé, brillant" },
     { key: "caoutchouc", label: "Caoutchouc" },
     { key: "nato", label: "NATO" },
   ],
@@ -32,6 +33,7 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
     { key: "cannelee", label: "Cannelée" },
     { key: "plongee", label: "Plongée, 120 clics" },
     { key: "gmt", label: "GMT, 24 heures" },
+    { key: "tachymetre", label: "Tachymètre, fixe" },
   ],
   insert: [
     { key: "ceramique", label: "Céramique" },
@@ -52,6 +54,8 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
     { key: "batons", label: "Index bâtons" },
     { key: "arabes", label: "Chiffres arabes" },
     { key: "plongee", label: "Ronds et triangle, plongée" },
+    { key: "montagne", label: "Chiffres pairs appliqués et index en pointe" },
+    { key: "terrain-24h", label: "Chiffres arabes, double échelle 12/24 h" },
   ],
   signature: [],
   "guichet-date": [
@@ -70,11 +74,15 @@ export const PART_REGISTRY: Record<FaceLayer, readonly { key: string; label: str
   verre: [
     { key: "plat", label: "Saphir plat" },
     { key: "bombe", label: "Saphir bombé" },
+    { key: "box", label: "Saphir box, très bombé" },
+    // Loupe de quantième (`cyclops`) : collée sur le verre, à 3 h.
+    { key: "loupe", label: "Loupe de quantième" },
   ],
   reflet: [],
   couronne: [
     { key: "signee", label: "Signée Chronova" },
     { key: "lisse", label: "Lisse" },
+    { key: "oignon", label: "Oignon, bombée" },
     // Position horaire (`crownAt`).
     { key: "3", label: "À 3 h" },
     { key: "4", label: "À 4 h, déportée" },

@@ -123,7 +123,7 @@ export default async function Confirmation(props: PageProps<"/commande/confirmat
 
         <p className="type-caption mt-12 text-fg-soft">
           Une question sur cette commande ?{" "}
-          <Link href="/contact" className="link-underline text-gold">
+          <Link href="/contact" className="link-underline text-accent-ink">
             Écrire à l&apos;atelier
           </Link>
           .

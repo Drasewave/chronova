@@ -38,13 +38,13 @@ export function BlocGamme({
             id={`gamme-${gamme.style}`}
             render={render}
             label={`${gamme.phare.name}, montre phare de la gamme ${gamme.nom}`}
-            className="absolute inset-0 h-full w-full transition-transform duration-[900ms] ease-atelier group-hover:scale-[1.04] motion-reduce:transition-none"
+            className="absolute inset-0 h-full w-full transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.04]"
           />
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-4">
           <h2 className="type-title-1 text-fg">{gamme.nom}</h2>
-          <IconFleche className="fleche-glisse shrink-0 text-gold" />
+          <IconFleche className="fleche-glisse shrink-0 text-accent-ink" />
         </div>
         <p className="type-body mt-2 text-fg-soft">{gamme.contenu.phrase}</p>
 
@@ -72,10 +72,10 @@ export function TuileGamme({ catalogue, gamme }: { catalogue: Catalogue; gamme: 
           render={render}
           detail="compact"
           label=""
-          className="absolute inset-0 h-full w-full transition-transform duration-[900ms] ease-atelier group-hover:scale-[1.04] motion-reduce:transition-none"
+          className="absolute inset-0 h-full w-full transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.04]"
         />
       </div>
-      <h3 className="type-title-2 mt-4 text-fg transition-colors duration-200 group-hover:text-gold">
+      <h3 className="type-title-2 mt-4 text-fg transition-colors duration-(--d-fast) ease-atelier group-hover:text-accent-ink">
         {gamme.nom}
       </h3>
       <p className="type-mono mt-1.5 text-fg-soft">{compte(gamme)}</p>

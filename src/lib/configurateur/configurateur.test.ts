@@ -247,13 +247,48 @@ describe("rendu déduit des sélections", () => {
     expect(render.innerRing).toBeUndefined();
   });
 
-  it("la Soirée 37 est sans date, sans luminova, fond transparent", () => {
+  it("la Soirée 37 est une habillée : quantième, sans luminova, verre box, couronne oignon, cuir glacé", () => {
     const render = resolveRender(catalogue, soiree.defaultSelections);
-    expect(render.showDate).toBe(false);
+    expect(render.showDate).toBe(true);
     expect(render.lume).toBe(false);
     expect(render.caseback).toBe("transparent");
     expect(render.handShape).toBe("dauphine");
     expect(render.dialTexture).toBe("soleil-profond");
+    expect(render).toMatchObject({ crystal: "box", crownStyle: "oignon", strapKind: "cuir-glace" });
+  });
+
+  it("le Méridien 39 est un GMT sport : lunette 24 h bicolore, aiguille rouge, loupe, couronne à 4 h", () => {
+    const meridien = SAMPLE_MODELS.find((m) => m.slug === "meridien-39");
+    if (!meridien) throw new Error("fixture absente");
+    expect(resolveRender(catalogue, meridien.defaultSelections)).toMatchObject({
+      bezelStyle: "gmt",
+      insertColor2: "#5E6369",
+      accentHandColor: "#C8202B",
+      cyclops: true,
+      crownAt: 4,
+      movement: "NH34",
+    });
+  });
+
+  it("la Rallye 41 porte la lunette tachymètre, réservée au chronographe", () => {
+    const rallye = SAMPLE_MODELS.find((m) => m.slug === "rallye-41");
+    if (!rallye) throw new Error("fixture absente");
+    expect(resolveRender(catalogue, rallye.defaultSelections)).toMatchObject({ bezelStyle: "tachymetre", movement: "VK64" });
+    expect(evaluateOption(catalogue, "lunette-style:tachymetre", { mouvement: "nh35" }).selectable).toBe(false);
+  });
+
+  it("la loupe exige un quantième seul sous un saphir plat", () => {
+    expect(evaluateOption(catalogue, "loupe:avec", { date: "jour-date", "verre-forme": "plat" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "loupe:avec", { date: "avec", "verre-forme": "bombe" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "loupe:avec", { date: "avec", "verre-forme": "plat" }).selectable).toBe(true);
+  });
+
+  it("sans les nouveaux choix, ni loupe, ni teinte d'aiguille, ni métal d'index", () => {
+    const render = resolveRender(catalogue, { "cadran-teinte": "creme" });
+    expect(render.cyclops).toBeUndefined();
+    expect(render.accentHandColor).toBeUndefined();
+    expect(render.indexMetal).toBeUndefined();
+    expect(render.waterResistM).toBeUndefined();
   });
 
   it("reporte la gravure sur le rendu", () => {

@@ -63,7 +63,7 @@ export default async function Accueil() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANISATION) }}
       />
-      {vedette && <Hero catalogue={catalogue} vedette={vedette} />}
+      {vedette && <Hero catalogue={catalogue} modeles={modeles} vedette={vedette} />}
       <ModelsSection catalogue={catalogue} modeles={modeles} />
       {vedette && <MacroBand catalogue={catalogue} modele={vedette} />}
       <ExplodedView />

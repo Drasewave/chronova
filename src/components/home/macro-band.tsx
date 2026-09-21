@@ -63,7 +63,7 @@ export function MacroBand({ catalogue, modele }: { catalogue: Catalogue; modele:
                     render={render}
                     crop={plan.crop}
                     label={`${modele.name}, gros plan : ${plan.titre.toLowerCase()}`}
-                    className="block aspect-square h-auto w-full transition-transform duration-[1200ms] ease-atelier hover:scale-[1.06]"
+                    className="block aspect-square h-auto w-full transition-transform duration-(--d-long) ease-atelier hover:scale-[1.04]"
                   />
                 </div>
                 <figcaption className="mt-5">

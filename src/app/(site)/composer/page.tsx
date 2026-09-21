@@ -36,8 +36,8 @@ export default async function ChoixDuModele() {
                 href={`/composer/${modele.slug}`}
                 className="block rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--focus)]"
               >
-                <div className="overflow-hidden rounded-card border border-rule bg-bg-alt p-5 transition-colors duration-300 ease-atelier group-hover:border-accent-decor">
-                  <div className="transition-transform duration-[450ms] ease-atelier group-hover:rotate-3">
+                <div className="overflow-hidden rounded-card border border-rule bg-bg-alt p-5 transition-colors duration-(--d-base) ease-atelier group-hover:border-accent-decor">
+                  <div className="transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.035]">
                     <WatchSvg
                       id={`composer-${modele.slug}`}
                       render={configuration.render}

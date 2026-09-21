@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
 import { ButtonLink } from "@/components/ui/button";
 import { IconChevron, IconCompte, IconCroix, IconMenu, IconPanier } from "@/components/ui/icons";
 import { Wordmark } from "@/components/layout/wordmark";
@@ -53,6 +53,7 @@ export function Header() {
   }, [ouvert]);
 
   return (
+    <>
     <header
       // L'en-tête ne bouge pas pendant une transition de page : c'est le seul
       // point fixe qui dit au lecteur que le contenu a changé, pas l'écran.
@@ -61,7 +62,7 @@ export function Header() {
       style={{ viewTransitionName: "entete-site", paddingInline: "var(--gutter)" }}
       data-theme={nuit ? "night" : undefined}
       className={cn(
-        "sticky top-0 z-40 text-fg transition-[border-color,background-color,color] duration-500 ease-atelier",
+        "sticky top-0 z-40 text-fg transition-[border-color,background-color,color] duration-(--d-slow) ease-atelier",
         // Le voile ne vaut que menu fermé : ouvert, le panneau mobile doit
         // reposer sur un fond plein.
         surScene
@@ -87,8 +88,8 @@ export function Header() {
                     href={lien.href}
                     aria-current={estActif(lien, chemin) ? "page" : undefined}
                     className={cn(
-                      "type-ui link-underline py-2 transition-colors duration-200",
-                      estActif(lien, chemin) ? "text-gold" : "text-fg hover:text-gold",
+                      "type-ui link-underline py-2 transition-colors duration-(--d-fast) ease-atelier",
+                      estActif(lien, chemin) ? "text-accent-ink" : "text-fg hover:text-accent-ink",
                     )}
                   >
                     {lien.label}
@@ -102,7 +103,7 @@ export function Header() {
         <div className="flex items-center gap-1 md:gap-2">
           <Link
             href="/compte"
-            className="inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-200 hover:text-gold"
+            className="inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
             aria-label="Mon compte"
           >
             <IconCompte />
@@ -110,7 +111,7 @@ export function Header() {
           <button
             type="button"
             onClick={panier.open}
-            className="relative inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-200 hover:text-gold"
+            className="relative inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
             aria-label={
               panier.count === 0
                 ? "Panier, vide"
@@ -145,14 +146,21 @@ export function Header() {
         </div>
       </div>
 
+    </header>
+
       {/* Tiroir mobile : pleine hauteur, cibles de 44 px. Les gammes sont
-          dépliées d'office sous « Collection » : rien à ouvrir pour les voir. */}
+          dépliées d'office sous « Collection » : rien à ouvrir pour les voir.
+          Il vit À CÔTÉ de l'en-tête, pas dedans : le voile de l'en-tête
+          (`backdrop-filter`) deviendrait son bloc conteneur et l'écraserait
+          pendant qu'il se referme. Toujours monté, il entre et sort en fondu
+          (`.volet`) ; fermé, `visibility` le retire de la tabulation. */}
       <div
         id="menu-mobile"
-        hidden={!ouvert}
-        className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-rule bg-bg md:top-20 lg:hidden"
+        data-ouvert={ouvert}
+        style={{ "--volet-y": "0px" } as CSSProperties}
+        className="volet fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-rule bg-bg md:top-20 lg:hidden"
       >
-        <nav aria-label="Navigation principale (mobile)" style={{ padding: "var(--gutter)" }}>
+        <nav aria-label="Navigation principale (mobile)" className="volet-contenu" style={{ padding: "var(--gutter)" }}>
           <ul className="flex flex-col">
             {NAV_PRINCIPALE.map((lien) => (
               <li key={lien.href} className="border-b border-rule">
@@ -168,7 +176,7 @@ export function Header() {
                           aria-current={chemin === sousLien.href ? "page" : undefined}
                           className={cn(
                             "type-body flex min-h-11 items-center",
-                            chemin === sousLien.href ? "text-gold" : "text-fg-soft",
+                            chemin === sousLien.href ? "text-accent-ink" : "text-fg-soft",
                           )}
                         >
                           {sousLien.label}
@@ -185,7 +193,7 @@ export function Header() {
           </ButtonLink>
         </nav>
       </div>
-    </header>
+    </>
   );
 }
 
@@ -268,8 +276,8 @@ function EntreeAvecPanneau({ lien, chemin }: { lien: EntreeNav; chemin: string }
         href={lien.href}
         aria-current={actif ? "page" : undefined}
         className={cn(
-          "type-ui link-underline py-2 transition-colors duration-200",
-          actif ? "text-gold" : "text-fg hover:text-gold",
+          "type-ui link-underline py-2 transition-colors duration-(--d-fast) ease-atelier",
+          actif ? "text-accent-ink" : "text-fg hover:text-accent-ink",
         )}
       >
         {lien.label}
@@ -281,18 +289,20 @@ function EntreeAvecPanneau({ lien, chemin }: { lien: EntreeNav; chemin: string }
         aria-controls={idPanneau}
         aria-label={`${lien.label} : afficher les gammes`}
         onClick={() => setDeplie((valeur) => !valeur)}
-        className="-ml-1.5 -mr-3 inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-200 hover:text-gold"
+        className="-ml-1.5 -mr-3 inline-flex size-11 items-center justify-center rounded-pill text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
       >
         <IconChevron
           width="16"
           height="16"
-          className={cn("transition-transform duration-200 ease-atelier motion-reduce:transition-none", deplie && "rotate-180")}
+          className={cn("transition-transform duration-(--d-base) ease-atelier", deplie && "rotate-180")}
         />
       </button>
 
       {/* Le retrait haut fait partie de la zone survolée : la souris passe du
           lien au panneau sans jamais sortir de l'entrée. */}
-      <div id={idPanneau} hidden={!deplie} className="absolute left-0 top-full z-50 -ml-5 pt-2">
+      {/* Toujours monté : il entre et sort en fondu glissé (`.volet`). Fermé,
+          `visibility: hidden` le retire de la tabulation comme le faisait `hidden`. */}
+      <div id={idPanneau} data-ouvert={deplie} className="volet absolute left-0 top-full z-50 -ml-5 pt-2">
         <ul className="w-64 rounded-card border border-rule bg-panel p-2 text-fg">
           {(lien.sousLiens ?? []).map((sousLien, index, tous) => (
             <li key={sousLien.href} className={cn(index === tous.length - 1 && "mt-2 border-t border-rule pt-2")}>
@@ -301,8 +311,8 @@ function EntreeAvecPanneau({ lien, chemin }: { lien: EntreeNav; chemin: string }
                 aria-current={chemin === sousLien.href ? "page" : undefined}
                 onClick={() => setDeplie(false)}
                 className={cn(
-                  "type-ui flex min-h-11 items-center rounded-field px-3 transition-colors duration-200 hover:bg-bg-alt hover:text-gold",
-                  chemin === sousLien.href ? "text-gold" : "text-fg",
+                  "type-ui flex min-h-11 items-center rounded-field px-3 transition-colors duration-(--d-fast) ease-atelier hover:bg-bg-alt hover:text-accent-ink",
+                  chemin === sousLien.href ? "text-accent-ink" : "text-fg",
                 )}
               >
                 {sousLien.label}

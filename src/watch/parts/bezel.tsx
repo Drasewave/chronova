@@ -13,14 +13,19 @@ interface BezelProps {
   insertMaterial?: InsertMaterial;
   lume: boolean;
   detail: "full" | "compact";
+  /**
+   * Rayon de l'ouverture du verre. Une lunette à insert est plus large qu'une
+   * lunette lisse : son ouverture se resserre (voir `dialScale`).
+   */
+  rIn?: number;
 }
 
 /** Largeur du chanfrein intérieur, qui retombe vers le verre. */
 const CHAMFER = 9;
 
-export function Bezel({ uid, style, metal, finish, insertColor, insertColor2, insertMaterial, lume, detail }: BezelProps) {
+export function Bezel({ uid, style, metal, finish, insertColor, insertColor2, insertMaterial, lume, detail, rIn = R_BEZEL_IN }: BezelProps) {
   const ramp = METALS[metal];
-  const rTop = R_BEZEL_IN + CHAMFER;
+  const rTop = rIn + CHAMFER;
 
   return (
     <g data-layer="lunette">
@@ -47,18 +52,20 @@ export function Bezel({ uid, style, metal, finish, insertColor, insertColor2, in
           uid={uid}
           metal={metal}
           color={insertColor ?? "#1B2B45"}
-          dayColor={style === "gmt" ? insertColor2 : undefined}
+          secondColor={insertColor2}
           scale={style === "gmt" ? "24h" : "60min"}
           material={insertMaterial ?? "ceramique"}
           lume={lume}
           detail={detail}
+          rIn={rIn}
         />
       )}
+      {style === "tachymetre" && <TachymeterInsert uid={uid} metal={metal} color={insertColor ?? "#17191C"} detail={detail} rIn={rIn} />}
 
       {/* Chanfrein intérieur poli : tourné vers le centre, il renvoie le côté opposé. */}
-      <Ring id={`${uid}-clip-chanfrein`} disk={`${uid}-conic-poli`} rOut={rTop} rIn={R_BEZEL_IN} rotate={180} />
+      <Ring id={`${uid}-clip-chanfrein`} disk={`${uid}-conic-poli`} rOut={rTop} rIn={rIn} rotate={180} />
       <circle cx="500" cy="500" r={rTop} fill="none" stroke={ramp.edge} strokeOpacity="0.55" strokeWidth="1" />
-      <circle cx="500" cy="500" r={R_BEZEL_IN} fill="none" stroke={ramp.edge} strokeWidth="1.6" />
+      <circle cx="500" cy="500" r={rIn} fill="none" stroke={ramp.edge} strokeWidth="1.6" />
       <circle cx="500" cy="500" r={R_BEZEL_OUT} fill="none" stroke={ramp.edge} strokeOpacity="0.9" strokeWidth="1.4" />
     </g>
   );
@@ -104,46 +111,99 @@ function Fluting({ uid, metal, detail }: { uid: string; metal: MetalTone; detail
   );
 }
 
+/** Secteur de couronne entre deux angles (0° = midi, sens horaire), pour découper un insert. */
+function sectorPath(a0: number, a1: number, r = 480): string {
+  const p0 = polar(r, a0);
+  const p1 = polar(r, a1);
+  return `M 500 500 L ${n(p0.x)} ${n(p0.y)} A ${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${n(p1.x)} ${n(p1.y)} Z`;
+}
+
+/**
+ * Une gravure remplie de peinture : le creux porte une ombre du côté de la
+ * lumière. En vignette on s'en passe, le chiffre seul suffit.
+ */
+function Engraved({
+  x,
+  y,
+  angle,
+  size,
+  fill,
+  detail,
+  children,
+  spacing = "0.01em",
+  weight = 600,
+}: {
+  x: number;
+  y: number;
+  angle: number;
+  size: number;
+  fill: string;
+  detail: "full" | "compact";
+  children: string;
+  spacing?: string;
+  weight?: number;
+}) {
+  const style = { fontFamily: "var(--font-ui)", fontSize: size, fontWeight: weight, letterSpacing: spacing };
+  const t = `rotate(${n(angle)} ${n(x)} ${n(y)})`;
+  return (
+    <>
+      {detail === "full" && (
+        <text x={n(x - 1)} y={n(y - 1.3)} dy={n(size * 0.35)} textAnchor="middle" fill={INK} fillOpacity="0.6" transform={t} style={style}>
+          {children}
+        </text>
+      )}
+      <text x={n(x)} y={n(y)} dy={n(size * 0.35)} textAnchor="middle" fill={fill} transform={t} style={style}>
+        {children}
+      </text>
+    </>
+  );
+}
+
 /**
  * Insert gravé, triangle luminescent à midi. Deux graduations : soixante
- * minutes pour la plongée, vingt-quatre heures pour le GMT — dont la moitié
- * basse (6 h – 18 h, le jour) peut porter une seconde teinte.
+ * minutes pour la plongée, vingt-quatre heures pour le GMT. Une seconde teinte
+ * est possible : sur le GMT la moitié basse (6 h – 18 h, le jour), sur la
+ * plongeuse le secteur des vingt premières minutes — la durée des paliers,
+ * qu'on repère ainsi sans lire un chiffre.
  */
 function DiveInsert({
   uid,
   metal,
   color,
-  dayColor,
+  secondColor,
   scale,
   material,
   lume,
   detail,
+  rIn,
 }: {
   uid: string;
   metal: MetalTone;
   color: string;
-  dayColor?: string;
+  secondColor?: string;
   scale: "60min" | "24h";
   material: InsertMaterial;
   lume: boolean;
   detail: "full" | "compact";
+  rIn: number;
 }) {
   const ramp = METALS[metal];
   const rGrip = R_BEZEL_OUT - 13; // pourtour cranté, large : on le saisit avec des gants
   const rInsertOut = rGrip - 1;
-  const rInsertIn = R_BEZEL_IN + CHAMFER;
+  const rInsertIn = rIn + CHAMFER;
   const rMid = (rInsertOut + rInsertIn) / 2;
   const width = rInsertOut - rInsertIn;
-  const ticks = detail === "full" ? 60 : 12;
-  const step = 360 / ticks;
+  const full = detail === "full";
   // Gravure remplie : platine sur céramique, peinture claire sur aluminium.
-  const engraved = material === "ceramique" ? mix(PAPER, color, 0.08) : tint(color, 0.78);
-  const teeth = detail === "full" ? 60 : 36;
+  // Sur un insert bicolore, la même peinture doit rester lisible sur les deux teintes.
+  const engraved = material === "ceramique" ? mix(PAPER, color, 0.08) : tint(color, secondColor ? 0.92 : 0.82);
+  const teeth = full ? 60 : 36;
   const w = 360 / teeth;
   const pt = (r: number, a: number) => {
     const p = polar(r, a);
     return `${n(p.x)} ${n(p.y)}`;
   };
+  const corps = Math.min(36, width * 0.62);
 
   return (
     <g>
@@ -164,7 +224,7 @@ function DiveInsert({
               d={`M ${pt(rA, a - w * 0.3)} L ${pt(rB, a - w * 0.3)} L ${pt(rB, a + w * 0.3)} L ${pt(rA, a + w * 0.3)} Z`}
               fill={rampAt(ramp, 0.3 + 0.66 * studioLum(a, "poli"))}
             />
-            {detail === "full" && (
+            {full && (
               <>
                 <path
                   d={`M ${pt(rA, a - w * 0.41)} L ${pt(rB - 2.5, a - w * 0.41)} L ${pt(rB, a - w * 0.3)} L ${pt(rA, a - w * 0.3)} Z`}
@@ -180,7 +240,7 @@ function DiveInsert({
             <path
               d={`M ${pt(rA, g - w * 0.09)} L ${pt(R_BEZEL_OUT + 1.2, g - w * 0.12)} L ${pt(R_BEZEL_OUT + 1.2, g + w * 0.12)} L ${pt(rA, g + w * 0.09)} Z`}
               fill={INK}
-              fillOpacity={detail === "full" ? 0.72 : 0.6}
+              fillOpacity={full ? 0.72 : 0.6}
             />
           </g>
         );
@@ -189,83 +249,80 @@ function DiveInsert({
       <circle cx="500" cy="500" r={rGrip + 0.8} fill="none" stroke={ramp.hi} strokeOpacity="0.5" strokeWidth="0.9" />
 
       <Ring id={`${uid}-clip-insert`} disk={`${uid}-conic-insert`} rOut={rInsertOut} rIn={rInsertIn} />
-      {dayColor && (
+      {secondColor && (
         <>
           <clipPath id={`${uid}-clip-jour`}>
-            <rect x="0" y="500" width="1000" height="500" />
+            {scale === "24h" ? <rect x="0" y="500" width="1000" height="500" /> : <path d={sectorPath(0, 120)} />}
           </clipPath>
           <g clipPath={`url(#${uid}-clip-jour)`}>
             <Ring id={`${uid}-clip-insert-jour`} disk={`${uid}-conic-insert-jour`} rOut={rInsertOut} rIn={rInsertIn} />
           </g>
         </>
       )}
+      {/* L'insert est légèrement bombé : ses deux bords tombent. */}
+      {full && (
+        <>
+          <circle cx="500" cy="500" r={rInsertOut - 3} fill="none" stroke={INK} strokeOpacity="0.16" strokeWidth="6" />
+          <circle cx="500" cy="500" r={rInsertIn + 3} fill="none" stroke={INK} strokeOpacity="0.2" strokeWidth="6" />
+        </>
+      )}
       {/* L'insert est serti : un filet d'ombre de chaque côté. */}
       <circle cx="500" cy="500" r={rInsertOut} fill="none" stroke={INK} strokeOpacity="0.6" strokeWidth="1.6" />
       <circle cx="500" cy="500" r={rInsertIn} fill="none" stroke={INK} strokeOpacity="0.5" strokeWidth="1.4" />
 
-      {scale === "24h" && (
-        <Scale24 rMid={rMid} width={width} engraved={engraved} detail={detail} />
-      )}
+      {scale === "24h" && <Scale24 rMid={rMid} width={width} engraved={engraved} detail={detail} />}
 
-      {scale === "60min" && Array.from({ length: ticks }, (_, i) => {
-        const angle = step * i;
-        if (angle === 0) return null;
+      {scale === "60min" &&
+        Array.from({ length: 60 }, (_, i) => {
+          const angle = i * 6;
+          if (angle === 0) return null;
+          const dizaine = angle % 60 === 0;
+          const cinq = angle % 30 === 0;
+          if (!full && !cinq) return null;
 
-        // Les cinq repères chiffrés remplacent leur trait, comme sur un insert
-        // gravé ; chaque chiffre suit la courbure de la lunette.
-        if (detail === "full" && angle % 60 === 0) {
-          const p = polar(rMid, angle);
-          const upright = angle > 90 && angle < 270 ? angle + 180 : angle;
+          // Les cinq repères chiffrés remplacent leur trait, comme sur un insert
+          // gravé ; chaque chiffre suit la courbure de la lunette.
+          if (dizaine && full) {
+            const p = polar(rMid, angle);
+            const upright = angle > 90 && angle < 270 ? angle + 180 : angle;
+            return (
+              <Engraved key={i} x={p.x} y={p.y} angle={upright} size={corps} fill={engraved} detail={detail}>
+                {(angle / 6).toString()}
+              </Engraved>
+            );
+          }
+          // Minuterie détaillée sur les vingt premières minutes : la plage des paliers.
+          if (!cinq && angle > 120) return null;
+          const a = polar(rInsertOut - (cinq ? 8 : 5), angle);
+          const b = polar(cinq ? rInsertIn + 8 : rInsertOut - 5 - width * 0.3, angle);
           return (
-            <text
+            <line
               key={i}
-              x={n(p.x)}
-              y={n(p.y)}
-              dy="8"
-              textAnchor="middle"
-              fill={engraved}
-              transform={`rotate(${upright} ${n(p.x)} ${n(p.y)})`}
-              style={{ fontFamily: "var(--font-ui)", fontSize: 23.5, fontWeight: 600, letterSpacing: "0.01em" }}
-            >
-              {(angle / 6).toString()}
-            </text>
+              x1={n(a.x)}
+              y1={n(a.y)}
+              x2={n(b.x)}
+              y2={n(b.y)}
+              stroke={engraved}
+              strokeWidth={cinq ? n(width * 0.17) : n(width * 0.075)}
+            />
           );
-        }
-
-        const major = angle % 30 === 0;
-        // Minuterie détaillée sur le premier quart d'heure, comme sur une plongeuse.
-        if (!major && !(angle % 6 === 0 && angle <= 90)) return null;
-        const long = major ? width - 11 : 9;
-        const a = polar(rInsertOut - 5, angle);
-        const b = polar(rInsertOut - 5 - long, angle);
-        return (
-          <line
-            key={i}
-            x1={n(a.x)}
-            y1={n(a.y)}
-            x2={n(b.x)}
-            y2={n(b.y)}
-            stroke={engraved}
-            strokeWidth={major ? 6 : 3}
-          />
-        );
-      })}
+        })}
 
       {/* Triangle de midi et sa perle luminescente, sertie de métal. */}
       <path
-        d={`M ${500 - 19} ${500 - rInsertOut + 5} L ${500 + 19} ${500 - rInsertOut + 5} L 500 ${500 - rInsertIn - 4} Z`}
+        d={`M ${n(500 - width * 0.42)} ${500 - rInsertOut + 5} L ${n(500 + width * 0.42)} ${500 - rInsertOut + 5} L 500 ${500 - rInsertIn - 4} Z`}
         fill={engraved}
       />
-      <circle cx="500" cy={500 - rMid - 3} r="9.5" fill={ramp.mid} stroke={ramp.edge} strokeWidth="1" />
+      <circle cx="500" cy={500 - rMid - 4} r={n(width * 0.2)} fill={ramp.mid} stroke={ramp.edge} strokeWidth="1" />
       <circle
         cx="500"
-        cy={500 - rMid - 3}
-        r="7"
+        cy={500 - rMid - 4}
+        r={n(width * 0.2 - 2.6)}
         fill={lume ? LUME_FILL : ramp.light}
         stroke={lume ? LUME_EDGE : ramp.dark}
         strokeWidth="1"
       />
-      <circle cx="498" cy={500 - rMid - 5.5} r="2" fill="#FFFFFF" fillOpacity="0.7" />
+      <circle cx={n(500 - width * 0.06)} cy={n(500 - rMid - 4 - width * 0.07)} r={n(width * 0.05)} fill="#FFFFFF" fillOpacity="0.7" />
     </g>
   );
 }
@@ -282,6 +339,7 @@ function Scale24({
   engraved: string;
   detail: "full" | "compact";
 }) {
+  const corps = Math.min(33, width * 0.58);
   return (
     <g>
       {Array.from({ length: 24 }, (_, hour) => {
@@ -290,28 +348,106 @@ function Scale24({
         const p = polar(rMid, angle);
         if (hour % 2 === 1 || detail === "compact") {
           if (detail === "compact" && hour % 2 === 1) return null;
-          return detail === "compact" ? (
-            <circle key={hour} cx={n(p.x)} cy={n(p.y)} r="4.5" fill={engraved} />
-          ) : (
-            <circle key={hour} cx={n(p.x)} cy={n(p.y)} r="3.4" fill={engraved} />
-          );
+          return <circle key={hour} cx={n(p.x)} cy={n(p.y)} r={detail === "compact" ? 5.5 : n(width * 0.085)} fill={engraved} />;
         }
         const upright = angle > 90 && angle < 270 ? angle + 180 : angle;
         return (
-          <text
-            key={hour}
-            x={n(p.x)}
-            y={n(p.y)}
-            dy="8"
-            textAnchor="middle"
-            fill={engraved}
-            transform={`rotate(${upright} ${n(p.x)} ${n(p.y)})`}
-            style={{ fontFamily: "var(--font-ui)", fontSize: Math.min(24, width - 8), fontWeight: 600 }}
-          >
-            {hour}
-          </text>
+          <Engraved key={hour} x={p.x} y={p.y} angle={upright} size={corps} fill={engraved} detail={detail}>
+            {hour.toString()}
+          </Engraved>
         );
       })}
+    </g>
+  );
+}
+
+/** Vitesses gravées : `v` km/h pour un kilomètre parcouru en 3600 / v secondes. */
+const VITESSES = [500, 400, 300, 250, 200, 180, 160, 150, 140, 130, 120, 110, 100, 90, 85, 80, 75, 70, 65, 60];
+
+/**
+ * Lunette tachymétrique : fixe, sans crantage, un insert noir gravé d'une
+ * échelle de vitesse. On lance le chronographe à une borne, on l'arrête à la
+ * suivante : la trotteuse pointe la vitesse moyenne. L'échelle est donc
+ * hyperbolique — serrée vers 500, large vers 60 — et c'est ce rythme irrégulier
+ * qui fait reconnaître un chronographe de sport de loin.
+ */
+function TachymeterInsert({
+  uid,
+  metal,
+  color,
+  detail,
+  rIn,
+}: {
+  uid: string;
+  metal: MetalTone;
+  color: string;
+  detail: "full" | "compact";
+  rIn: number;
+}) {
+  const ramp = METALS[metal];
+  const full = detail === "full";
+  const rRim = R_BEZEL_OUT - 9; // simple jonc poli : on ne tourne pas cette lunette
+  const rInsertOut = rRim - 1;
+  const rInsertIn = rIn + CHAMFER;
+  const width = rInsertOut - rInsertIn;
+  const rText = rInsertIn + width * 0.42;
+  const engraved = tint(color, 0.86);
+  const arcId = `${uid}-arc-tachy`;
+  const a0 = polar(rText - 6.5, 5);
+  const a1 = polar(rText - 6.5, 37);
+
+  return (
+    <g>
+      <Ring id={`${uid}-clip-jonc`} disk={`${uid}-conic-poli`} rOut={R_BEZEL_OUT} rIn={rRim} />
+      <circle cx="500" cy="500" r={rRim + 0.8} fill="none" stroke={ramp.hi} strokeOpacity="0.5" strokeWidth="0.9" />
+      <Ring id={`${uid}-clip-insert`} disk={`${uid}-conic-insert`} rOut={rInsertOut} rIn={rInsertIn} />
+      {full && (
+        <>
+          <circle cx="500" cy="500" r={rInsertOut - 3} fill="none" stroke={INK} strokeOpacity="0.16" strokeWidth="6" />
+          <circle cx="500" cy="500" r={rInsertIn + 3} fill="none" stroke={INK} strokeOpacity="0.2" strokeWidth="6" />
+        </>
+      )}
+      <circle cx="500" cy="500" r={rInsertOut} fill="none" stroke={INK} strokeOpacity="0.6" strokeWidth="1.6" />
+      <circle cx="500" cy="500" r={rInsertIn} fill="none" stroke={INK} strokeOpacity="0.5" strokeWidth="1.4" />
+
+      {/* Repères : un trait au bord extérieur pour chaque vitesse gravée, et en
+          plein détail les subdivisions intermédiaires. */}
+      {VITESSES.map((v) => {
+        const angle = (3600 / v) * 6;
+        const a = polar(rInsertOut - 3, angle);
+        const b = polar(rInsertOut - 3 - width * 0.2, angle);
+        return <line key={v} x1={n(a.x)} y1={n(a.y)} x2={n(b.x)} y2={n(b.y)} stroke={engraved} strokeWidth={full ? 3 : 4} />;
+      })}
+      {full &&
+        [450, 350, 275, 225, 190, 170, 155, 145, 135, 125, 115, 105, 95, 62.5, 67.5, 72.5, 77.5, 82.5, 87.5].map((v) => {
+          const angle = (3600 / v) * 6;
+          const a = polar(rInsertOut - 3, angle);
+          const b = polar(rInsertOut - 3 - width * 0.11, angle);
+          return <line key={v} x1={n(a.x)} y1={n(a.y)} x2={n(b.x)} y2={n(b.y)} stroke={engraved} strokeOpacity="0.85" strokeWidth="1.6" />;
+        })}
+
+      {VITESSES.map((v) => {
+        if (!full && ![400, 200, 120, 90, 70, 60].includes(v)) return null;
+        const angle = ((3600 / v) * 6) % 360;
+        const p = polar(rText - (full ? 0 : 2), angle);
+        const upright = angle > 90 && angle < 270 ? angle + 180 : angle;
+        return (
+          <Engraved key={v} x={p.x} y={p.y} angle={upright} size={full ? n(width * 0.4) : n(width * 0.52)} fill={engraved} detail={detail} spacing="-0.01em">
+            {v.toString()}
+          </Engraved>
+        );
+      })}
+
+      {full && (
+        <>
+          <path id={arcId} d={`M ${n(a0.x)} ${n(a0.y)} A ${n(rText - 6.5)} ${n(rText - 6.5)} 0 0 1 ${n(a1.x)} ${n(a1.y)}`} fill="none" />
+          <text fill={engraved} style={{ fontFamily: "var(--font-ui)", fontSize: n(width * 0.33), fontWeight: 600, letterSpacing: "0.09em" }}>
+            <textPath href={`#${arcId}`} startOffset="50%" textAnchor="middle">
+              TACHYMETRE
+            </textPath>
+          </text>
+        </>
+      )}
     </g>
   );
 }

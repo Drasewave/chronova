@@ -1,5 +1,5 @@
 import { INK, METALS, PAPER, mix, rampAt, shade, tint, type MetalRamp } from "../palette";
-import { n } from "../geometry";
+import { dialScale, n } from "../geometry";
 import type { StrapKind, WatchRender } from "../types";
 import type { Sheen } from "./conic";
 import { FINISH_SHEEN } from "./defs";
@@ -59,7 +59,7 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
   const sheen = FINISH_SHEEN[render.caseFinish];
   const plongee = render.bezelStyle === "plongee";
   // La lunette GMT a le même profil cranté et le même insert, sans protège-couronne.
-  const insert = plongee || render.bezelStyle === "gmt";
+  const insert = plongee || render.bezelStyle === "gmt" || render.bezelStyle === "tachymetre";
   const chrono = render.movement === "VK64";
   const coussin = render.caseShape === "coussin";
   const crownAt: 3 | 4 = render.crownAt === 4 ? 4 : 3;
@@ -68,6 +68,10 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
   const boussole = render.innerRing === "boussole" && render.movement !== "NH34" && render.movement !== "VK64";
   const secondCrownAt: 2 | 4 | null = boussole ? (crownAt === 4 ? 2 : 4) : null;
   const yLunette = insert ? 420 : 424;
+  // Mêmes épaulements que de face : une plongeuse, ou toute carrure ronde percée à 4 h.
+  const guards = !coussin && !chrono && (plongee || crownAt === 4);
+  // Une lunette à insert resserre le verre (voir `dialScale`).
+  const hg = n(HG * dialScale(render.bezelStyle));
   const yBas = render.caseback === "plein" ? 542 : 539;
   const grain =
     render.caseFinish === "brosse" ? `url(#${uid}-pf-stries)` : render.caseFinish === "microbille" ? `url(#${uid}-beaded)` : null;
@@ -88,7 +92,7 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
             id={`${uid}-pf-insert`}
             half={HB}
             colorAt={(t) => {
-              const c = render.insertColor ?? "#1B2B45";
+              const c = render.insertColor ?? (render.bezelStyle === "tachymetre" ? "#17191C" : "#1B2B45");
               return (render.insertMaterial ?? "ceramique") === "ceramique"
                 ? mix(shade(c, 0.38), tint(c, 0.6), flankLum(t, "ceramique"))
                 : mix(shade(c, 0.12), tint(c, 0.2), flankLum(t, "mat"));
@@ -180,14 +184,15 @@ export function ProfileView({ uid, render }: { uid: string; render: WatchRender 
       )}
 
       <BezelProfile uid={uid} render={render} ramp={ramp} y={yLunette} />
-      <CrystalProfile uid={uid} render={render} ramp={ramp} y={yLunette} />
+      <CrystalProfile uid={uid} render={render} ramp={ramp} y={yLunette} hg={hg} />
 
       {/* La lunette déborde : trait d'ombre au plan de joint. */}
       <line x1={CX - HB} y1={Y_CARRURE} x2={CX + HB} y2={Y_CARRURE} stroke={INK} strokeOpacity="0.6" strokeWidth="1.6" />
 
       {/* Un coussin enveloppe sa couronne dans le flanc : pas d'épaulements rapportés. */}
-      {plongee && !coussin && <GuardsProfile ramp={ramp} at={crownAt} />}
-      {chrono && [-46, 46].map((dx) => <PusherProfile key={dx} uid={uid} x={CX + dx} ramp={ramp} />)}
+      {guards && <GuardsProfile ramp={ramp} at={crownAt} />}
+      {/* Poussoirs à 2 h et 4 h : de part et d'autre de la couronne, vus un peu de biais. */}
+      {chrono && [-92, 92].map((dx) => <PusherProfile key={dx} uid={uid} x={CX + dx} ramp={ramp} />)}
       {secondCrownAt && <CrownProfile uid={uid} render={render} at={secondCrownAt} size={0.8} signed={false} />}
       <CrownProfile uid={uid} render={render} at={crownAt} signed={render.crownStyle === "signee"} />
     </g>
@@ -225,6 +230,20 @@ function Lug({ uid, sx, ramp, grain, mat }: { uid: string; sx: 1 | -1; ramp: Met
 function BezelProfile({ uid, render, ramp, y }: { uid: string; render: WatchRender; ramp: MetalRamp; y: number }) {
   const style = render.bezelStyle;
   const rad = Math.PI / 180;
+
+  if (style === "tachymetre") {
+    // Lunette fixe : la pente noire de l'insert, puis un jonc poli sans cran.
+    return (
+      <g data-layer="lunette">
+        <path d={`M ${CX - 196} ${y + 12} L ${CX - 178} ${y} H ${CX + 178} L ${CX + 196} ${y + 12} Z`} fill={`url(#${uid}-pf-insert)`} />
+        <line x1={CX - 168} y1={y + 3} x2={CX - 70} y2={y + 3} stroke={PAPER} strokeOpacity="0.18" strokeWidth="1.6" strokeLinecap="round" />
+        <rect x={CX - HB} y={y + 12} width={HB * 2} height={Y_CARRURE - y - 12} rx="3" fill={`url(#${uid}-pf-poli)`} />
+        <line x1={CX - HB + 4} y1={y + 13.4} x2={CX + HB - 4} y2={y + 13.4} stroke={ramp.hi} strokeOpacity="0.85" strokeWidth="1.2" />
+        <path d={`M ${CX - 196} ${y + 12} L ${CX - 178} ${y} H ${CX + 178} L ${CX + 196} ${y + 12}`} fill="none" stroke={ramp.edge} strokeOpacity="0.7" strokeWidth="1.1" />
+        <rect x={CX - HB} y={y + 12} width={HB * 2} height={Y_CARRURE - y - 12} rx="3" fill="none" stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="1.1" />
+      </g>
+    );
+  }
 
   if (style === "plongee" || style === "gmt") {
     // Pourtour cranté pour la prise en main, puis la pente de l'insert : sa
@@ -287,8 +306,28 @@ function BezelProfile({ uid, render, ramp, y }: { uid: string; render: WatchRend
 }
 
 /** Verre. Tout l'intérêt de la vue est là : une lame à peine saillante, ou un dôme. */
-function CrystalProfile({ uid, render, ramp, y }: { uid: string; render: WatchRender; ramp: MetalRamp; y: number }) {
+function CrystalProfile({ uid, render, ramp, y, hg: HG }: { uid: string; render: WatchRender; ramp: MetalRamp; y: number; hg: number }) {
   const ar = render.antiGlare;
+  if (render.crystal === "box") {
+    // Verre box : des flancs droits qui montent franchement au-dessus de la
+    // lunette, puis un dessus à peine bombé. C'est lui qui donne son épaisseur
+    // et son allure d'autrefois à une habillée.
+    const mur = 17;
+    const h = 30;
+    const boite = `M ${CX - HG} ${y} L ${CX - HG + 2} ${y - mur} C ${CX - HG + 6} ${y - mur - 7} ${CX - 110} ${y - h} ${CX} ${y - h} C ${CX + 110} ${y - h} ${CX + HG - 6} ${y - mur - 7} ${CX + HG - 2} ${y - mur} L ${CX + HG} ${y}`;
+    return (
+      <g data-layer="verre">
+        <path d={`${boite} Z`} fill={`url(#${uid}-pf-verre)`} />
+        <path d={`M ${CX - HG + 10} ${y} Q ${CX} ${y - 9} ${CX + HG - 10} ${y} Z`} fill={INK} fillOpacity="0.22" />
+        {/* Le flanc gauche prend la boîte à lumière de plein fouet. */}
+        <line x1={CX - HG + 4} y1={y - 2} x2={CX - HG + 5.5} y2={y - mur} stroke="#FFFFFF" strokeOpacity="0.9" strokeWidth="2.6" strokeLinecap="round" />
+        <path d={boite} fill="none" stroke="#FFFFFF" strokeOpacity="0.9" strokeWidth="3.4" strokeLinecap="round" strokeDasharray="0 40 120 1000" transform="translate(3 5)" />
+        <path d={boite} fill="none" stroke="#FFFFFF" strokeOpacity="0.4" strokeWidth="2.2" strokeLinecap="round" strokeDasharray="0 270 44 1000" transform="translate(-2 5)" />
+        {ar && <path d={boite} fill="none" stroke="#6A64FF" strokeOpacity="0.3" strokeWidth="2" transform="translate(0 1.6)" />}
+        <path d={boite} fill="none" stroke={ramp.edge} strokeOpacity="0.55" strokeWidth="1.2" />
+      </g>
+    );
+  }
   if (render.crystal === "bombe") {
     const h = 27;
     const dome = `M ${CX - HG} ${y} C ${CX - 150} ${y - 15} ${CX - 96} ${y - h} ${CX} ${y - h} C ${CX + 96} ${y - h} ${CX + 150} ${y - 15} ${CX + HG} ${y}`;
@@ -313,6 +352,14 @@ function CrystalProfile({ uid, render, ramp, y }: { uid: string; render: WatchRe
       <line x1={CX - HG + 12} y1={top + 1.4} x2={CX - 20} y2={top + 1.4} stroke="#FFFFFF" strokeOpacity="0.95" strokeWidth="1.8" strokeLinecap="round" />
       <line x1={CX + 40} y1={top + 1.4} x2={CX + HG - 30} y2={top + 1.4} stroke="#FFFFFF" strokeOpacity="0.4" strokeWidth="1.2" strokeLinecap="round" />
       {ar && <line x1={CX - HG + 6} y1={y - 1.5} x2={CX + HG - 6} y2={y - 1.5} stroke="#6A64FF" strokeOpacity="0.35" strokeWidth="1.5" />}
+      {/* Loupe de quantième : elle est à 3 h, donc face à nous — une petite
+          lentille bombée posée sur la lame, au milieu. */}
+      {render.cyclops && (render.showDate ?? true) && (render.dateWindow ?? "date") === "date" && render.movement !== "NH38" && render.movement !== "VK64" && (
+        <>
+          <path d={`M ${CX - 24} ${top} Q ${CX} ${top - 9} ${CX + 24} ${top} Z`} fill={SAPHIR} fillOpacity="0.85" stroke={ramp.edge} strokeOpacity="0.5" strokeWidth="0.9" />
+          <path d={`M ${CX - 18} ${top - 1.6} Q ${CX - 6} ${top - 6.4} ${CX + 4} ${top - 5.4}`} fill="none" stroke="#FFFFFF" strokeOpacity="0.95" strokeWidth="1.4" strokeLinecap="round" />
+        </>
+      )}
     </g>
   );
 }
@@ -325,7 +372,9 @@ function CrystalProfile({ uid, render, ramp, y }: { uid: string; render: WatchRe
  */
 function CrownProfile({ uid, render, at, size = 1, signed }: { uid: string; render: WatchRender; at: 2 | 3 | 4; size?: number; signed: boolean }) {
   const ramp = METALS[render.crownMetal];
-  const r = 23 * size;
+  // Oignon : vue de bout, une couronne plus large, coiffée d'un cabochon.
+  const oignon = render.crownStyle === "oignon" && size === 1;
+  const r = (oignon ? 27 : 23) * size;
   const dents = 24;
   const pas = n((2 * Math.PI * (r - 2)) / dents);
 
@@ -366,6 +415,12 @@ function CrownProfile({ uid, render, at, size = 1, signed }: { uid: string; rend
       <circle cx={CX} cy={Y_COURONNE} r={r - 2} fill="none" stroke={`url(#${uid}-pf-tete-couronne)`} strokeWidth="4.4" strokeDasharray={`${n(pas * 0.58)} ${n(pas * 0.42)}`} />
       <circle cx={CX} cy={Y_COURONNE} r={r - 5} fill={`url(#${uid}-pf-tete-couronne)`} stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="1" />
       <circle cx={CX} cy={Y_COURONNE} r={r - 8.5} fill="none" stroke={ramp.hi} strokeOpacity="0.4" strokeWidth="0.8" />
+      {oignon && (
+        <>
+          <circle cx={CX} cy={Y_COURONNE} r="7.5" fill={`url(#${uid}-pf-tete-couronne)`} stroke={ramp.edge} strokeOpacity="0.7" strokeWidth="0.9" />
+          <circle cx={CX - 2.2} cy={Y_COURONNE - 2.6} r="2" fill="#FFFFFF" fillOpacity="0.8" />
+        </>
+      )}
       {signed && (
         <>
           <text x={CX + 0.7} y={Y_COURONNE + 6.4} textAnchor="middle" fill={ramp.hi} fillOpacity="0.6" style={{ fontFamily: "var(--font-title)", fontSize: 16, fontWeight: 600 }}>
@@ -601,8 +656,9 @@ function SteelLinks({ uid, pts, side, jubile, ramp, lit }: { uid: string; pts: P
  * gorges près des cornes ; le NATO n'est qu'une sangle fine, à passant d'acier.
  */
 function Ribbon({ uid, pts, kind, color, lit }: { uid: string; pts: Pt[]; kind: StrapKind; color: string; lit: boolean }) {
-  const t0 = kind === "cuir" ? 38 : kind === "caoutchouc" ? 40 : 15;
-  const t1 = kind === "cuir" ? 25 : kind === "caoutchouc" ? 29 : 15;
+  const glace = kind === "cuir-glace";
+  const t0 = kind === "cuir" ? 38 : glace ? 34 : kind === "caoutchouc" ? 40 : 15;
+  const t1 = kind === "cuir" ? 25 : glace ? 21 : kind === "caoutchouc" ? 29 : 15;
   const thick = (s: number) => t0 + (t1 - t0) * Math.min(1, s / 300);
   const face = lit ? tint(color, kind === "caoutchouc" ? 0.1 : 0.14) : shade(color, 0.16);
   const body = band(pts, (s) => thick(s) / 2, (s) => -thick(s) / 2);
@@ -612,11 +668,11 @@ function Ribbon({ uid, pts, kind, color, lit }: { uid: string; pts: Pt[]; kind: 
       {/* Boucle du brin autour de la barrette. */}
       <circle cx={n(start.x)} cy={n(start.y)} r={t0 / 2} fill={face} />
       <path d={body} fill={face} stroke={shade(color, 0.55)} strokeWidth="1.2" strokeLinejoin="round" />
-      {kind === "cuir" && (
+      {(kind === "cuir" || glace) && (
         <>
           {/* Doublure, côté peau : plus sombre, séparée par le trait de collage. */}
           <path d={band(pts, (s) => -thick(s) * 0.14, (s) => -thick(s) / 2)} fill={shade(color, lit ? 0.4 : 0.55)} />
-          <path d={poly(rail(pts, (s) => thick(s) * 0.26))} fill="none" stroke={tint(color, 0.72)} strokeOpacity={lit ? 0.9 : 0.6} strokeWidth="1.8" strokeDasharray="7 5" strokeLinecap="round" />
+          <path d={poly(rail(pts, (s) => thick(s) * 0.26))} fill="none" stroke={tint(color, glace ? 0.25 : 0.72)} strokeOpacity={lit ? 0.9 : 0.6} strokeWidth={glace ? 1.2 : 1.8} strokeDasharray={glace ? "4 4" : "7 5"} strokeLinecap="round" />
         </>
       )}
       {kind === "caoutchouc" &&
@@ -637,7 +693,7 @@ function Ribbon({ uid, pts, kind, color, lit }: { uid: string; pts: Pt[]; kind: 
         </>
       )}
       {/* Arête extérieure : le seul endroit où un ruban mat accroche la lumière. */}
-      <path d={poly(rail(pts, (s) => thick(s) / 2 - 1.4))} fill="none" stroke={PAPER} strokeOpacity={lit ? 0.4 : 0.14} strokeWidth="1.4" />
+      <path d={poly(rail(pts, (s) => thick(s) / 2 - 1.4))} fill="none" stroke={PAPER} strokeOpacity={glace ? (lit ? 0.75 : 0.3) : lit ? 0.4 : 0.14} strokeWidth={glace ? 2 : 1.4} />
     </>
   );
 }

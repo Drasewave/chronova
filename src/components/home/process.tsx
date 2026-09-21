@@ -20,7 +20,7 @@ export function Process() {
           <Reveal as="li" key={etape.numero} delay={index * 110} className="relative xl:pr-10">
             {/* Le filet de la frise : il part du repère et court jusqu'au suivant. */}
             <div className="flex items-center gap-4" aria-hidden="true">
-              <span className="type-title-2 grid size-12 shrink-0 place-items-center rounded-pill border border-gold text-gold" data-numeric>
+              <span className="type-title-2 grid size-12 shrink-0 place-items-center rounded-pill border border-accent-ink text-accent-ink" data-numeric>
                 {index + 1}
               </span>
               <span className="h-px flex-1 bg-rule" />

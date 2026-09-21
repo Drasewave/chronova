@@ -42,7 +42,7 @@ export function BackView({ uid, render }: { uid: string; render: WatchRender }) 
   const levre = surSombre ? INK : ramp.hi;
 
   const texteBas =
-    transparent && render.engraving ? render.engraving : `ÉTANCHE 10 ATM · ${render.caseSize} MM`;
+    transparent && render.engraving ? render.engraving : `ÉTANCHE ${render.waterResistM ? Math.round(render.waterResistM / 10) : 10} ATM · ${render.caseSize} MM`;
 
   return (
     <g data-view="dos">

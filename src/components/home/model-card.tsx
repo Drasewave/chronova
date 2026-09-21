@@ -9,9 +9,10 @@ import type { Catalogue } from "@/lib/configurateur/catalogue";
 import { formatPrice } from "@/lib/utils";
 
 /**
- * Vignette de modèle. Au survol, la montre pivote de 3°, un reflet traverse le
- * verre et le second coloris apparaît en fondu — trois indices que la montre
- * est configurable, sans une ligne de texte de plus.
+ * Vignette de modèle. Au survol, la montre s'approche à peine (3,5 %, sans
+ * rotation), un reflet traverse le verre et le second coloris apparaît en fondu
+ * — trois indices que la montre est configurable, sans une ligne de texte de
+ * plus. Tout est lent (`--d-long`, `--d-reveal`) et réversible à tout instant.
  */
 export function ModelCard({
   catalogue,
@@ -47,7 +48,7 @@ export function ModelCard({
           {/* Élément partagé : au clic, cette montre est la même que celle de
               la fiche — elle s'y déplace et grandit au lieu de disparaître. */}
           <ViewTransition name={`montre-${modele.slug}`} share="morph" default="none">
-            <div className="relative transition-transform duration-[900ms] ease-atelier group-hover:scale-[1.045] group-hover:-rotate-2">
+            <div className="relative transition-transform duration-(--d-long) ease-atelier group-hover:scale-[1.035] group-focus-within:scale-[1.035]">
             <WatchSvg
               id={`carte-${modele.slug}`}
               render={base.render}
@@ -57,7 +58,7 @@ export function ModelCard({
             />
             <div
               aria-hidden="true"
-              className="absolute inset-0 opacity-0 transition-opacity duration-[600ms] ease-atelier group-hover:opacity-100"
+              className="absolute inset-0 opacity-0 transition-opacity duration-(--d-reveal) ease-atelier group-hover:opacity-100"
             >
               <WatchSvg
                 id={`carte-alt-${modele.slug}`}
@@ -77,7 +78,7 @@ export function ModelCard({
           ) : (
             <h3 className="type-title-2 text-fg">{modele.name}</h3>
           )}
-          <IconFleche className="fleche-glisse shrink-0 text-gold opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+          <IconFleche className="fleche-glisse shrink-0 text-accent-ink opacity-0 transition-opacity duration-(--d-base) ease-atelier group-hover:opacity-100 group-focus-within:opacity-100" />
         </div>
 
         <p className="type-body mt-1.5 text-fg-soft">{modele.tagline}</p>

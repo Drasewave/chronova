@@ -7,7 +7,7 @@ export function Wordmark({ className }: { className?: string }) {
     <Link
       href="/"
       className={cn(
-        "inline-flex min-h-11 items-center text-[1.25rem] leading-none text-fg transition-colors duration-200 hover:text-gold",
+        "inline-flex min-h-11 items-center text-[1.25rem] leading-none text-fg transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink",
         className,
       )}
       style={{ fontFamily: "var(--font-title)", letterSpacing: "0.22em", textIndent: "0.22em" }}

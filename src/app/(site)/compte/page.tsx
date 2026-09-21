@@ -91,7 +91,7 @@ export default async function Compte() {
 
               <Link
                 href={`/compte/commandes/${enCours.number}`}
-                className="type-ui link-underline mt-6 inline-block text-gold"
+                className="type-ui link-underline mt-6 inline-block text-accent-ink"
               >
                 Voir le détail de l&apos;assemblage
               </Link>

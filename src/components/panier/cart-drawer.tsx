@@ -33,7 +33,8 @@ export function CartDrawer() {
         if (event.target === dialogue.current) close();
       }}
       aria-label="Panier"
-      className="ml-auto mr-0 h-dvh max-h-dvh w-[min(100vw,29rem)] border-l border-rule bg-bg p-0 text-fg shadow-lift backdrop:bg-[color-mix(in_srgb,var(--color-nuit)_52%,transparent)]"
+      data-cote="droite"
+      className="dialogue-anime ml-auto mr-0 h-dvh max-h-dvh w-[min(100vw,29rem)] border-l border-rule bg-bg p-0 text-fg shadow-lift backdrop:bg-[color-mix(in_srgb,var(--color-nuit)_52%,transparent)]"
     >
       <div className="flex h-dvh flex-col">
         <header className="flex items-center justify-between border-b border-rule px-6 py-5">
@@ -44,7 +45,7 @@ export function CartDrawer() {
           <button
             type="button"
             onClick={close}
-            className="inline-flex size-11 items-center justify-center text-fg-soft hover:text-gold"
+            className="inline-flex size-11 items-center justify-center text-fg-soft transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
             aria-label="Fermer le panier"
           >
             <IconCroix />

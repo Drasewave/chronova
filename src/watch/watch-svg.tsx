@@ -11,7 +11,7 @@ import { Pushers } from "./parts/pushers";
 import { ProfileView } from "./parts/profile";
 import { BackView } from "./parts/back";
 import { cushionRadius } from "./parts/cushion";
-import { DEFAULT_TIME, FRAME_SCALE, R_CASE, SIZE_SCALE } from "./geometry";
+import { DEFAULT_TIME, FRAME_SCALE, R_BEZEL_IN, R_CASE, SIZE_SCALE, dialScale, n } from "./geometry";
 import type { WatchRender, WatchView } from "./types";
 
 /**
@@ -37,7 +37,11 @@ export function flankLayout(render: WatchRender) {
     boussole,
     secondCrownAt,
     offsetAt,
-    guards: render.bezelStyle === "plongee" && !coussin,
+    // Épaulements de couronne, venus de matière avec le flanc : ceux d'une
+    // plongeuse, et ceux de toute carrure ronde percée à 4 h — c'est la même
+    // boîte de sport japonaise, qu'elle porte une lunette de plongée, 24 h ou
+    // lisse. Un coussin enveloppe déjà sa couronne ; un chronographe a ses poussoirs.
+    guards: !coussin && render.movement !== "VK64" && (render.bezelStyle === "plongee" || crownAt === 4),
   };
 }
 
@@ -75,6 +79,14 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
   const isGmt = render.movement === "NH34";
   const isChrono = render.movement === "VK64";
   const showDate = (render.showDate ?? true) && render.movement !== "NH38" && render.movement !== "VK64";
+
+  // De dos, couronne et poussoirs passent à gauche : la montre est retournée.
+  const couronneDos = (
+    <Crown uid={id} style={render.crownStyle === "oignon" ? "oignon" : "lisse"} metal={render.crownMetal} at={flank.crownAt} offset={flank.offsetAt(flank.crownAt)} mirror />
+  );
+  const secondeCouronneDos = flank.secondCrownAt ? (
+    <Crown uid={id} style="lisse" metal={render.crownMetal} at={flank.secondCrownAt} offset={flank.offsetAt(flank.secondCrownAt)} size={0.8} mirror />
+  ) : null;
 
   return (
     <svg
@@ -117,12 +129,13 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
               frame={500 / scale}
             />
             {/* De dos, couronne et poussoirs passent à gauche : la montre est retournée. */}
-            <Crown uid={id} style="lisse" metal={render.crownMetal} at={flank.crownAt} offset={flank.offsetAt(flank.crownAt)} mirror />
-            {flank.secondCrownAt && (
-              <Crown uid={id} style="lisse" metal={render.crownMetal} at={flank.secondCrownAt} offset={flank.offsetAt(flank.secondCrownAt)} size={0.8} mirror />
-            )}
+            {(flank.coussin || !flank.guards) && couronneDos}
+            {flank.coussin && secondeCouronneDos}
             {isChrono && <Pushers uid={id} metal={render.caseMetal} mirror />}
             {!flank.coussin && <Lugs uid={id} metal={render.caseMetal} finish={render.caseFinish} />}
+            {/* Comme de face : à 4 h, la couronne passe devant la racine de la corne. */}
+            {!flank.coussin && secondeCouronneDos}
+            {!flank.coussin && flank.guards && couronneDos}
             {/* Les épaulements passent sous le fond vissé : seul leur débord se voit. */}
             {flank.guards && <CrownGuards uid={id} metal={render.caseMetal} at={flank.crownAt} mirror />}
             <BackView uid={id} render={render} />
@@ -174,6 +187,20 @@ function FaceView({
   // La minuterie d'une plongeuse vit sur son réhaut : elle suit les index de
   // plongée. Le réhaut boussole, lui, est une option à part entière.
   const rehaut = flank.boussole ? "boussole" : render.indexStyle === "plongee" ? "minuterie" : "poli";
+  // Une lunette à insert resserre l'ouverture du verre : tout ce qui vit sous le
+  // verre est réduit d'un bloc autour du centre.
+  const k = dialScale(render.bezelStyle);
+  // L'échelle 24 h imprimée ne sert que sans lunette 24 h.
+  const gmtScale = isGmt && render.bezelStyle !== "gmt";
+  // La loupe ne grossit qu'un quantième seul : sur un jour-date elle n'en couvrirait que la moitié.
+  const cyclops = Boolean(render.cyclops) && showDate && (render.dateWindow ?? "date") === "date";
+  const couronne = (
+    <Crown uid={id} style={render.crownStyle} metal={render.crownMetal} at={flank.crownAt} offset={flank.offsetAt(flank.crownAt)} />
+  );
+  // Plus menue, jamais signée.
+  const secondeCouronne = flank.secondCrownAt ? (
+    <Crown uid={id} style="lisse" metal={render.crownMetal} at={flank.secondCrownAt} offset={flank.offsetAt(flank.secondCrownAt)} size={0.8} />
+  ) : null;
   return (
     <>
         <Strap
@@ -185,26 +212,16 @@ function FaceView({
           frame={frame}
         />
 
-        <Crown
-          uid={id}
-          style={render.crownStyle}
-          metal={render.crownMetal}
-          at={flank.crownAt}
-          offset={flank.offsetAt(flank.crownAt)}
-        />
-        {/* Couronne du réhaut boussole : plus menue, jamais signée. */}
-        {flank.secondCrownAt && (
-          <Crown
-            uid={id}
-            style="lisse"
-            metal={render.crownMetal}
-            at={flank.secondCrownAt}
-            offset={flank.offsetAt(flank.secondCrownAt)}
-            size={0.8}
-          />
-        )}
+        {/* Sans épaulements, la couronne passe sous le flanc. Avec eux, elle est
+            dessinée après le boîtier : à 4 h la corne la masquerait. */}
+        {!flank.guards && couronne}
+        {/* Couronne du réhaut boussole. Sur un coussin elle s'enfonce dans le
+            flanc ; sur une carrure ronde elle passe devant la racine de la corne. */}
+        {flank.coussin && secondeCouronne}
         {isChrono && <Pushers uid={id} metal={render.caseMetal} />}
         <Case uid={id} metal={render.caseMetal} finish={render.caseFinish} shape={render.caseShape} />
+        {!flank.coussin && secondeCouronne}
+        {flank.guards && couronne}
         {flank.guards && <CrownGuards uid={id} metal={render.caseMetal} at={flank.crownAt} />}
 
         <Bezel
@@ -217,8 +234,10 @@ function FaceView({
           insertMaterial={render.insertMaterial}
           lume={render.lume}
           detail={detail}
+          rIn={n(R_BEZEL_IN * k)}
         />
 
+        <g data-layer="sous-verre" transform={k === 1 ? undefined : `translate(500 500) scale(${k}) translate(-500 -500)`}>
         <Dial
           uid={id}
           color={render.dialColor}
@@ -229,16 +248,19 @@ function FaceView({
           subdialColor={render.subdialColor}
           dateWindow={render.dateWindow}
           rehaut={rehaut}
+          gmtScale={gmtScale}
+          waterResistM={render.waterResistM}
+          metal={render.caseMetal}
         />
 
         <g filter={`url(#${id}-contact-shadow)`}>
           <Indices
             style={render.indexStyle}
-            metal={render.caseMetal}
+            metal={render.indexMetal ?? render.caseMetal}
             dialColor={render.dialColor}
             lume={render.lume}
-            outerRadius={flank.boussole ? 227 : isGmt ? 230 : undefined}
-            innerRadius={flank.boussole ? 194 : isGmt ? 196 : undefined}
+            outerRadius={flank.boussole ? 227 : gmtScale ? 230 : undefined}
+            innerRadius={flank.boussole ? 194 : gmtScale ? 196 : undefined}
             skipHour={showDate ? 3 : undefined}
           />
         </g>
@@ -251,9 +273,11 @@ function FaceView({
           movement={render.movement}
           time={time}
           detail={detail}
+          accent={render.accentHandColor}
         />
 
-        <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} />
+        <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} cyclops={cyclops} dialColor={render.dialColor} />
+        </g>
     </>
   );
 }

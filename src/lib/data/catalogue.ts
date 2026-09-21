@@ -106,6 +106,7 @@ export const STEPS: Step[] = [
           { key: "vert-montagne", label: "Vert montagne", colorName: "Vert montagne", colorHex: "#1D4A37", priceDeltaCents: 3000, partRef: "CAD-MON", render: { dialColor: "#1D4A37" } },
           { key: "bleu-glacier", label: "Bleu glacier", colorName: "Bleu glacier", colorHex: "#9CBDD4", priceDeltaCents: 3000, partRef: "CAD-GLA", render: { dialColor: "#9CBDD4" } },
           { key: "orange-plongee", label: "Orange plongée", colorName: "Orange plongée", colorHex: "#D6621F", priceDeltaCents: 3000, partRef: "CAD-ORA", render: { dialColor: "#D6621F" } },
+          { key: "argent", label: "Argent", colorName: "Argent", colorHex: "#D5D8DB", priceDeltaCents: 0, partRef: "CAD-ARG", render: { dialColor: "#D5D8DB" } },
         ],
       },
       {
@@ -171,6 +172,31 @@ export const STEPS: Step[] = [
             priceDeltaCents: 2000,
             render: { indexStyle: "plongee" },
           },
+          {
+            key: "montagne",
+            label: "Chiffres pairs appliqués",
+            description: "Chiffres en métal poli aux heures paires, index en pointe aux heures impaires, un point luminescent au pied de chacun : le cadran des montres de montagne.",
+            priceDeltaCents: 4000,
+            partRef: "IDX-MON",
+            render: { indexStyle: "montagne" },
+          },
+          {
+            key: "terrain-24h",
+            label: "Double échelle 12/24 h",
+            description: "Douze grands chiffres luminescents, et sous chacun l'heure de l'après-midi en petit, de 13 à 24 : la lecture des montres de terrain.",
+            priceDeltaCents: 2000,
+            render: { indexStyle: "terrain-24h" },
+          },
+        ],
+      },
+      {
+        key: "index-metal",
+        label: "Métal des index",
+        help: "Sans choix, les index appliqués suivent le métal du boîtier.",
+        selection: "unique",
+        optional: true,
+        options: [
+          { key: "dore", label: "Index dorés", colorName: "Doré", colorHex: "#C99A45", priceDeltaCents: 3000, render: { indexMetal: "dore" } },
         ],
       },
       {
@@ -268,6 +294,7 @@ export const STEPS: Step[] = [
           { key: "cannelee", label: "Cannelée", description: "Soixante-douze crans, reflets en étoile.", priceDeltaCents: 6000, partRef: "LUN-CAN", render: { bezelStyle: "cannelee" } },
           { key: "plongee", label: "Plongée, 120 clics", description: "Unidirectionnelle, graduée soixante minutes.", priceDeltaCents: 12000, partRef: "LUN-PLO", render: { bezelStyle: "plongee" } },
           { key: "gmt", label: "GMT, 24 heures", description: "Bidirectionnelle, graduée vingt-quatre heures : un second fuseau se lit sur la lunette.", priceDeltaCents: 14000, partRef: "LUN-GMT", render: { bezelStyle: "gmt" } },
+          { key: "tachymetre", label: "Tachymètre, fixe", description: "Insert aluminium noir gravé d'une échelle de vitesse, de 60 à 500 : la trotteuse du chronographe y pointe une moyenne sur un kilomètre.", priceDeltaCents: 9000, partRef: "LUN-TAC", render: { bezelStyle: "tachymetre", insertColor: "#17191C", insertMaterial: "aluminium" } },
         ],
       },
       {
@@ -301,6 +328,17 @@ export const STEPS: Step[] = [
         options: [
           { key: "rouge", label: "Rouge", colorName: "Rouge", colorHex: "#8C1D2B", priceDeltaCents: 4000, render: { insertColor2: "#8C1D2B" } },
           { key: "bleu-roi", label: "Bleu roi", colorName: "Bleu roi", colorHex: "#1F4E8C", priceDeltaCents: 4000, render: { insertColor2: "#1F4E8C" } },
+          { key: "gris", label: "Gris", colorName: "Gris", colorHex: "#5E6369", priceDeltaCents: 4000, render: { insertColor2: "#5E6369" } },
+        ],
+      },
+      {
+        key: "insert-secteur",
+        label: "Secteur des vingt minutes",
+        help: "Sur une lunette de plongée, les vingt premières minutes peuvent prendre une seconde teinte : la plage des paliers se repère sans lire un chiffre.",
+        selection: "unique",
+        optional: true,
+        options: [
+          { key: "rouge", label: "Rouge", colorName: "Rouge", colorHex: "#A3202E", priceDeltaCents: 4000, render: { insertColor2: "#A3202E" } },
         ],
       },
     ],
@@ -317,6 +355,7 @@ export const STEPS: Step[] = [
         options: [
           { key: "signee", label: "Signée Chronova", description: "Initiale gravée puis noircie à la main.", priceDeltaCents: 3000, partRef: "COU-SIG", render: { crownStyle: "signee" } },
           { key: "lisse", label: "Lisse", description: "Cannelures seules, aucune marque.", priceDeltaCents: 0, partRef: "COU-LIS", render: { crownStyle: "lisse" } },
+          { key: "oignon", label: "Oignon", description: "Plus grosse et bombée, cannelures galbées : elle se saisit du bout des doigts. Non signée.", priceDeltaCents: 3000, partRef: "COU-OIG", render: { crownStyle: "oignon" } },
         ],
       },
       {
@@ -365,6 +404,7 @@ export const STEPS: Step[] = [
           { key: "cuir", label: "Cuir", description: "Tannage végétal, coutures à la main.", priceDeltaCents: 0, partRef: "BRA-CUI", render: { strapKind: "cuir" } },
           { key: "caoutchouc", label: "Caoutchouc", description: "Vulcanisé, insensible à l'eau de mer.", priceDeltaCents: 0, partRef: "BRA-CAO", render: { strapKind: "caoutchouc" } },
           { key: "nato", label: "NATO", description: "Sangle tissée, passe sous le boîtier.", priceDeltaCents: 0, partRef: "BRA-NAT", render: { strapKind: "nato" } },
+          { key: "cuir-glace", label: "Cuir glacé", description: "Veau glacé, brillant, rembordé, à surpiqûre fine ton sur ton : le brin des habillées.", priceDeltaCents: 4000, partRef: "BRA-GLA", render: { strapKind: "cuir-glace" } },
         ],
       },
       {
@@ -381,6 +421,8 @@ export const STEPS: Step[] = [
           { key: "nato-kaki", label: "NATO kaki", colorName: "Kaki", colorHex: "#5D6152", priceDeltaCents: 0, render: { strapColor: "#5D6152" } },
           { key: "nato-marine", label: "NATO marine", colorName: "Marine", colorHex: "#2E3B4A", priceDeltaCents: 0, render: { strapColor: "#2E3B4A" } },
           { key: "nato-sable", label: "NATO sable", colorName: "Sable", colorHex: "#A08E6E", priceDeltaCents: 0, render: { strapColor: "#A08E6E" } },
+          { key: "glace-noir", label: "Cuir glacé noir", colorName: "Noir", colorHex: "#17181B", priceDeltaCents: 0, render: { strapColor: "#17181B" } },
+          { key: "glace-brun", label: "Cuir glacé brun", colorName: "Brun", colorHex: "#3B2418", priceDeltaCents: 0, render: { strapColor: "#3B2418" } },
         ],
       },
       {
@@ -412,6 +454,17 @@ export const STEPS: Step[] = [
         options: [
           { key: "plat", label: "Saphir plat", description: "Silhouette basse, aucune déformation sur les bords.", priceDeltaCents: 0, partRef: "VER-PLA", render: { crystal: "plat" } },
           { key: "bombe", label: "Saphir bombé", description: "Galbe à l'ancienne, avec des reflets sur tout le pourtour.", priceDeltaCents: 7000, partRef: "VER-BOM", render: { crystal: "bombe" } },
+          { key: "box", label: "Saphir box", description: "Très saillant, flancs droits et dessus bombé, comme les verres acryliques d'autrefois : le bord du cadran s'y dédouble.", priceDeltaCents: 11000, leadDaysDelta: 2, partRef: "VER-BOX", render: { crystal: "box" } },
+        ],
+      },
+      {
+        key: "loupe",
+        label: "Loupe de quantième",
+        help: "Une lentille collée sur le verre, au droit du guichet : elle grossit le quantième deux fois et demie.",
+        selection: "unique",
+        options: [
+          { key: "sans", label: "Sans loupe", priceDeltaCents: 0, render: { cyclops: false } },
+          { key: "avec", label: "Avec loupe", description: "Posée et collée à la main sur un saphir plat, centrée sur le guichet.", priceDeltaCents: 5000, leadDaysDelta: 1, partRef: "VER-LOU", render: { cyclops: true } },
         ],
       },
       {
@@ -480,6 +533,16 @@ export const STEPS: Step[] = [
         options: [
           { key: "fleche", label: "Flèche évidée", description: "Ne masque pas l'heure locale.", priceDeltaCents: 0 },
           { key: "baton-lume", label: "Bâton luminescent", description: "Lisible de nuit comme les autres aiguilles.", priceDeltaCents: 2000 },
+        ],
+      },
+      {
+        key: "aiguille-fonction-teinte",
+        label: "Teinte de l'aiguille de fonction",
+        help: "L'aiguille 24 heures d'un GMT ou la trotteuse centrale d'un chronographe peut être laquée : on ne la confond plus avec les autres.",
+        selection: "unique",
+        optional: true,
+        options: [
+          { key: "rouge", label: "Laquée rouge", colorName: "Rouge", colorHex: "#C8202B", priceDeltaCents: 2000, render: { accentHandColor: "#C8202B" } },
         ],
       },
       {
@@ -677,6 +740,48 @@ export const RULES: CompatibilityRule[] = [
     targets: ["mouvement:vk64"],
     message: "Les compteurs supposent le mouvement chronographe VK64.",
   },
+  {
+    subject: "insert-bicolore:gris",
+    kind: "exige-une-de",
+    targets: ["lunette-style:gmt"],
+    message: "L'insert bicolore n'existe que sur la lunette GMT.",
+  },
+  {
+    subject: "insert-secteur:rouge",
+    kind: "exige-une-de",
+    targets: ["lunette-style:plongee"],
+    message: "Le secteur des vingt minutes n'existe que sur la lunette de plongée.",
+  },
+  {
+    subject: "lunette-style:tachymetre",
+    kind: "exige-une-de",
+    targets: ["mouvement:vk64"],
+    message: "L'échelle tachymétrique se lit avec la trotteuse du chronographe VK64.",
+  },
+  {
+    subject: "aiguille-fonction-teinte:rouge",
+    kind: "exige-une-de",
+    targets: ["mouvement:nh34", "mouvement:vk64"],
+    message: "Seules l'aiguille 24 heures du NH34 et la trotteuse du chronographe VK64 se laquent.",
+  },
+  {
+    subject: "loupe:avec",
+    kind: "exige-une-de",
+    targets: ["date:avec"],
+    message: "La loupe grossit un quantième seul : il faut le guichet de date simple.",
+  },
+  {
+    subject: "loupe:avec",
+    kind: "exige-une-de",
+    targets: ["verre-forme:plat"],
+    message: "La loupe ne se colle que sur un saphir plat.",
+  },
+  ...["glace-noir", "glace-brun"].map((teinte) => ({
+    subject: `bracelet-teinte:${teinte}`,
+    kind: "exige-une-de" as const,
+    targets: ["bracelet-type:cuir-glace"],
+    message: "Teinte réservée au cuir glacé.",
+  })),
   // Une teinte d'insert n'a de sens que s'il y a un insert à teindre.
   ...["noir", "bleu-nuit", "vert-foret", "gris-ardoise"].map((teinte) => ({
     subject: `insert-teinte:${teinte}`,
@@ -729,6 +834,8 @@ export const PARTS: Part[] = [
   { ref: "CAD-MON", name: "Cadran vert montagne", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5200, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
   { ref: "CAD-GLA", name: "Cadran bleu glacier", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5200, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
   { ref: "CAD-ORA", name: "Cadran orange plongée", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5200, quantityOnHand: 4, quantityReserved: 0, reorderThreshold: 2, restockDays: 32 },
+  { ref: "CAD-ARG", name: "Cadran argent soleillé", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 4800, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
+  { ref: "IDX-MON", name: "Jeu d'index montagne, chiffres appliqués", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 2100, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
   { ref: "REH-BOU", name: "Réhaut boussole tournant et sa couronne", category: "cadran", supplier: "Atelier Suwa", purchasePriceCents: 4600, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 2, restockDays: 30 },
   { ref: "AIG-GLA", name: "Jeu d'aiguilles glaive", category: "aiguilles", supplier: "Horotec Supply", purchasePriceCents: 1900, quantityOnHand: 14, quantityReserved: 3, reorderThreshold: 5, restockDays: 18 },
   { ref: "AIG-MER", name: "Jeu d'aiguilles Mercedes", category: "aiguilles", supplier: "Horotec Supply", purchasePriceCents: 2400, quantityOnHand: 8, quantityReserved: 2, reorderThreshold: 4, restockDays: 18 },
@@ -740,19 +847,24 @@ export const PARTS: Part[] = [
   { ref: "LUN-CAN", name: "Lunette cannelée", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 3900, quantityOnHand: 5, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
   { ref: "LUN-PLO", name: "Lunette plongée 120 clics", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5200, quantityOnHand: 7, quantityReserved: 2, reorderThreshold: 3, restockDays: 24 },
   { ref: "LUN-GMT", name: "Lunette GMT 24 heures", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 5600, quantityOnHand: 4, quantityReserved: 0, reorderThreshold: 2, restockDays: 24 },
+  { ref: "LUN-TAC", name: "Lunette tachymètre fixe, insert aluminium noir", category: "lunette", supplier: "Atelier Suwa", purchasePriceCents: 4300, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 2, restockDays: 24 },
   { ref: "INS-NOI", name: "Insert céramique noir", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3100, quantityOnHand: 9, quantityReserved: 2, reorderThreshold: 3, restockDays: 38 },
   { ref: "INS-BLE", name: "Insert céramique bleu nuit", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3100, quantityOnHand: 6, quantityReserved: 2, reorderThreshold: 3, restockDays: 38 },
   { ref: "INS-VER", name: "Insert céramique vert forêt", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 3300, quantityOnHand: 0, quantityReserved: 0, reorderThreshold: 2, restockDays: 38 },
   { ref: "INS-GRI", name: "Insert aluminium gris ardoise", category: "insert", supplier: "Ceramtech Nagano", purchasePriceCents: 1700, quantityOnHand: 4, quantityReserved: 0, reorderThreshold: 2, restockDays: 38 },
   { ref: "COU-SIG", name: "Couronne signée Chronova", category: "couronne", supplier: "Horotec Supply", purchasePriceCents: 2200, quantityOnHand: 12, quantityReserved: 3, reorderThreshold: 4, restockDays: 18 },
   { ref: "COU-LIS", name: "Couronne lisse", category: "couronne", supplier: "Horotec Supply", purchasePriceCents: 1400, quantityOnHand: 10, quantityReserved: 1, reorderThreshold: 4, restockDays: 18 },
+  { ref: "COU-OIG", name: "Couronne oignon", category: "couronne", supplier: "Horotec Supply", purchasePriceCents: 1900, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 18 },
   { ref: "BRA-3M", name: "Bracelet acier trois maillons", category: "bracelet", supplier: "Strapworks Lyon", purchasePriceCents: 6800, quantityOnHand: 7, quantityReserved: 2, reorderThreshold: 3, restockDays: 21 },
   { ref: "BRA-JUB", name: "Bracelet acier jubilé", category: "bracelet", supplier: "Strapworks Lyon", purchasePriceCents: 8900, quantityOnHand: 4, quantityReserved: 1, reorderThreshold: 2, restockDays: 21 },
   { ref: "BRA-CUI", name: "Bracelet cuir tannage végétal", category: "bracelet", supplier: "Strapworks Lyon", purchasePriceCents: 3400, quantityOnHand: 15, quantityReserved: 3, reorderThreshold: 5, restockDays: 12 },
+  { ref: "BRA-GLA", name: "Bracelet cuir glacé", category: "bracelet", supplier: "Strapworks Lyon", purchasePriceCents: 4200, quantityOnHand: 8, quantityReserved: 0, reorderThreshold: 3, restockDays: 12 },
   { ref: "BRA-CAO", name: "Bracelet caoutchouc vulcanisé", category: "bracelet", supplier: "Strapworks Lyon", purchasePriceCents: 2600, quantityOnHand: 2, quantityReserved: 2, reorderThreshold: 4, restockDays: 12 },
   { ref: "BRA-NAT", name: "Bracelet NATO tissé", category: "bracelet", supplier: "Strapworks Lyon", purchasePriceCents: 1600, quantityOnHand: 18, quantityReserved: 2, reorderThreshold: 6, restockDays: 12 },
   { ref: "VER-PLA", name: "Saphir plat", category: "verre", supplier: "Ceramtech Nagano", purchasePriceCents: 2100, quantityOnHand: 13, quantityReserved: 3, reorderThreshold: 5, restockDays: 38 },
   { ref: "VER-BOM", name: "Saphir bombé", category: "verre", supplier: "Ceramtech Nagano", purchasePriceCents: 3600, quantityOnHand: 6, quantityReserved: 2, reorderThreshold: 3, restockDays: 38 },
+  { ref: "VER-BOX", name: "Saphir box", category: "verre", supplier: "Ceramtech Nagano", purchasePriceCents: 5400, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 2, restockDays: 38 },
+  { ref: "VER-LOU", name: "Loupe de quantième saphir", category: "verre", supplier: "Ceramtech Nagano", purchasePriceCents: 1200, quantityOnHand: 8, quantityReserved: 0, reorderThreshold: 3, restockDays: 38 },
   { ref: "MOU-NH35", name: "Mouvement Seiko NH35", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 5200, quantityOnHand: 16, quantityReserved: 5, reorderThreshold: 6, restockDays: 28 },
   { ref: "MOU-NH34", name: "Mouvement Seiko NH34 GMT", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 9800, quantityOnHand: 3, quantityReserved: 2, reorderThreshold: 3, restockDays: 42 },
   { ref: "MOU-NH38", name: "Mouvement Seiko NH38 cœur ouvert", category: "mouvement", supplier: "Time Module Europe", purchasePriceCents: 7400, quantityOnHand: 5, quantityReserved: 1, reorderThreshold: 3, restockDays: 28 },

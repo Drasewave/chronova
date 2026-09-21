@@ -116,7 +116,7 @@ export function IntroCurtain() {
           className="intro-filet block h-px w-full"
           style={{
             backgroundImage:
-              "linear-gradient(90deg, var(--color-or-clair), var(--color-or-clair) 70%, transparent)",
+              "linear-gradient(90deg, var(--color-bleu-clair), var(--color-bleu-clair) 70%, transparent)",
           }}
         />
       </div>
@@ -132,7 +132,7 @@ export function IntroCurtain() {
         }}
         // Il ne reste visible qu'une seconde et demie à peine : sa cible doit être
         // franche, d'où les 44 px de hauteur malgré un libellé d'un mot.
-        className="type-mono link-underline absolute bottom-6 right-[calc(var(--gutter)-0.75rem)] inline-flex min-h-11 items-center px-3 text-[var(--color-nuit-douce)] hover:text-[var(--color-or-clair)]"
+        className="type-mono link-underline absolute bottom-6 right-[calc(var(--gutter)-0.75rem)] inline-flex min-h-11 items-center px-3 text-[var(--color-nuit-douce)] hover:text-[var(--color-bleu-clair)]"
       >
         Passer
       </button>

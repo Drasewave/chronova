@@ -14,7 +14,12 @@ export type MetalTone = "acier" | "dore" | "noir" | "bleui";
 export type CaseShape = "rond" | "coussin";
 /** `soleil-profond` : soleillage très contrasté, fumé vers le bord, gaufré en rayons. */
 export type DialTexture = "emaille" | "soleille" | "mat" | "soleil-profond";
-export type IndexStyle = "batons" | "arabes" | "plongee";
+/**
+ * `montagne` : chiffres pairs appliqués et index en pointe aux heures impaires,
+ * le cadran des montres de montagne japonaises. `terrain-24h` : chiffres arabes
+ * luminescents doublés d'une petite échelle 13–24 imprimée, montre de terrain.
+ */
+export type IndexStyle = "batons" | "arabes" | "plongee" | "montagne" | "terrain-24h";
 /**
  * `fleche` : jeu de plongeuse japonaise (heure en flèche courte, minute en glaive
  * large). `dauphine` : deux facettes polies, montre habillée. `cathedrale` :
@@ -25,11 +30,15 @@ export type HandShape = "glaive" | "mercedes" | "crayon" | "fleche" | "dauphine"
 export type DateWindow = "date" | "jour-date";
 /** Réhaut tournant gradué en points cardinaux, commandé par une seconde couronne. */
 export type InnerRing = "aucun" | "boussole";
-export type BezelStyle = "lisse" | "cannelee" | "plongee" | "gmt";
+/** `tachymetre` : lunette fixe à insert noir, échelle de vitesse 60–500 d'un chronographe de sport. */
+export type BezelStyle = "lisse" | "cannelee" | "plongee" | "gmt" | "tachymetre";
 export type InsertMaterial = "ceramique" | "aluminium";
-export type CrownStyle = "signee" | "lisse";
-export type StrapKind = "acier-3-maillons" | "acier-jubile" | "cuir" | "caoutchouc" | "nato";
-export type Crystal = "plat" | "bombe";
+/** `oignon` : couronne bombée et plus grosse des habillées, qu'on saisit sans ôter la montre. */
+export type CrownStyle = "signee" | "lisse" | "oignon";
+/** `cuir-glace` : veau glacé, brillant, à fine surpiqûre ton sur ton — le brin des habillées. */
+export type StrapKind = "acier-3-maillons" | "acier-jubile" | "cuir" | "cuir-glace" | "caoutchouc" | "nato";
+/** `box` : verre très saillant à flancs droits et dessus bombé, comme les verres acryliques d'autrefois. */
+export type Crystal = "plat" | "bombe" | "box";
 export type Movement = "NH35" | "NH34" | "NH38" | "VK64";
 export type Caseback = "plein" | "transparent";
 export type WatchView = "face" | "profil" | "dos";
@@ -43,13 +52,19 @@ export interface WatchRender {
 
   bezelStyle: BezelStyle;
   insertColor?: string;
-  /** Demi-lunette de jour d'un insert GMT bicolore (6 h – 18 h). Absent : insert uni. */
+  /**
+   * Seconde teinte de l'insert. Sur une lunette GMT : la demi-lunette de jour
+   * (6 h – 18 h). Sur une lunette de plongée : le secteur des vingt premières
+   * minutes, celui des paliers. Absent : insert uni.
+   */
   insertColor2?: string;
   insertMaterial?: InsertMaterial;
 
   dialColor: string;
   dialTexture: DialTexture;
   indexStyle: IndexStyle;
+  /** Métal des index appliqués. Absent : ils suivent le métal du boîtier. */
+  indexMetal?: MetalTone;
 
   handShape: HandShape;
   handMetal: MetalTone;
@@ -67,9 +82,16 @@ export interface WatchRender {
   strapColor: string;
 
   crystal: Crystal;
+  /** Loupe de quantième collée sur le verre, à 3 h. Absent : verre nu. */
+  cyclops?: boolean;
   /** Traitement antireflet interne du saphir. */
   antiGlare: boolean;
   movement: Movement;
+  /**
+   * Teinte de l'aiguille de fonction : l'aiguille 24 h d'un GMT, la trotteuse
+   * centrale d'un chronographe. Absent : elle suit le métal des autres aiguilles.
+   */
+  accentHandColor?: string;
   /** Teinte des compteurs chronographe (VK64 uniquement). */
   subdialColor?: string;
   /** Certains montages se passent de date : le cadran reste épuré. */
@@ -80,6 +102,12 @@ export interface WatchRender {
   innerRing?: InnerRing;
   caseback: Caseback;
   engraving?: string;
+  /**
+   * Étanchéité réelle du modèle, en mètres : une donnée de la fiche, jamais une
+   * valeur inventée par le dessin. Présente, elle s'imprime sous « AUTOMATIQUE »
+   * et se grave au dos ; absente, le cadran garde sa ligne de calibre.
+   */
+  waterResistM?: number;
 
   /** Heure figée du rendu. 10 h 10 : la position des photographies horlogères. */
   time?: { hours: number; minutes: number; seconds: number };

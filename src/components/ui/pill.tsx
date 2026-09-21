@@ -5,7 +5,7 @@ type Ton = "neutre" | "accent" | "positif" | "alerte";
 
 const TONS: Record<Ton, string> = {
   neutre: "border-rule text-fg-soft",
-  accent: "border-gold text-gold",
+  accent: "border-accent-ink text-accent-ink",
   positif: "border-positive text-positive",
   alerte: "border-alert text-alert",
 };

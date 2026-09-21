@@ -94,7 +94,7 @@ export function CrmShell({
                           <span className="type-ui flex items-center justify-between gap-2">
                             {entree.label}
                             {actif && (
-                              <span aria-hidden="true" className="size-1.5 shrink-0 rounded-pill bg-gold" />
+                              <span aria-hidden="true" className="size-1.5 shrink-0 rounded-pill bg-accent-ink" />
                             )}
                           </span>
                           <span className="type-caption text-fg-soft">{entree.aide}</span>
@@ -118,7 +118,7 @@ export function CrmShell({
                 Se déconnecter
               </button>
             </form>
-            <Link href="/" className="type-caption lien-atelier link-underline mt-1 text-fg-soft hover:text-gold">
+            <Link href="/" className="type-caption lien-atelier link-underline mt-1 text-fg-soft hover:text-accent-ink">
               Voir le site public
             </Link>
           </div>

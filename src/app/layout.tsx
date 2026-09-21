@@ -57,6 +57,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="fr"
+      // `html` défile en douceur (ancres). Sans cet attribut, Next 16 laisse ce
+      // réglage agir aussi sur le retour en haut d'une navigation : la nouvelle
+      // page arrivait en train de remonter, et le morphing carte → fiche ne
+      // trouvait pas sa montre, encore hors champ.
+      data-scroll-behavior="smooth"
       className={`${jost.variable} ${hanken.variable} ${geistMono.variable}`}
     >
       <body>

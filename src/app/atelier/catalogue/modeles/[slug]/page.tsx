@@ -53,7 +53,7 @@ export default async function FicheModele(props: PageProps<"/atelier/catalogue/m
           <TitrePage className="mt-1">{enregistre.name}</TitrePage>
           <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">{enregistre.tagline}</p>
         </div>
-        <Link href={`/collection/${slug}`} className="type-ui lien-atelier link-underline text-gold">
+        <Link href={`/collection/${slug}`} className="type-ui lien-atelier link-underline text-accent-ink">
           Voir la fiche publique
         </Link>
       </header>

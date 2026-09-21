@@ -23,7 +23,8 @@ describe("palette sur fond clair (papier)", () => {
   it.each([
     ["encre", 11],
     ["encre-douce", AA],
-    ["or-profond", AA],
+    ["bleu", AA],
+    ["bleu-vif", AA],
     ["sapin", AA],
     ["grenat", AA],
   ])("%s atteint le niveau AA sur le papier et sur son alterné", (nom, minimum) => {
@@ -31,17 +32,18 @@ describe("palette sur fond clair (papier)", () => {
     expect(contrastRatio(token(nom), token("papier-alt"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("un bouton plein reste lisible : nuit sur or, au repos comme au survol", () => {
-    expect(contrastRatio(token("nuit"), token("or"))).toBeGreaterThanOrEqual(AA);
-    expect(contrastRatio(token("nuit"), token("or-vif"))).toBeGreaterThanOrEqual(AA);
+  it("un bouton plein reste lisible : blanc sur bleu, au repos comme au survol", () => {
+    expect(contrastRatio(token("panneau"), token("bleu"))).toBeGreaterThanOrEqual(AA);
+    expect(contrastRatio(token("panneau"), token("bleu-vif"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("l'or d'aplat est trop clair pour s'écrire sur papier : le texte prend l'or profond", () => {
-    expect(contrastRatio(token("or"), token("papier"))).toBeLessThan(AA);
+  it("l'aplat bleu se détache du blanc et de son alterné (WCAG 1.4.11, 3:1)", () => {
+    expect(contrastRatio(token("bleu"), token("papier"))).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(token("bleu"), token("papier-alt"))).toBeGreaterThanOrEqual(3);
   });
 
-  it("l'or clair est bien trop faible pour du texte sur papier : décor uniquement", () => {
-    expect(contrastRatio(token("or-clair"), token("papier"))).toBeLessThan(3);
+  it("le bleu clair est trop faible pour du texte sur blanc : réservé au noir", () => {
+    expect(contrastRatio(token("bleu-clair"), token("papier"))).toBeLessThan(AA);
   });
 });
 
@@ -49,8 +51,8 @@ describe("palette sur fond sombre (nuit)", () => {
   it.each([
     ["nuit-encre", 11],
     ["nuit-douce", AA],
-    ["or-clair", AA],
-    ["or-pale", AA],
+    ["bleu-clair", AA],
+    ["bleu-pale", AA],
     ["sapin-clair", AA],
     ["grenat-clair", AA],
   ])("%s atteint le niveau AA sur la nuit et sur son panneau", (nom, minimum) => {
@@ -58,15 +60,15 @@ describe("palette sur fond sombre (nuit)", () => {
     expect(contrastRatio(token(nom), token("nuit-panneau"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("un bouton plein reste lisible : nuit sur or clair", () => {
-    expect(contrastRatio(token("nuit"), token("or-clair"))).toBeGreaterThanOrEqual(AA);
+  it("un bouton plein reste lisible : nuit sur bleu clair", () => {
+    expect(contrastRatio(token("nuit"), token("bleu-clair"))).toBeGreaterThanOrEqual(AA);
   });
 
-  it("l'or profond disparaît sur la nuit : c'est pourquoi le texte d'accent y passe à l'or clair", () => {
-    expect(contrastRatio(token("or-profond"), token("nuit"))).toBeLessThan(AA);
+  it("le bleu profond disparaît sur le noir : c'est pourquoi l'accent y passe au bleu clair", () => {
+    expect(contrastRatio(token("bleu"), token("nuit"))).toBeLessThan(3);
   });
 
-  it("le vert sapin normal chute aussi", () => {
-    expect(contrastRatio(token("sapin"), token("nuit"))).toBeLessThan(3);
+  it("le vert sapin normal passe aussi sous le seuil de lecture", () => {
+    expect(contrastRatio(token("sapin"), token("nuit"))).toBeLessThan(AA);
   });
 });

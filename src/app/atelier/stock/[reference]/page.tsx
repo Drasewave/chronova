@@ -85,7 +85,7 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
             {piece.supplier && (
               <Link
                 href={`/atelier/fournisseurs/${piece.supplier.id}`}
-                className="link-underline text-gold"
+                className="link-underline text-accent-ink"
               >
                 {piece.supplier.name}
               </Link>
@@ -262,7 +262,7 @@ export default async function FichePiece(props: PageProps<"/atelier/stock/[refer
                   >
                     <Link
                       href={`/atelier/commandes/${reservation.orderItem.order.number}`}
-                      className="type-mono lien-atelier link-underline text-gold"
+                      className="type-mono lien-atelier link-underline text-accent-ink"
                     >
                       {reservation.orderItem.order.number}
                     </Link>

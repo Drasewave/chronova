@@ -47,6 +47,9 @@ export function Crown({
 }) {
   const ramp = METALS[metal];
   const grooves = [-72, -56, -41, -27, -13, 0, 13, 27, 41, 56, 72];
+  if (style === "oignon") {
+    return <OnionCrown uid={uid} metal={metal} at={at} offset={offset} size={size} mirror={mirror} />;
+  }
   const r = R * size;
   const x0 = X0 + offset;
   const x1 = x0 + (X1 - X0) * size;
@@ -93,7 +96,12 @@ export function Crown({
   );
 }
 
-/** Protège-couronne : dessinés après le boîtier, ils enveloppent la couronne. */
+/**
+ * Épaulements de couronne : deux bossages venus de matière avec le flanc, qui
+ * encadrent la couronne et encaissent les chocs à sa place. Dessinés après le
+ * boîtier — et après la couronne, qu'ils enserrent — ils débordent franchement
+ * de la carrure : c'est cette silhouette asymétrique qui signe une plongeuse.
+ */
 export function CrownGuards({
   uid,
   metal,
@@ -106,19 +114,93 @@ export function CrownGuards({
   mirror?: boolean;
 }) {
   const ramp = METALS[metal];
-  const d = `M ${C + R_CASE - 56} ${C - 66} Q ${C + R_CASE + 6} ${C - 60} ${X0 + 4} ${C - 30}
-            L ${X0 + 4} ${C + 30} Q ${C + R_CASE + 6} ${C + 60} ${C + R_CASE - 56} ${C + 66} Z`;
+  const xPied = C + R_CASE - 30;
+  const xNez = C + R_CASE + 27;
+  const bossage = (sy: 1 | -1) => {
+    const Y = (d: number) => C + sy * d;
+    return `M ${xPied - 34} ${Y(92)} C ${xPied + 12} ${Y(88)} ${xNez - 6} ${Y(80)} ${xNez} ${Y(60)} Q ${xNez + 4} ${Y(44)} ${xNez - 4} ${Y(34)} L ${xPied + 22} ${Y(30)} L ${xPied - 12} ${Y(30)} Z`;
+  };
   return (
     <g data-layer="protege-couronne" transform={flankTransform(at, mirror)}>
-      <path d={d} fill={`url(#${uid}-case)`} stroke={ramp.edge} strokeWidth="1.4" strokeLinejoin="round" />
-      <path
-        d={`M ${C + R_CASE - 8} ${C - 60} Q ${C + R_CASE + 4} ${C - 56} ${X0 + 1} ${C - 31}`}
-        fill="none"
-        stroke={ramp.hi}
-        strokeOpacity="0.8"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      {([-1, 1] as const).map((sy) => (
+        <g key={sy}>
+          <path d={bossage(sy)} fill={`url(#${uid}-case)`} stroke={ramp.edge} strokeWidth="1.4" strokeLinejoin="round" />
+          {/* Le bossage du bas est sous la lumière : il s'assombrit. */}
+          {sy === 1 && <path d={bossage(sy)} fill={INK} fillOpacity="0.22" />}
+          {/* Chanfrein poli sur l'arête extérieure. */}
+          <path
+            d={`M ${xPied + 4} ${C + sy * 86} C ${xPied + 30} ${C + sy * 82} ${xNez - 8} ${C + sy * 76} ${xNez - 3} ${C + sy * 58}`}
+            fill="none"
+            stroke={ramp.hi}
+            strokeOpacity={sy === -1 ? 0.9 : 0.5}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          {/* Joue intérieure, dans l'ombre de la couronne. */}
+          <line x1={xPied + 2} y1={C + sy * 31.5} x2={xNez - 6} y2={C + sy * 35} stroke={INK} strokeOpacity="0.45" strokeWidth="2.2" />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/**
+ * Couronne oignon : la couronne des habillées. Plus grosse que la carrure ne le
+ * demande, bombée comme un bulbe, elle se saisit du bout des doigts sans ôter la
+ * montre. Ses cannelures suivent le galbe : larges au ventre, elles se resserrent
+ * vers la tête, coiffée d'un petit cabochon poli.
+ */
+function OnionCrown({
+  uid,
+  metal,
+  at,
+  offset,
+  size,
+  mirror,
+}: {
+  uid: string;
+  metal: MetalTone;
+  at: 2 | 3 | 4;
+  offset: number;
+  size: number;
+  mirror: boolean;
+}) {
+  const ramp = METALS[metal];
+  const r = 47 * size;
+  const x0 = X0 + offset + 6;
+  const x1 = x0 + 62 * size;
+  const ventre = x0 + 26 * size;
+  const bulbe = `M ${x0} ${C - r * 0.62} C ${x0 + 6} ${C - r * 1.02} ${ventre + 8} ${C - r * 1.06} ${ventre + 14} ${C - r * 0.9} C ${x1 - 8} ${C - r * 0.62} ${x1} ${C - r * 0.4} ${x1} ${C - r * 0.26} L ${x1} ${C + r * 0.26} C ${x1} ${C + r * 0.4} ${x1 - 8} ${C + r * 0.62} ${ventre + 14} ${C + r * 0.9} C ${ventre + 8} ${C + r * 1.06} ${x0 + 6} ${C + r * 1.02} ${x0} ${C + r * 0.62} Z`;
+  const clip = `${uid}-clip-oignon-${at}${mirror ? "-dos" : ""}`;
+  return (
+    <g data-layer="couronne" transform={flankTransform(at, mirror)}>
+      <clipPath id={clip}>
+        <path d={bulbe} />
+      </clipPath>
+      {/* Tube, puis le col étroit qui porte le bulbe. */}
+      <rect x={x0 - 22} y={C - r * 0.4} width="30" height={r * 0.8} fill={`url(#${uid}-metal-${metal})`} />
+      <rect x={x0 - 22} y={C - r * 0.4} width="30" height={r * 0.8} fill={INK} fillOpacity="0.4" />
+      <path d={bulbe} fill={`url(#${uid}-metal-${metal})`} stroke={ramp.edge} strokeWidth="1.4" strokeLinejoin="round" />
+      <g clipPath={`url(#${clip})`}>
+        {/* Cannelures galbées : chaque gorge est un arc qui converge vers la tête. */}
+        {[-78, -62, -47, -33, -20, -7, 7, 20, 33, 47, 62, 78].map((deg) => {
+          const s = Math.sin((deg * Math.PI) / 180);
+          const y0 = n(C + r * 1.02 * s);
+          const y1 = n(C + r * 0.3 * s);
+          const lit = Math.cos(((deg + 38) * Math.PI) / 180);
+          const d = `M ${x0 + 2} ${n(C + r * 0.66 * s)} Q ${ventre} ${y0} ${x1 - 3} ${y1}`;
+          return (
+            <g key={deg}>
+              <path d={d} fill="none" stroke={INK} strokeOpacity="0.5" strokeWidth={n(2.6 * size)} />
+              <path d={d} fill="none" stroke={ramp.hi} strokeOpacity={n(Math.max(0.08, lit * 0.75))} strokeWidth="1" transform="translate(0 1.9)" />
+            </g>
+          );
+        })}
+        {/* Le bulbe se dérobe vers la carrure : son pied est dans l'ombre. */}
+        <rect x={x0 - 2} y={C - r * 1.1} width="14" height={r * 2.2} fill={INK} fillOpacity="0.3" />
+      </g>
+      {/* Cabochon poli, en bout. */}
+      <rect x={x1 - 3} y={n(C - r * 0.22)} width="7" height={n(r * 0.44)} rx="3.5" fill={`url(#${uid}-metal-${metal})`} stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="0.9" />
     </g>
   );
 }

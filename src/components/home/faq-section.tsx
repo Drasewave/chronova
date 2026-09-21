@@ -21,11 +21,11 @@ export function FaqSection() {
 
       <div className="mt-14 border-t border-rule">
         {FAQ.map((entree) => (
-          <details key={entree.question} className="group border-b border-rule">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-fg transition-colors duration-200 marker:content-none hover:text-gold">
+          <details key={entree.question} className="accordeon group border-b border-rule">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-fg transition-colors duration-(--d-fast) ease-atelier marker:content-none hover:text-accent-ink">
               <h3 className="type-title-2">{entree.question}</h3>
               <IconChevron
-                className="shrink-0 text-gold transition-transform duration-300 ease-atelier group-open:rotate-180"
+                className="chevron shrink-0 text-accent-ink"
                 width={22}
                 height={22}
               />

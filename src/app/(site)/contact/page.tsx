@@ -60,7 +60,7 @@ export default async function Contact() {
                 {identite.email ? (
                   <a
                     href={`mailto:${identite.email}`}
-                    className="type-body link-underline self-start text-gold"
+                    className="type-body link-underline self-start text-accent-ink"
                   >
                     {identite.email}
                   </a>
@@ -73,7 +73,7 @@ export default async function Contact() {
               <dt className="type-mono text-fg-soft">Une montre sur mesure ?</dt>
               <dd className="type-body mt-2 text-fg-soft">
                 Pour une pièce qui sort du configurateur, passez plutôt par{" "}
-                <Link href="/sur-mesure" className="link-underline text-gold">
+                <Link href="/sur-mesure" className="link-underline text-accent-ink">
                   la demande de pièce unique
                 </Link>{" "}
                 : le formulaire est fait pour ça.

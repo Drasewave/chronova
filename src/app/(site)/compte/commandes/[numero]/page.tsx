@@ -52,7 +52,7 @@ export default async function Commande(props: PageProps<"/compte/commandes/[nume
       <nav aria-label="Fil d'Ariane">
         <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
           <li>
-            <Link href="/compte/commandes" className="link-underline hover:text-gold">
+            <Link href="/compte/commandes" className="link-underline hover:text-accent-ink">
               Mes commandes
             </Link>
           </li>

@@ -79,13 +79,13 @@ export default async function Catalogue(props: PageProps<"/atelier/catalogue">) 
           </p>
         </div>
         <div className="flex flex-wrap gap-5">
-          <Link href="/atelier/catalogue/regles" className="type-ui lien-atelier link-underline text-gold">
+          <Link href="/atelier/catalogue/regles" className="type-ui lien-atelier link-underline text-accent-ink">
             Règles de compatibilité
           </Link>
           {premier && (
             <Link
               href={`/atelier/catalogue/modeles/${premier.slug}`}
-              className="type-ui lien-atelier link-underline text-gold"
+              className="type-ui lien-atelier link-underline text-accent-ink"
             >
               Modèles de base
             </Link>

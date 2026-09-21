@@ -56,11 +56,11 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
           <a
             href="/api/atelier/commandes"
             download
-            className="type-ui lien-atelier link-underline text-gold"
+            className="type-ui lien-atelier link-underline text-accent-ink"
           >
             Exporter en CSV
           </a>
-          <Link href="/atelier/commandes" className="type-ui lien-atelier link-underline text-gold">
+          <Link href="/atelier/commandes" className="type-ui lien-atelier link-underline text-accent-ink">
             Revenir au kanban
           </Link>
         </div>
@@ -103,7 +103,7 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
                   <Td>
                     <Link
                       href={`/atelier/commandes/${commande.number}`}
-                      className="type-mono lien-atelier link-underline text-gold"
+                      className="type-mono lien-atelier link-underline text-accent-ink"
                     >
                       {commande.number}
                     </Link>

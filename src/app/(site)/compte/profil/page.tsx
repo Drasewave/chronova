@@ -45,7 +45,7 @@ export default async function Profil() {
         <h2 className="type-title-1">Vos données</h2>
         <p className="type-body measure mt-4 text-fg-soft">
           Le détail de ce qui est collecté, pourquoi et pour combien de temps se trouve dans la{" "}
-          <Link href="/confidentialite" className="link-underline text-gold">
+          <Link href="/confidentialite" className="link-underline text-accent-ink">
             politique de confidentialité
           </Link>
           .
@@ -61,7 +61,7 @@ export default async function Profil() {
             <a
               href="/api/compte/export"
               download
-              className="type-ui link-underline mt-4 inline-block text-gold"
+              className="type-ui link-underline mt-4 inline-block text-accent-ink"
             >
               Télécharger mes données
             </a>

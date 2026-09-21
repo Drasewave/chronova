@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * par `for`, rien à oublier. L'aide se lit dessous, en légende.
  */
 export const SAISIE =
-  "type-ui w-full rounded-field border border-field bg-panel px-3 font-normal text-fg transition-colors duration-200 placeholder:text-fg-soft hover:border-fg focus-visible:border-gold focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:border-rule disabled:bg-bg-alt disabled:text-fg-soft aria-[invalid=true]:border-alert";
+  "type-ui w-full rounded-field border border-field bg-panel px-3 font-normal text-fg transition-colors duration-200 placeholder:text-fg-soft hover:border-fg focus-visible:border-accent-ink focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:border-rule disabled:bg-bg-alt disabled:text-fg-soft aria-[invalid=true]:border-alert";
 
 /** Case à cocher de 24 px dans une ligne de 44 px. */
 export const CASE = "size-6 shrink-0 accent-[var(--accent)]";

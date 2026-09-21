@@ -82,7 +82,7 @@ export function PanierComplet() {
                 </label>
                 <Link
                   href={`/composer/${ligne.modelSlug}?c=${encodeURIComponent(ligne.shareParam)}`}
-                  className="type-caption link-underline text-fg-soft hover:text-gold"
+                  className="type-caption link-underline text-fg-soft hover:text-accent-ink"
                 >
                   Modifier la configuration
                 </Link>

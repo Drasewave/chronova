@@ -135,7 +135,7 @@ export default async function Stock(props: PageProps<"/atelier/stock">) {
                 <Td>
                   <Link
                     href={`/atelier/stock/${piece.reference}`}
-                    className="type-mono lien-atelier link-underline text-gold"
+                    className="type-mono lien-atelier link-underline text-accent-ink"
                   >
                     {piece.reference}
                   </Link>

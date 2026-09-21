@@ -113,7 +113,7 @@ export function CollectionBrowser({
           <button
             type="button"
             onClick={() => setFiltres({ taille: TOUS, mouvement: TOUS, prix: TOUS })}
-            className="link-underline text-gold"
+            className="link-underline text-accent-ink"
           >
             Tout afficher
           </button>
@@ -181,9 +181,9 @@ function Puce({
       onClick={onClick}
       aria-pressed={actif}
       className={cn(
-        "type-ui min-h-11 rounded-pill border px-5 transition-colors duration-200 ease-atelier",
+        "type-ui min-h-11 rounded-pill border px-5 transition-colors duration-(--d-base) ease-atelier",
         actif
-          ? "border-gold bg-accent text-on-accent"
+          ? "border-accent-ink bg-accent text-on-accent"
           : "border-rule bg-panel text-fg hover:border-fg",
       )}
     >

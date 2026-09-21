@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+/** `useLayoutEffect` avertit au rendu serveur ; là-bas, il n'y a rien à mesurer. */
+const useEffetAvantImage = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 /**
- * Apparition au défilement : opacité + 16 px de montée, une seule fois par
- * élément, 60 ms d'écart entre deux éléments d'une même série.
+ * Apparition au défilement : opacité + 20 px de montée, `--d-reveal`, une seule
+ * fois par élément. `delay` décale deux voisins d'une même série.
  *
  * Volontairement sans bibliothèque d'animation : un IntersectionObserver et une
  * transition CSS coûtent moins qu'un composant animé par élément.
  *
- * L'état masqué est rendu DÈS LE SERVEUR (`data-reveal="pending"`) : sinon le
- * contenu s'afficherait, puis disparaîtrait à l'hydratation, puis reviendrait.
- * Le filet de sécurité sans JavaScript est une règle `<noscript>` posée dans le
- * gabarit du site, qui remet tout en place.
+ * Le contenu est rendu VISIBLE par le serveur. À l'hydratation, avant la
+ * première image, seuls les éléments situés SOUS la ligne de flottaison sont
+ * masqués (`data-reveal="pending"`) — hors champ, donc sans que rien ne
+ * clignote. Ce qui est déjà à l'écran au chargement ne bouge jamais : pas
+ * d'éclair de contenu invisible, et rien à rattraper sans JavaScript.
  */
 export function Reveal({
   children,
@@ -28,44 +32,42 @@ export function Reveal({
 }) {
   const ref = useRef<HTMLElement>(null);
 
-  useEffect(() => {
+  useEffetAvantImage(() => {
     const node = ref.current;
     if (!node) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (typeof IntersectionObserver !== "function") return;
+    // Déjà à l'écran, ou déjà dépassé : on n'y touche pas.
+    if (node.getBoundingClientRect().top < window.innerHeight) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      node.dataset.reveal = "done";
-      return;
-    }
-
-    let minuteur = 0;
+    node.dataset.reveal = "pending";
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
-          minuteur = window.setTimeout(() => {
-            node.dataset.reveal = "done";
-          }, delay);
-          observer.unobserve(entry.target);
+          node.dataset.reveal = "done";
+          observer.disconnect();
         }
       },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.08 },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.05 },
     );
 
     observer.observe(node);
     return () => {
-      window.clearTimeout(minuteur);
       observer.disconnect();
+      // Un remontage ne doit jamais laisser le contenu masqué.
+      delete node.dataset.reveal;
     };
-  }, [delay]);
+  }, []);
 
   return (
     <Tag
       ref={ref as never}
-      data-reveal="pending"
+      style={delay ? ({ "--reveal-retard": `${delay}ms` } as CSSProperties) : undefined}
       className={cn(
-        "transition-[opacity,transform] duration-[450ms] ease-atelier",
-        "data-[reveal=pending]:translate-y-4 data-[reveal=pending]:opacity-0",
-        "data-[reveal=done]:translate-y-0 data-[reveal=done]:opacity-100",
+        "data-[reveal=pending]:translate-y-5 data-[reveal=pending]:opacity-0",
+        // La transition n'existe qu'à l'arrivée : le masquage initial est sec.
+        "data-[reveal=done]:transition-[opacity,transform] data-[reveal=done]:delay-[var(--reveal-retard,0ms)] data-[reveal=done]:duration-(--d-reveal) data-[reveal=done]:ease-atelier",
         className,
       )}
     >

@@ -27,6 +27,18 @@ export const SIZE_SCALE: Record<number, number> = {
   41: 1.028,
 };
 
+/**
+ * Part du diamètre laissée au cadran. Une lunette à insert est large : sur une
+ * plongeuse japonaise le verre ne fait guère que les trois quarts de la lunette,
+ * et c'est ce cadran resserré dans un large anneau gravé qui fait la silhouette.
+ * Cadran, index, aiguilles et verre sont réduits d'un bloc autour du centre.
+ */
+export function dialScale(bezelStyle: string): number {
+  if (bezelStyle === "plongee" || bezelStyle === "gmt") return 0.9;
+  if (bezelStyle === "tachymetre") return 0.93;
+  return 1;
+}
+
 /** Point sur un cercle centré, angle en degrés, 0° = midi, sens horaire. */
 export function polar(radius: number, angleDeg: number): { x: number; y: number } {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
