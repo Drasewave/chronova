@@ -49,8 +49,13 @@ const CRANS = [
    côtés, rien ne saute) et chaque pose s'étire un peu en largeur (≤ 4 %) pour
    suivre la silhouette. Au repos une seule pose est montée. */
 const PAS = 15;
-/** Le fondu croisé commence à cet écart de la pose et est à mi-chemin à `PAS / 2` : dix degrés de trajet en tout. */
-const FONDU_DEBUT = 2.5;
+/**
+ * Le fondu croisé commence à cet écart de la pose et est à mi-chemin à `PAS / 2` :
+ * quatre degrés de trajet en tout. Plus large, deux poses à 15° d'écart se
+ * dédoublent visiblement (signature, guichet) sur un glisser lent ; plus court,
+ * le passage claque. Le `scaleX` porte le reste de la continuité.
+ */
+const FONDU_DEBUT = 5.5;
 const ETIREMENT_MAX = 0.04;
 
 const PERSPECTIVE = 1200;
