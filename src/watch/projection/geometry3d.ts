@@ -36,7 +36,15 @@ export const Z = {
   couronne: 4,
   cadran: 76,
   index: 84,
+  /** Aiguille des heures ; les autres sont empilées sur le canon (`HAND_LIFT`). */
   aiguilles: 94,
+  /** Dessus du cadre appliqué du guichet ; le disque de quantième est en retrait sous le cadran. */
+  guichet: 82,
+  guichetDisque: 71,
+  /** Hauteur de la loupe collée sur le verre. */
+  loupe: 34,
+  /** Bas du rebord vissé du fond : au-delà, le fond se bombe jusqu'à `fondBas`. */
+  fondRebord: -66,
   /** Dessous du verre : le dessus de la lunette. */
   verrePlat: 12,
   verreBombe: 47,
@@ -53,6 +61,27 @@ export const Z = {
 /** Diamètre hors tout du fond vissé (voir `parts/back.tsx`). */
 export const R_FOND = 326;
 export const R_INSERT_OUT = R_BEZEL_OUT - 14;
+
+/**
+ * Étagement des aiguilles sur le canon, au-dessus de l'aiguille des heures :
+ * la 24 h d'un GMT passe dessous, la minute et la trotteuse dessus. Vu de
+ * biais, chacune glisse de `−lift·sin θ` par rapport à l'heure.
+ */
+export const HAND_LIFT = { gmt: -3, heure: 0, minute: 3, seconde: 6 } as const;
+
+/**
+ * Les cornes plongent au-delà du coude : leur dessus suit `Z.cornePente`, leur
+ * dessous une pente plus douce (`Z.cornePenteDessous`), si bien que la corne,
+ * aussi épaisse que la carrure à sa racine, s'amincit vers la pointe — sans
+ * marche à la jonction avec la carrure.
+ */
+export const LUG_PENTE_DESSOUS = 0.31;
+export function lugTopZ(dist: number, zRoot = Z.carrure): number {
+  return zRoot - Z.cornePente * Math.max(0, dist - Z.corneCoude);
+}
+export function lugBottomZ(dist: number, zRoot = Z.fond): number {
+  return zRoot - LUG_PENTE_DESSOUS * Math.max(0, dist - Z.corneCoude);
+}
 
 export interface Pose {
   /** Lacet ramené dans [0, 360). */
@@ -104,8 +133,7 @@ export function flat(p: Pose, z: number): string {
  * de `Z.cornePente` par unité de distance. L'altitude dépend de `y`, la
  * projection devient un cisaillement — encore une matrice, pas un recalcul.
  */
-export function lugTilt(p: Pose, sy: 1 | -1, zRoot: number): string {
-  const k = Z.cornePente;
+export function lugTilt(p: Pose, sy: 1 | -1, zRoot: number, k: number = Z.cornePente): string {
   // x' = cf·(x − C) − (zRoot − k·(sy·(y − C) − coude))·s + C
   const a = p.cf;
   const cc = sy * k * p.s;
@@ -247,6 +275,22 @@ export function pts(points: Array<[number, number]>): string {
 export function ribbon(top: Array<[number, number]>, dx: number): string {
   const bottom = top.map(([x, y]): [number, number] => [x + dx, y]).reverse();
   return `${pts(top)} ${bottom.map(([x, y]) => `L ${n(x)} ${n(y)}`).join(" ")} Z`;
+}
+
+/** Quadrilatère fermé. */
+export function quad(a: [number, number], b: [number, number], c: [number, number], d: [number, number]): string {
+  return `${pts([a, b, c, d])} Z`;
+}
+
+/**
+ * Face verticale d'une pièce posée sur le cadran (cadre de guichet, loupe) :
+ * l'arête `x = xEdge` entre `y0` et `y1`, balayée de l'altitude `zBot` à
+ * `zTop`. Elle ne se voit que si sa normale (`nx` = ±1 dans le repère de la
+ * montre) tourne vers nous ; sinon `null`.
+ */
+export function wallPath(p: Pose, xEdge: number, y0: number, y1: number, zBot: number, zTop: number, nx: 1 | -1): string | null {
+  if (nx * p.s <= 0.01) return null;
+  return quad([px(p, xEdge, zBot), y0], [px(p, xEdge, zTop), y0], [px(p, xEdge, zTop), y1], [px(p, xEdge, zBot), y1]);
 }
 
 /** Enveloppe convexe (chaîne monotone) : le balayage d'une pièce convexe entre deux altitudes. */

@@ -1,20 +1,28 @@
 import { C, R_DIAL, n } from "../geometry";
-import { METALS } from "../palette";
+import { INK, METALS, PAPER } from "../palette";
 import { Crystal } from "../parts/crystal";
 import type { WatchRender } from "../types";
-import { Z, bandPath, flat, pts, rimSegment, type Pose } from "./geometry3d";
+import { SAPHIR } from "./defs3d";
+import { Z, bandPath, flat, pts, rimSegment, wallPath, type Pose } from "./geometry3d";
 import { bezelTop } from "./case3d";
+
+/** Emprise de la loupe de quantième (voir `Cyclops` dans `parts/crystal.tsx`). */
+export const LOUPE = { cx: C + 198, cy: C, w: 90, h: 74 } as const;
 
 /**
  * Verre en volume. Une lame plate ne montre que son chant ; un bombé, son
  * galbe ; un box, ses flancs droits puis un dessus à peine bombé. Le reflet
  * et le chant lumineux du dessin de face (`parts/crystal.tsx`) restent posés
- * sur le verre, projetés à son altitude.
+ * sur le verre, projetés à son altitude : la boîte à lumière ne bouge pas,
+ * c'est l'objet qui tourne sous elle. La loupe, collée sur le verre, a une
+ * hauteur : son flanc de saphir se voit de biais, et elle porte son ombre.
  *
  * Le dôme est l'enveloppe d'un empilement de tranches horizontales du même
  * sphérique : chaque tranche est une ellipse décalée de son altitude ; leur
  * contour extérieur, échantillonné en hauteur, donne la silhouette. Un dôme
- * plat ne déborde de sa base qu'aux angles rasants, ce qui est exact.
+ * plat ne déborde de sa base qu'aux angles rasants, ce qui est exact. Sous
+ * son bord, le saphir épais réfracte : le pourtour du cadran y apparaît
+ * légèrement grossi (`Refraction`).
  */
 export function Crystal3D({
   uid,
@@ -44,16 +52,61 @@ export function Crystal3D({
 
   return (
     <g data-layer="verre-3d">
-      {full && (
-        <g transform={`${flat(p, zSheen)}${kScale}`}>
-          <Crystal uid={uid} kind={kind} antiGlare={render.antiGlare} sheen={sheen} cyclops={cyclops} dialColor={render.dialColor} />
-        </g>
-      )}
+      {kind !== "plat" && p.s !== 0 && <Refraction uid={uid} p={p} a={a} zBase={zBase} />}
+      <g transform={`${flat(p, zSheen)}${kScale}`}>
+        <Crystal uid={uid} kind={kind} antiGlare={render.antiGlare} sheen={sheen} cyclops={cyclops} dialColor={render.dialColor} />
+      </g>
+      {cyclops && p.s !== 0 && <LoupeFlanc uid={uid} p={p} k={k} zBase={zSheen} edge={ramp.edge} />}
       {p.s !== 0 && (kind === "plat" || kind === "box") && (
         <Chant uid={uid} p={p} a={a} zBase={zBase} height={kind === "plat" ? Z.verrePlat : Z.verreBoxMur} edge={ramp.edge} antiGlare={render.antiGlare} />
       )}
-      {kind === "bombe" && <Dome uid={uid} p={p} a={a} zBase={zBase} h={Z.verreBombe} />}
-      {kind === "box" && <Dome uid={uid} p={p} a={a - 2} zBase={zBase + Z.verreBoxMur} h={Z.verreBoxDome} />}
+      {kind === "bombe" && <Dome uid={uid} p={p} a={a} zBase={zBase} h={Z.verreBombe} antiGlare={render.antiGlare} />}
+      {kind === "box" && <Dome uid={uid} p={p} a={a - 2} zBase={zBase + Z.verreBoxMur} h={Z.verreBoxDome} antiGlare={render.antiGlare} />}
+    </g>
+  );
+}
+
+/**
+ * Réfraction du bord : sous le chant d'un verre épais, ce qu'on voit du cadran
+ * est repris, à peine grossi autour du centre — quelques unités de décalage
+ * au bord, rien au centre. Un `<use>` du contenu sous verre, limité à une
+ * couronne le long du bord du côté qui fuit, là où le saphir se voit en biais.
+ */
+function Refraction({ uid, p, a, zBase }: { uid: string; p: Pose; a: number; zBase: number }) {
+  const largeur = 16;
+  const clip = `${uid}-pj-clip-refraction`;
+  const grossi = 1 + 0.018 * Math.abs(p.s);
+  // Le contenu sous verre porte déjà ses propres projections : on le grossit
+  // autour du centre du cadran tel qu'il apparaît à l'écran.
+  const cx = n(C - Z.cadran * p.s);
+  return (
+    <g data-layer="refraction" opacity={n(0.45 + 0.3 * Math.abs(p.s))}>
+      <clipPath id={clip}>
+        <path d={bandPath(p, a, zBase, a - largeur, zBase, p.side > 0 ? -1 : 1)} />
+      </clipPath>
+      <g clipPath={`url(#${clip})`}>
+        <use href={`#${uid}-pj-sous-verre`} transform={`translate(${cx} ${C}) scale(${n(grossi)}) translate(${-cx} ${-C})`} />
+      </g>
+    </g>
+  );
+}
+
+/**
+ * Flanc de la loupe : une lentille de saphir d'un bon millimètre et demi,
+ * collée sur le verre. Vue de biais, sa face latérale qui regarde vers nous se
+ * montre en bande claire, et elle porte une ombre nette sur le cadran.
+ */
+function LoupeFlanc({ uid, p, k, zBase, edge }: { uid: string; p: Pose; k: number; zBase: number; edge: string }) {
+  const x0 = C + (LOUPE.cx - LOUPE.w / 2 - C) * k;
+  const x1 = C + (LOUPE.cx + LOUPE.w / 2 - C) * k;
+  const y0 = C + (LOUPE.cy - LOUPE.h / 2 - C) * k + 6;
+  const y1 = C + (LOUPE.cy + LOUPE.h / 2 - C) * k - 6;
+  const d = wallPath(p, x1, y0, y1, zBase, zBase + Z.loupe, 1) ?? wallPath(p, x0, y0, y1, zBase, zBase + Z.loupe, -1);
+  if (!d) return null;
+  return (
+    <g data-layer="loupe-flanc">
+      <path d={d} fill={`url(#${uid}-pj-verre)`} stroke={edge} strokeOpacity="0.45" strokeWidth="0.9" strokeLinejoin="round" />
+      <path d={d} fill={SAPHIR} fillOpacity="0.35" />
     </g>
   );
 }
@@ -76,7 +129,7 @@ function Chant({ uid, p, a, zBase, height, edge, antiGlare }: { uid: string; p: 
  * Dôme : seule compte la part qui déborde de sa base — la calotte vue par la
  * tranche. Tant qu'elle reste dans l'ellipse de base (jusqu'à ~75°), rien.
  */
-function Dome({ uid, p, a, zBase, h }: { uid: string; p: Pose; a: number; zBase: number; h: number }) {
+function Dome({ uid, p, a, zBase, h, antiGlare }: { uid: string; p: Pose; a: number; zBase: number; h: number; antiGlare: boolean }) {
   if (p.s === 0) return null;
   const rho = (a * a + h * h) / (2 * h);
   const zc = zBase + h - rho;
@@ -115,7 +168,11 @@ function Dome({ uid, p, a, zBase, h }: { uid: string; p: Pose; a: number; zBase:
   return (
     <g data-layer="dome">
       <path d={d} fill={`url(#${uid}-pj-dome)`} />
-      <path d={pts(outer)} fill="none" stroke="#FFFFFF" strokeOpacity="0.5" strokeWidth="1.2" />
+      <path d={d} fill={INK} fillOpacity="0.06" />
+      {/* Voile antireflet : le bleu-violet du traitement, au ras du bord. */}
+      {antiGlare && <path d={pts(outer)} fill="none" stroke="#6A64FF" strokeOpacity="0.28" strokeWidth="2" />}
+      <path d={pts(outer)} fill="none" stroke={PAPER} strokeOpacity="0.5" strokeWidth="1.2" />
+      {/* Fenêtre du studio, en haut à gauche du galbe : elle ne suit pas l'objet. */}
       <path d={pts(outer.slice(3, -3))} fill="none" stroke="#FFFFFF" strokeOpacity="0.85" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="0 70 120 2000" />
     </g>
   );

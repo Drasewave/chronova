@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { LUME_EDGE, LUME_FILL, METALS, shade } from "../palette";
 import { C, POSE_GMT_OFFSET_DEG, handAngles, n } from "../geometry";
 import { teintesDauphine, teintesFacettes } from "../facettes";
@@ -19,7 +20,19 @@ interface HandsProps {
    * fois la page montée, par `horloge-vivante.tsx`.
    */
   vivante?: boolean;
+  /**
+   * Vue projetée : chaque aiguille vit à sa hauteur sur le canon, et glisse
+   * donc d'un peu plus ou d'un peu moins que les autres quand la montre tourne.
+   * Le `transform` fourni est posé sur un groupe PARENT de l'aiguille — jamais
+   * sur le groupe `data-aiguille`, dont l'horloge vivante réécrit le `rotate`.
+   * Absent : aucun groupe supplémentaire, le rendu à plat est inchangé.
+   */
+  decalages?: Partial<Record<HandRole, string>>;
+  /** Vue projetée : filtres d'ombre portée de remplacement (aiguilles basses, aiguilles hautes). */
+  ombres?: { basse: string; haute: string };
 }
+
+export type HandRole = "heure" | "minute" | "seconde" | "gmt";
 
 const HOUR_LEN = 182;
 const MIN_LEN = 248;
@@ -49,7 +62,7 @@ const PROPORTIONS: Record<HandShape, readonly [number, number, number]> = {
  * l'angle) et écrit leur rotation sans passer par React : ce composant reste
  * pur, et comme ses props ne changent pas, React ne réécrit jamais par-dessus.
  */
-export function Hands({ uid, shape, metal, lume, movement, time, detail = "full", accent, vivante = true }: HandsProps) {
+export function Hands({ uid, shape, metal, lume, movement, time, detail = "full", accent, vivante = true, decalages, ombres }: HandsProps) {
   const lus = handAngles(time);
   const angles = {
     ...lus,
@@ -62,11 +75,35 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
     gmt: vivante ? (lus.gmt + POSE_GMT_OFFSET_DEG) % 360 : lus.gmt,
   };
   const ramp = METALS[metal];
-  const low = `url(#${uid}-hand-shadow)`;
-  const high = detail === "full" ? `url(#${uid}-hand-shadow-haut)` : undefined;
+  const low = `url(#${ombres?.basse ?? `${uid}-hand-shadow`})`;
+  const high = detail === "full" ? `url(#${ombres?.haute ?? `${uid}-hand-shadow-haut`})` : undefined;
   // Chaque jeu a ses proportions : la flèche de plongée est courte et trapue,
   // la dauphine large à la base, la cathédrale longue et fine.
   const [hourLen, hourW, minW] = PROPORTIONS[shape];
+  // Étage d'une aiguille dans la vue projetée : un groupe parent, transparent
+  // pour l'horloge vivante, qui ne connaît que le groupe `data-aiguille`.
+  const etage = (role: HandRole, node: ReactNode) => {
+    const t = decalages?.[role];
+    return t ? (
+      <g data-etage={role} transform={t}>
+        {node}
+      </g>
+    ) : (
+      node
+    );
+  };
+  const minute = etage(
+    "minute",
+    <g data-aiguille="minute" transform={`rotate(${angles.minute})`}>
+      <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
+    </g>,
+  );
+  const seconde = etage(
+    "seconde",
+    <g data-aiguille="seconde" transform={`rotate(${angles.second})`}>
+      <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
+    </g>,
+  );
 
   return (
     // `id` stable : la loupe de quantième (`crystal.tsx`) reprend ce groupe par
@@ -81,34 +118,31 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
       </defs>
 
       <g filter={low}>
-        {movement === "NH34" && (
-          <g data-aiguille="gmt" transform={`rotate(${angles.gmt})`}>
-            <GmtHand fill={accent ?? `url(#${uid}-hand-gmt)`} metal={metal} lume={lume} laquee={Boolean(accent)} />
-          </g>
+        {movement === "NH34" &&
+          etage(
+            "gmt",
+            <g data-aiguille="gmt" transform={`rotate(${angles.gmt})`}>
+              <GmtHand fill={accent ?? `url(#${uid}-hand-gmt)`} metal={metal} lume={lume} laquee={Boolean(accent)} />
+            </g>,
+          )}
+        {etage(
+          "heure",
+          <g data-aiguille="heure" transform={`rotate(${angles.hour})`}>
+            <Hand fill={`url(#${uid}-hand-heure)`} shape={shape} role="heure" length={hourLen} width={hourW} metal={metal} lume={lume} angle={angles.hour} />
+          </g>,
         )}
-        <g data-aiguille="heure" transform={`rotate(${angles.hour})`}>
-          <Hand fill={`url(#${uid}-hand-heure)`} shape={shape} role="heure" length={hourLen} width={hourW} metal={metal} lume={lume} angle={angles.hour} />
-        </g>
         {!high && (
           <>
-            <g data-aiguille="minute" transform={`rotate(${angles.minute})`}>
-              <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
-            </g>
-            <g data-aiguille="seconde" transform={`rotate(${angles.second})`}>
-              <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
-            </g>
+            {minute}
+            {seconde}
           </>
         )}
       </g>
 
       {high && (
         <g filter={high}>
-          <g data-aiguille="minute" transform={`rotate(${angles.minute})`}>
-            <Hand fill={`url(#${uid}-hand-minute)`} shape={shape} role="minute" length={MIN_LEN} width={minW} metal={metal} lume={lume} angle={angles.minute} />
-          </g>
-          <g data-aiguille="seconde" transform={`rotate(${angles.second})`}>
-            <SecondHand fill={`url(#${uid}-hand-seconde)`} shape={shape} metal={metal} lume={lume} chrono={movement === "VK64"} accent={movement === "VK64" ? accent : undefined} />
-          </g>
+          {minute}
+          {seconde}
         </g>
       )}
 

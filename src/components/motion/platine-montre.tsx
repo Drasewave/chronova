@@ -13,8 +13,10 @@ import {
   type Ref,
 } from "react";
 import { IconRotation, IconTournerDroite, IconTournerGauche } from "@/components/ui/icons";
-import type { WatchView } from "@/watch/types";
+import type { WatchRender, WatchView } from "@/watch/types";
 import { cn } from "@/lib/utils";
+import { ID_POSE, MARGE_POSE, empreinte, prendreFabrique, type BailPoses } from "./poses-montre";
+import { COTE_MAX, Rasteriseur, anneauDe, rasterisationPossible, type Dessin } from "./rasters-montre";
 
 /** Côté du profil montré : celui de la couronne (3 h), ou le flanc opposé (9 h). */
 export type CotePlatine = "3h" | "9h";
@@ -40,14 +42,25 @@ const CRANS = [
 ] as const satisfies readonly { angle: number; vue: WatchView; cote: CotePlatine }[];
 
 /* ─────────────────────────────── Poses ───────────────────────────────────
-   Un dessin fait 1 500 à 2 500 nœuds : en redessiner un à chaque image du
-   geste serait trop lourd. La platine ne monte donc que des POSES à pas fixe
-   de 15° (24 par tour) : la pose la plus proche de l'angle courant, et sa
-   voisine dans le sens du mouvement, prémontée. Entre deux poses, le passage
-   se fait en CSS : la pose voisine se fond par-dessus (au plus 0,5 à
-   mi-chemin, où les rôles s'échangent — la composition est la même des deux
-   côtés, rien ne saute) et chaque pose s'étire un peu en largeur (≤ 4 %) pour
-   suivre la silhouette. Au repos une seule pose est montée. */
+   Deux façons de montrer la montre entre deux vues cardinales.
+
+   1. Poses RASTÉRISÉES (chemin normal). La fabrique (`poses-montre.tsx`)
+      produit hors écran la chaîne SVG de 72 poses (tous les 5°) ; le
+      rastériseur (`rasters-montre.ts`) en fait des bitmaps à la taille du
+      cadre, décodées à la demande autour de l'angle courant. Pendant le geste,
+      chaque image de la boucle `requestAnimationFrame` ne fait que dessiner la
+      bitmap de la pose la plus proche sur un `<canvas>` (jamais de trou : à
+      défaut de la pose exacte, la plus proche disponible) et poser par-dessus
+      le calque vivant de cette pose — aiguilles, verre, pièces de flanc devant
+      — un petit SVG que l'horloge vivante fait battre. Rien ne monte de SVG
+      complet pendant le geste. Au repos sur une vue cardinale, le dessin
+      vivant (`children`) reprend sa place en un fondu court : ses aiguilles
+      sont à la même heure, rien ne saute.
+
+   2. Poses SVG à pas de 15° (repli : navigateur sans `createImageBitmap` ou
+      `decode()`, mouvement réduit, ou bitmaps pas encore prêtes). La platine
+      monte la pose la plus proche et sa voisine dans le sens du mouvement ;
+      entre deux, fondu croisé et léger étirement en largeur (≤ 4 %). */
 const PAS = 15;
 /**
  * Le fondu croisé commence à cet écart de la pose et est à mi-chemin à `PAS / 2` :
@@ -57,6 +70,16 @@ const PAS = 15;
  */
 const FONDU_DEBUT = 5.5;
 const ETIREMENT_MAX = 0.04;
+/** Étirement entre deux poses rastérisées à 5° : à peine perceptible, mais continu. */
+const ETIREMENT_RASTER = 0.02;
+/** Densité de pixels du canevas, plafonnée : au-delà, plus de mémoire pour rien. */
+const DENSITE_MAX = 2;
+/** Le rastériseur est refait si le cadre change de plus que cette part. */
+const TOLERANCE_COTE = 0.12;
+/** Durée du fondu bitmap → dessin vivant (ms) : le repli si `--d-fondu-platine` est illisible. */
+const REPLI_FONDU = 180;
+/** Les `id` des chaînes de poses (`pose-…`), à préfixer par ceux de la platine. */
+const ID_DE_POSE = new RegExp(`(^|[#"'])${ID_POSE}-`, "g");
 
 const PERSPECTIVE = 1200;
 const INCLINAISON_MAX = 18;
@@ -101,6 +124,10 @@ function poseProche(angle: number): number {
 
 function angleDe(vue: WatchView, cote: CotePlatine): number {
   return vue === "face" ? 0 : vue === "dos" ? 180 : cote === "9h" ? 270 : 90;
+}
+
+function libelleDe(cran: (typeof CRANS)[number]): string {
+  return `${LIBELLES[cran.vue]}${cran.vue === "profil" ? (cran.cote === "3h" ? ", côté couronne" : ", côté opposé à la couronne") : ""}`;
 }
 
 /**
@@ -173,6 +200,13 @@ interface Couche {
   cache: string;
 }
 
+/** Le carré du dessin (repère 1000 × 1000) dans la scène, en px CSS. */
+interface Cadre {
+  x: number;
+  y: number;
+  cote: number;
+}
+
 /**
  * Platine tournante : la montre se manipule comme un objet.
  *
@@ -182,13 +216,14 @@ interface Couche {
  * sur sa lancée et se cale sur la vue la plus proche, d'UN seul mouvement : la
  * courbe `--ease` part à la vitesse du geste et se pose sans dépassement.
  *
- * Le dessin est la vue projetée du moteur, demandée à `children(vue, yaw)`
- * pour chaque pose montée (voir « Poses »). Pendant le geste rien ne passe par
- * React : l'état vit dans des refs, une boucle `requestAnimationFrame` n'écrit
- * que des `transform` et des `opacity` sur des conteneurs HTML — jamais dans
- * le SVG, dont les aiguilles continuent de battre. React n'intervient qu'aux
- * changements de pose (montage, démontage), et les rendus déjà faits restent
- * en cache tant que `children` ne change pas.
+ * Au repos, le dessin est la vue projetée du moteur, demandée à
+ * `children(vue, yaw)` pour la vue cardinale où la montre est calée : ses
+ * aiguilles battent, son reflet suit le pointeur. Pendant le geste, ce sont des
+ * poses rastérisées de `render` qui tournent (voir « Poses ») ; sans `render`,
+ * ou sans bitmap disponible, les poses SVG à 15° prennent le relais. Pendant
+ * le geste rien ne passe par React : l'état vit dans des refs, une boucle
+ * `requestAnimationFrame` dessine sur le canevas et n'écrit que des
+ * `transform` et des `opacity` sur des conteneurs HTML.
  *
  * Clavier : ← → d'un quart de tour, Maj + ← → par pas de 15°, Origine pour la
  * face. `touch-action: pan-y` laisse la page défiler au doigt. Sous
@@ -208,6 +243,7 @@ export function PlatineMontre({
   className,
   classeCouche,
   commandes,
+  render,
 }: {
   vue: WatchView;
   /** Flanc voulu quand `vue` vaut « profil ». Absent : celui où la montre s'est calée. */
@@ -226,25 +262,37 @@ export function PlatineMontre({
   /** Classes du conteneur de chaque dessin : de quoi transmettre la hauteur. */
   classeCouche?: string;
   commandes?: Ref<CommandesPlatine>;
+  /**
+   * La montre dessinée par `children` : de quoi rastériser ses poses hors écran
+   * (cache partagé entre les platines de la page qui montrent la même). Absent,
+   * la rotation se fait par poses SVG à 15°.
+   */
+  render?: WatchRender;
 }) {
   const angleInitial = angleDe(vue, cote ?? "3h");
   const [montees, setMontees] = useState<number[]>([angleInitial]);
   const [annonce, setAnnonce] = useState("");
   const [indice, setIndice] = useState(false);
   const idConsigne = useId();
+  const prefixe = `pl${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   const racine = useRef<HTMLDivElement>(null);
   const zone = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
+  const rasterNoeud = useRef<HTMLDivElement>(null);
+  const toile = useRef<HTMLCanvasElement>(null);
+  const vivant = useRef<HTMLDivElement>(null);
   const couches = useRef(new Map<number, Couche>());
   const refsCouches = useRef(new Map<number, (noeud: HTMLDivElement | null) => void>());
   const monteesRef = useRef<number[]>([angleInitial]);
   const rendus = useRef<{ source: unknown; noeuds: Map<number, ReactNode> }>({ source: null, noeuds: new Map() });
   const surVueRef = useRef(surVue);
   const surClicRef = useRef(surClic);
+  const libelleRef = useRef(libelle);
   useEffect(() => {
     surVueRef.current = surVue;
     surClicRef.current = surClic;
+    libelleRef.current = libelle;
   });
 
   const etat = useRef({
@@ -261,35 +309,175 @@ export function PlatineMontre({
     actif: false,
   });
 
+  /* ─────────────────────── Poses rastérisées : état ─────────────────────── */
+  const raster = useRef({
+    bail: null as BailPoses | null,
+    moteur: null as Rasteriseur | null,
+    /** La platine est dans la fenêtre : la génération peut tourner (jamais pendant un mouvement). */
+    enVue: false,
+    cadre: { x: 0, y: 0, cote: 0 } as Cadre,
+    densite: 1,
+    /** Le canevas et le calque vivant sont montrés (pendant un geste). */
+    visible: false,
+    /** Fondu bitmap → dessin vivant en cours : son minuteur. */
+    fondu: 0,
+    /** Dernière pose dessinée, et à quelle taille de cadre. */
+    dessine: -1,
+    dessineCote: 0,
+    transform: "",
+    vueAnnoncee: "",
+  });
+
+  /** Le dessin rastérisé peut servir : moteur prêt, et pas de mouvement réduit. */
+  const rasterUtilisable = useCallback(() => raster.current.moteur !== null && !etat.current.calme, []);
+
+  /**
+   * Tant que le dessin rastérisé est montré, le dessin vivant (caché) ne doit
+   * pas se redessiner : le reflet d'`InteractiveWatch` écoute `pointermove` sur
+   * `window`, et chaque événement lui coûterait un rendu React de 1 500 nœuds —
+   * pendant la lancée, la souris bouge encore. Arrêter la propagation au niveau
+   * du document ne prive que `window` : la platine et le reste de la page
+   * reçoivent l'événement comme avant.
+   */
+  const retenirPointeur = useCallback((event: PointerEvent) => {
+    event.stopPropagation();
+  }, []);
+
+  const cacherRaster = useCallback(() => {
+    const r = raster.current;
+    if (r.fondu) window.clearTimeout(r.fondu);
+    r.fondu = 0;
+    r.visible = false;
+    racine.current?.removeAttribute("data-fondu");
+    rasterNoeud.current?.removeAttribute("data-visible");
+    if (rasterNoeud.current) rasterNoeud.current.style.opacity = "";
+    if (vivant.current) vivant.current.replaceChildren();
+    toile.current?.setAttribute("aria-hidden", "true");
+    document.removeEventListener("pointermove", retenirPointeur);
+    r.dessine = -1;
+  }, [retenirPointeur]);
+
+  const montrerRaster = useCallback(() => {
+    const r = raster.current;
+    if (r.fondu) window.clearTimeout(r.fondu);
+    r.fondu = 0;
+    racine.current?.removeAttribute("data-fondu");
+    if (rasterNoeud.current) {
+      rasterNoeud.current.style.opacity = "";
+      rasterNoeud.current.setAttribute("data-visible", "");
+    }
+    toile.current?.removeAttribute("aria-hidden");
+    if (!r.visible) document.addEventListener("pointermove", retenirPointeur);
+    r.visible = true;
+  }, [retenirPointeur]);
+
+  /** Dessine la pose sur le canevas et pose son calque vivant, si elle change. */
+  const dessiner = useCallback(
+    (dessin: Dessin, angle: number) => {
+      const r = raster.current;
+      const k = borne(largeur(angle) / largeur(dessin.yaw), 1 - ETIREMENT_RASTER, 1 + ETIREMENT_RASTER);
+      const transform = Math.abs(k - 1) < 0.0005 ? "" : `scaleX(${arrondi(k, 4)})`;
+      if (transform !== r.transform && rasterNoeud.current) {
+        r.transform = transform;
+        rasterNoeud.current.style.transform = transform;
+      }
+      const cran = cranProche(dessin.yaw);
+      const vueTexte = `${libelleRef.current} — vue ${libelleDe(cran)}`;
+      if (vueTexte !== r.vueAnnoncee && toile.current) {
+        r.vueAnnoncee = vueTexte;
+        toile.current.setAttribute("aria-label", vueTexte);
+      }
+      if (dessin.yaw === r.dessine && r.dessineCote === r.cadre.cote) return;
+      const canevas = toile.current;
+      const contexte = canevas?.getContext("2d");
+      if (!canevas || !contexte) return;
+      const { x, y, cote: c } = r.cadre;
+      const marge = (c * MARGE_POSE) / 1000;
+      const d = r.densite;
+      contexte.clearRect(0, 0, canevas.width, canevas.height);
+      contexte.drawImage(dessin.bitmap, (x - marge) * d, (y - marge) * d, (c + 2 * marge) * d, (c + 2 * marge) * d);
+      const pose = r.bail?.fabrique.pose(dessin.yaw);
+      if (vivant.current) {
+        // Les `id` de la pose deviennent ceux de cette platine : deux platines
+        // (scène et zoom) peuvent montrer un calque vivant en même temps.
+        const contenu = pose ? pose.vivant.replace(ID_DE_POSE, `$1${prefixe}-`) : "";
+        vivant.current.innerHTML = contenu ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" focusable="false">${contenu}</svg>` : "";
+      }
+      rasterNoeud.current?.setAttribute("data-pose", String(dessin.yaw));
+      r.dessine = dessin.yaw;
+      r.dessineCote = r.cadre.cote;
+    },
+    [prefixe],
+  );
+
   /* ─────────────────────────── Écriture d'une image ─────────────────────── */
   const appliquer = useCallback(() => {
     const e = etat.current;
+    const r = raster.current;
     const a = mod(e.angle, 360);
-    const proche = poseProche(a);
-    const d = ecart(a, proche);
-    // Entre deux poses, la voisine est celle vers laquelle on va ; sur une
-    // pose, celle du sens du mouvement — aucune au repos ou en mouvement réduit.
-    const sens = Math.sign(d) || e.sens;
-    const voisine = sens && !e.calme ? mod(proche + sens * PAS, 360) : null;
-    // Ordre stable (croissant) : l'empilement se règle par `z-index`, React ne
-    // déplace donc jamais un dessin déjà monté dans le DOM.
-    const voulues = voisine === null ? [proche] : [proche, voisine].sort((a, b) => a - b);
-    if (voulues.join() !== monteesRef.current.join()) {
-      monteesRef.current = voulues;
-      setMontees(voulues);
-    }
+    const auRepos = !e.glisse && e.anim === null && mod(a, 90) === 0;
+    const cardinal = cranProche(a).angle;
 
     const cran = cranProche(e.angle);
     racine.current?.setAttribute("data-vue", cran.vue);
     racine.current?.setAttribute("data-cote", cran.cote);
     if (scene.current) scene.current.style.transform = Math.abs(e.inclinaison) < 0.01 ? "" : `rotateX(${arrondi(e.inclinaison)}deg)`;
 
+    // Le dessin rastérisé de la pose la plus proche, s'il y en a un — jamais au repos.
+    let dessin: Dessin | undefined;
+    if (rasterUtilisable() && !auRepos && r.moteur) {
+      r.moteur.demander(a, Math.sign(e.anim ? e.anim.vers - e.anim.de : e.sens));
+      dessin = r.moteur.proche(a);
+    }
+
+    let voulues: number[];
+    let fonduVersVivant = false;
+    if (dessin) {
+      if (!r.visible) montrerRaster();
+      dessiner(dessin, a);
+      // Le dessin vivant reste tel quel, caché, jusqu'au repos.
+      voulues = monteesRef.current;
+    } else if (r.visible) {
+      // Au repos : le dessin vivant de la vue cardinale reprend, en fondu, dès qu'il est monté.
+      voulues = [cardinal];
+      fonduVersVivant = auRepos && couches.current.has(cardinal);
+      if (fonduVersVivant && !r.fondu) {
+        racine.current?.setAttribute("data-fondu", "");
+        if (rasterNoeud.current) rasterNoeud.current.style.opacity = "0";
+        const duree = racine.current ? lireDuree(getComputedStyle(racine.current), "--d-fondu-platine", REPLI_FONDU) : REPLI_FONDU;
+        r.fondu = window.setTimeout(cacherRaster, duree);
+      }
+    } else {
+      // Poses SVG : la plus proche, et sa voisine dans le sens du mouvement.
+      const proche = poseProche(a);
+      const d = ecart(a, proche);
+      const sens = Math.sign(d) || e.sens;
+      const voisine = sens && !e.calme && !auRepos ? mod(proche + sens * PAS, 360) : null;
+      // Ordre stable (croissant) : l'empilement se règle par `z-index`, React ne
+      // déplace donc jamais un dessin déjà monté dans le DOM.
+      voulues = voisine === null ? [proche] : [proche, voisine].sort((a, b) => a - b);
+    }
+    if (voulues.join() !== monteesRef.current.join()) {
+      monteesRef.current = voulues;
+      setMontees(voulues);
+    }
+
+    const proche = poseProche(a);
+    const d = ecart(a, proche);
+    const sensSvg = Math.sign(d) || e.sens;
+    const voisine = sensSvg && !e.calme ? mod(proche + sensSvg * PAS, 360) : null;
     // Part de la voisine à cet écart : nulle jusqu'à FONDU_DEBUT, la moitié à mi-chemin.
     const fondu = 0.5 * borne((Math.abs(d) - FONDU_DEBUT) / (PAS / 2 - FONDU_DEBUT), 0, 1);
     for (const [pose, couche] of couches.current) {
-      const opacite = pose === proche ? 1 : pose === voisine ? fondu : 0;
-      const k = borne(largeur(a) / largeur(pose), 1 - ETIREMENT_MAX, 1 + ETIREMENT_MAX);
-      const transform = Math.abs(k - 1) < 0.0005 ? "" : `scaleX(${arrondi(k, 4)})`;
+      let opacite: number;
+      let transform = "";
+      if (r.visible && !r.fondu) opacite = 0;
+      else if (r.visible) opacite = pose === cardinal ? 1 : 0;
+      else {
+        opacite = pose === proche ? 1 : pose === voisine ? fondu : 0;
+        const k = borne(largeur(a) / largeur(pose), 1 - ETIREMENT_MAX, 1 + ETIREMENT_MAX);
+        transform = Math.abs(k - 1) < 0.0005 ? "" : `scaleX(${arrondi(k, 4)})`;
+      }
       const ordre = pose === voisine ? "2" : "1";
       const texteOpacite = opacite >= 0.999 ? "" : String(arrondi(opacite, 3));
       if (texteOpacite !== couche.opacite) {
@@ -312,7 +500,7 @@ export function PlatineMontre({
         couche.noeud.style.pointerEvents = cache ? "none" : "";
       }
     }
-  }, []);
+  }, [cacherRaster, dessiner, montrerRaster, rasterUtilisable]);
 
   /* ─────────────────────────────── Boucle ───────────────────────────────── */
   const reposer = useCallback(() => {
@@ -321,6 +509,10 @@ export function PlatineMontre({
     e.sens = 0;
     e.angle = mod(e.angle, 360);
     racine.current?.removeAttribute("data-mouvement");
+    // Le fil principal est libre : la génération et la rastérisation reprennent.
+    const r = raster.current;
+    if (r.moteur) r.moteur.pause = false;
+    if (r.enVue) r.bail?.activer();
     // Au repos, seule la pose courante reste montée.
     appliquer();
   }, [appliquer]);
@@ -358,6 +550,10 @@ export function PlatineMontre({
       e.actif = true;
       // `will-change` (posé par `[data-mouvement]`) ne vit que le temps du mouvement.
       racine.current?.setAttribute("data-mouvement", "");
+      // Rien de lourd sur le fil principal tant que ça bouge : ni rastérisation, ni génération.
+      const r = raster.current;
+      if (r.moteur) r.moteur.pause = true;
+      r.bail?.suspendre();
     }
     if (!e.trame) e.trame = requestAnimationFrame(battre);
   }, [battre]);
@@ -378,7 +574,7 @@ export function PlatineMontre({
       const cran = cranProche(cible);
       if (mod(cible, 90) === 0) {
         surVueRef.current(cran.vue, cran.cote);
-        setAnnonce(`Vue affichée : ${LIBELLES[cran.vue]}${cran.vue === "profil" ? (cran.cote === "3h" ? ", côté couronne" : ", côté opposé à la couronne") : ""}`);
+        setAnnonce(`Vue affichée : ${libelleDe(cran)}`);
       }
       const distance = cible - e.angle;
       // Cadre invisible (dialogue fermé) ou mouvement réduit : on y est, sans trajet.
@@ -467,19 +663,110 @@ export function PlatineMontre({
     montrer(vue, vue === "profil" ? cote : undefined);
   }, [vue, cote, cibleCourante, montrer]);
 
+  /* ─────────────────── Poses rastérisées : fabrique et moteur ───────────── */
+  /** Le rastériseur à la taille du cadre ; refait si le cadre change vraiment. */
+  const assurerMoteur = useCallback(() => {
+    const r = raster.current;
+    if (!r.bail || r.cadre.cote <= 0) return;
+    const cote = Math.min(COTE_MAX, Math.round(r.cadre.cote * (1 + (2 * MARGE_POSE) / 1000) * r.densite));
+    if (r.moteur && Math.abs(r.moteur.cote - cote) / r.moteur.cote <= TOLERANCE_COTE) return;
+    r.moteur?.detruire();
+    const moteur = new Rasteriseur(r.bail.fabrique, cote);
+    moteur.pause = etat.current.actif;
+    moteur.surImage = () => {
+      // Une bitmap arrive pendant un geste immobile (aucune image programmée) : on la montre.
+      if (!etat.current.trame && (etat.current.glisse || raster.current.visible)) appliquer();
+    };
+    r.moteur = moteur;
+    r.dessine = -1;
+  }, [appliquer]);
+
+  // La fabrique se retrouve par l'empreinte de `render`, pas par son identité :
+  // un parent qui reconstruit le même objet ne relance rien.
+  const cleRender = render ? empreinte(render) : null;
+  const renderRef = useRef(render);
+  renderRef.current = render;
+  useEffect(() => {
+    const noeud = racine.current;
+    const renderCourant = renderRef.current;
+    if (!cleRender || !renderCourant || !noeud || !rasterisationPossible()) return;
+    const r = raster.current;
+    const bail = prendreFabrique(renderCourant);
+    r.bail = bail;
+    assurerMoteur();
+    // Les voisines de la vue courante d'abord : c'est par là qu'un geste commence.
+    bail.fabrique.prioriser(anneauDe(etat.current.angle, 0));
+    const zoneNoeud = zone.current;
+    const activer = () => {
+      r.enVue = true;
+      if (!etat.current.actif) bail.activer();
+    };
+    const observateur =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver((entrees) => {
+            if (entrees.some((entree) => entree.isIntersecting)) activer();
+            else {
+              r.enVue = false;
+              bail.suspendre();
+            }
+          });
+    if (observateur) observateur.observe(noeud);
+    else activer();
+    zoneNoeud?.addEventListener("pointerenter", activer, { passive: true });
+    zoneNoeud?.addEventListener("focusin", activer, { passive: true });
+    zoneNoeud?.addEventListener("touchstart", activer, { passive: true });
+    return () => {
+      observateur?.disconnect();
+      zoneNoeud?.removeEventListener("pointerenter", activer);
+      zoneNoeud?.removeEventListener("focusin", activer);
+      zoneNoeud?.removeEventListener("touchstart", activer);
+      bail.rendre();
+      r.moteur?.detruire();
+      r.moteur = null;
+      r.bail = null;
+      r.enVue = false;
+      cacherRaster();
+    };
+  }, [cleRender, assurerMoteur, cacherRaster]);
+
   /* ─────────────────────── Mesure, mouvement réduit, indice ─────────────── */
   useLayoutEffect(() => {
     const noeud = zone.current;
     if (!noeud) return;
     const mesurer = () => {
+      const r = raster.current;
       etat.current.taille = Math.min(noeud.clientWidth, noeud.clientHeight);
+      // Le carré du dessin : celui du SVG vivant (`xMidYMid meet`), sinon celui de la scène.
+      const boiteScene = (scene.current ?? noeud).getBoundingClientRect();
+      const svg = scene.current?.querySelector(".platine-dessin svg");
+      const boite = svg ? svg.getBoundingClientRect() : boiteScene;
+      const c = Math.min(boite.width, boite.height);
+      r.cadre = { x: boite.left - boiteScene.left + (boite.width - c) / 2, y: boite.top - boiteScene.top + (boite.height - c) / 2, cote: c };
+      r.densite = Math.min(DENSITE_MAX, window.devicePixelRatio || 1);
+      const canevas = toile.current;
+      if (canevas) {
+        const w = Math.max(1, Math.round(boiteScene.width * r.densite));
+        const h = Math.max(1, Math.round(boiteScene.height * r.densite));
+        if (canevas.width !== w) canevas.width = w;
+        if (canevas.height !== h) canevas.height = h;
+      }
+      if (vivant.current) {
+        const s = vivant.current.style;
+        s.left = `${arrondi(r.cadre.x)}px`;
+        s.top = `${arrondi(r.cadre.y)}px`;
+        s.width = `${arrondi(c)}px`;
+        s.height = `${arrondi(c)}px`;
+      }
+      assurerMoteur();
+      r.dessine = -1;
       appliquer();
     };
     mesurer();
     const observateur = new ResizeObserver(mesurer);
     observateur.observe(noeud);
     return () => observateur.disconnect();
-  }, [appliquer]);
+  }, [appliquer, assurerMoteur]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -496,10 +783,13 @@ export function PlatineMontre({
     }
     if (!vu) setIndice(true);
     const e = etat.current;
+    const r = raster.current;
     return () => {
       media.removeEventListener("change", lire);
       if (e.trame) cancelAnimationFrame(e.trame);
       e.trame = 0;
+      if (r.fondu) window.clearTimeout(r.fondu);
+      r.fondu = 0;
     };
   }, []);
 
@@ -542,6 +832,17 @@ export function PlatineMontre({
       appui = { id: event.pointerId, x: event.clientX, y: event.clientY, angle: e.angle, tactile: event.pointerType === "touch", attrape };
       echantillons = [];
       avalerClic = attrape;
+      // Le doigt est posé : les bitmaps autour de la vue courante, avant qu'il ne bouge.
+      // Et le reflet vivant cesse de suivre le pointeur dès l'appui : les quelques
+      // pixels avant le seuil de geste ne valent pas un rendu du SVG complet.
+      const r = raster.current;
+      if (r.moteur && !e.calme) document.addEventListener("pointermove", retenirPointeur);
+      if (r.bail && !e.calme) {
+        r.enVue = true;
+        if (!e.actif) r.bail.activer();
+        r.bail.fabrique.prioriser(anneauDe(e.angle, 0));
+        r.moteur?.demander(e.angle, 0);
+      }
     };
 
     const surMouvement = (event: PointerEvent) => {
@@ -554,6 +855,7 @@ export function PlatineMontre({
         if (appui.tactile && Math.abs(dx) <= Math.abs(dy)) {
           const attrape = appui.attrape;
           appui = null;
+          if (!raster.current.visible) document.removeEventListener("pointermove", retenirPointeur);
           if (attrape) lacher(0, 0);
           return;
         }
@@ -593,6 +895,7 @@ export function PlatineMontre({
       const { attrape, x } = appui;
       appui = null;
       if (!e.glisse) {
+        if (!raster.current.visible) document.removeEventListener("pointermove", retenirPointeur);
         if (attrape) lacher(0, 0);
         return;
       }
@@ -627,7 +930,7 @@ export function PlatineMontre({
       noeud.removeEventListener("pointercancel", surRelache);
       noeud.removeEventListener("click", surClicNatif);
     };
-  }, [congedierIndice, reveiller, viser]);
+  }, [congedierIndice, retenirPointeur, reveiller, viser]);
 
   const surTouche = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -685,6 +988,14 @@ export function PlatineMontre({
               <div className={cn("platine-dessin", classeCouche)}>{rendre(pose)}</div>
             </div>
           ))}
+          {render ? (
+            // Le dessin rastérisé du geste : la bitmap de la pose sur le canevas,
+            // son calque vivant (aiguilles, verre) par-dessus, dans le même carré.
+            <div ref={rasterNoeud} className="platine-raster">
+              <canvas ref={toile} className="platine-toile" role="img" aria-label={libelle} aria-hidden="true" />
+              <div ref={vivant} className="platine-vivant" aria-hidden="true" />
+            </div>
+          ) : null}
         </div>
       </div>
 

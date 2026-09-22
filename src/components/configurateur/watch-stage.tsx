@@ -95,6 +95,7 @@ export function WatchStage({
         surVue={surVue}
         surClic={ouvrirZoom}
         commandes={platine}
+        render={render}
         libelle={`${label} : montre à faire tourner`}
         className="cadre-montre h-[27vh] w-full lg:h-auto lg:p-6"
         classeCouche="flex h-full w-full items-center justify-center"
@@ -140,6 +141,7 @@ export function WatchStage({
               cote={pose.cote}
               surVue={surVue}
               commandes={platineZoom}
+              render={render}
               libelle={`${label}, agrandie : montre à faire tourner`}
               className="mx-auto aspect-square w-full max-w-[calc(92dvh-11rem)] rounded-card"
             >

@@ -141,8 +141,11 @@ export function Crown3D({
   const body: Cyl = { from: radial(psi, r0, z), to: radial(psi, r0 + 42 * size, z), r };
   const head: Cyl = { from: radial(psi, r0 + 41 * size, z), to: radial(psi, r0 + 50 * size, z), r: r - 4 };
   const q = projectCyl(p, head);
+  const pied = projectCyl(p, body);
   return (
     <g data-layer="couronne">
+      {/* Occlusion sous la couronne : elle dépasse du flanc de trois millimètres et y porte son ombre. */}
+      {full && p.s !== 0 && <ellipse cx={n(pied.x + 4)} cy={n(pied.y + 6)} rx={n(6 + 10 * Math.abs(p.s))} ry={n(r + 4)} fill={INK} fillOpacity={n(0.28 * Math.abs(p.s))} filter={`url(#${uid}-soft)`} />}
       <Cylinder3D uid={uid} p={p} detail={detail} cyl={body} metal={metal} grooves={full ? 11 : 0} footShade={0.28} />
       <Cylinder3D uid={uid} p={p} detail={detail} cyl={head} metal={metal} head={`${uid}-pj-tete-couronne`} headInset={2}>
         {style === "signee" &&
@@ -185,11 +188,13 @@ export function Pusher3D({ uid, p, detail, metal, at }: Base & { metal: MetalTon
 
 /**
  * Épaulements du protège-couronne : deux bossages venus de matière avec le
- * flanc, de part et d'autre de la couronne. Chacun est une plaque épaisse :
- * l'enveloppe convexe de ses deux faces (dessus et dessous) donne son flanc,
- * puis le dessus se pose par-dessus quand il nous regarde.
+ * flanc, de part et d'autre de la couronne, sur presque toute la hauteur de la
+ * carrure. Chacun est un volume : l'enveloppe convexe de ses deux faces
+ * (dessus, à un chanfrein sous le plat de carrure ; dessous, un peu au-dessus
+ * du plan de joint du fond) donne son flanc, qui se dérobe vers le bas comme
+ * celui de la carrure ; puis le dessus se pose par-dessus quand il nous regarde.
  */
-export function Guards3D({ uid, p, metal, at }: Base & { metal: MetalTone; at: 3 | 4 }) {
+export function Guards3D({ uid, p, metal, at, detail }: Base & { metal: MetalTone; at: 3 | 4 }) {
   const ramp = METALS[metal];
   const xPied = C + R_CASE - 30;
   const xNez = C + R_CASE + 27;
@@ -199,7 +204,9 @@ export function Guards3D({ uid, p, metal, at }: Base & { metal: MetalTone; at: 3
     const dy = y - C;
     return [C + dx * Math.cos(rot) - dy * Math.sin(rot), C + dx * Math.sin(rot) + dy * Math.cos(rot)];
   };
-  const H = 30;
+  const zHaut = Z.carrure - 3;
+  const zBas = Z.fond + 8;
+  const full = detail === "full";
   return (
     <g data-layer="protege-couronne">
       {([-1, 1] as const).map((sy) => {
@@ -215,15 +222,19 @@ export function Guards3D({ uid, p, metal, at }: Base & { metal: MetalTone; at: 3
           [xPied + 22, Y(30)],
           [xPied - 12, Y(30)],
         ] as Array<[number, number]>).map(turn);
-        const faces = [H, -H].flatMap((z) => contour.map(([x, y]): [number, number] => [px(p, x, z), y]));
+        const faces = [zHaut, zBas].flatMap((z) => contour.map(([x, y]): [number, number] => [px(p, x, z), y]));
         const enveloppe = hull(faces);
         const nx = p.side * 0.9;
         const lum = lum3(nx * p.c, sy * 0.35, Math.abs(nx * p.s), "poli");
+        // Arête du dessus, projetée : le chanfrein poli qui court sur le nez du bossage.
+        const arete = contour.slice(0, 5).map(([x, y]): [number, number] => [px(p, x, zHaut), y]);
         return (
           <g key={sy}>
             <path d={`${pts(enveloppe)} Z`} fill={rampAt(ramp, 0.2 + 0.7 * lum)} stroke={ramp.edge} strokeOpacity="0.8" strokeWidth="1.2" strokeLinejoin="round" />
+            {p.s !== 0 && <path d={`${pts(enveloppe)} Z`} fill={`url(#${uid}-pj-dessous)`} opacity="0.5" />}
+            {full && p.s !== 0 && <path d={pts(arete)} fill="none" stroke={ramp.hi} strokeOpacity={sy === -1 ? 0.8 : 0.45} strokeWidth="1.6" strokeLinecap="round" />}
             {Math.abs(p.c) > 0.03 && (
-              <g transform={`${flatSigned(p, H * (p.front ? 1 : -1))} rotate(${(at - 3) * 30} ${C} ${C})`}>
+              <g transform={`${flatSigned(p, p.front ? zHaut : zBas)} rotate(${(at - 3) * 30} ${C} ${C})`}>
                 <path d={d} fill={`url(#${uid}-case)`} stroke={ramp.edge} strokeWidth="1.4" strokeLinejoin="round" />
                 {sy === 1 && <path d={d} fill={INK} fillOpacity="0.22" />}
                 <path

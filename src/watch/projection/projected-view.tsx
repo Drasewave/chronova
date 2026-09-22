@@ -1,18 +1,20 @@
 import type { ReactNode } from "react";
-import { C, R_BEZEL_IN, dialScale, n } from "../geometry";
+import { C, R_BEZEL_IN, R_CASE, R_LUG_TIP, dialScale, n } from "../geometry";
+import { INK, isLight } from "../palette";
 import { Bezel } from "../parts/bezel";
 import { Dial } from "../parts/dial";
-import { Hands } from "../parts/hands";
+import { Hands, type HandRole } from "../parts/hands";
 import { Indices } from "../parts/indices";
 import { BackView } from "../parts/back";
+import { annulus } from "../parts/conic";
 import type { WatchRender } from "../types";
 import type { flankLayout } from "../watch-svg";
-import { R_FOND, Z, flat, pose } from "./geometry3d";
+import { HAND_LIFT, R_FOND, Z, bandPath, flat, pose, px, quad, wallPath, type Pose } from "./geometry3d";
 import { Defs3D } from "./defs3d";
-import { BezelBand, CarrureBand, CushionBottom, CushionFlank, CushionTop, FondBand, InnerWall, Lugs3D, Plat, Underside, bezelTop, fondBottom } from "./case3d";
+import { BezelBand, CarrureBand, CushionBottom, CushionFlank, CushionTop, FondBand, InnerWall, Lugs3D, Plat, Underside, bezelTop, fondFaces } from "./case3d";
 import { Crown3D, Guards3D, Pusher3D, flankDepth } from "./flank-parts3d";
-import { Strap3D } from "./strap3d";
-import { Crystal3D } from "./crystal3d";
+import { STRAP_THICKNESS, Strap3D } from "./strap3d";
+import { Crystal3D, LOUPE } from "./crystal3d";
 
 export interface ProjectedViewProps {
   uid: string;
@@ -34,21 +36,25 @@ export interface ProjectedViewProps {
  * Vue projetée : la montre sous n'importe quel lacet.
  *
  * Projection orthographique (`geometry3d.ts`) de l'objet en volume : le
- * boîtier est un empilement de bagues (fond, carrure, lunette) dont on voit la
- * moitié du pourtour qui nous regarde ; le plat de carrure, le cadran, les
- * index, les aiguilles, le verre et le fond sont les dessins de face et de dos
- * existants, chacun posé à son altitude — resserré en cos θ et décalé de
+ * boîtier est un empilement de bagues (fond bombé, carrure, lunette) dont on
+ * voit la moitié du pourtour qui nous regarde ; le plat de carrure, le cadran,
+ * les index, les aiguilles, le verre et le fond sont les dessins de face et de
+ * dos existants, chacun posé à son altitude — resserré en cos θ et décalé de
  * z·sin θ, par une seule transformation sur un groupe parent. Les aiguilles
  * gardent donc leur structure (`data-aiguille`, `rotate` sur les groupes
- * internes) et l'horloge vivante continue de les faire battre. Couronnes,
- * poussoirs et protège-couronne sont des cylindres couchés, triés par
- * profondeur : devant le boîtier quand ils regardent vers nous, derrière sinon.
- * Le bracelet reprend son dessin de face et gagne une tranche.
+ * internes) et l'horloge vivante continue de les faire battre ; chacune est
+ * en plus posée à son étage sur le canon (`HAND_LIFT`, groupe parent), avec
+ * une ombre qui s'allonge avec l'angle. Les index sont extrudés : leur
+ * silhouette au pied, dans le ton de la facette latérale, puis le dessus. Le
+ * cadre du guichet et la loupe montrent leur flanc. Couronnes, poussoirs et
+ * protège-couronne sont des volumes triés par profondeur : devant le boîtier
+ * quand ils regardent vers nous, derrière sinon. Le bracelet reprend son
+ * dessin de face, gagne une tranche, et montre son dessous de dos.
  *
- * Ordre de dessin (du fond vers l'observateur) : ombre au sol, cornes du côté
- * qui fuit, bracelet, pièces de flanc cachées, bagues du boîtier de la plus
- * lointaine à la plus proche, cornes du côté qui regarde, face visible (cadran
- * ou fond), verre, pièces de flanc devant.
+ * Ordre de dessin (du fond vers l'observateur) : ombre au sol (la silhouette
+ * réelle, floutée), cornes du côté qui fuit, bracelet, pièces de flanc
+ * cachées, bagues du boîtier de la plus lointaine à la plus proche, cornes du
+ * côté qui regarde, face visible (cadran ou fond), verre, pièces de flanc devant.
  *
  * Composant pur et déterministe : mêmes props, même SVG, serveur ou client.
  */
@@ -63,7 +69,6 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
   const gmtScale = isGmt && render.bezelStyle !== "gmt";
   const cyclops = Boolean(render.cyclops) && showDate && (render.dateWindow ?? "date") === "date";
   const zLunette = bezelTop(render);
-  const zFondBas = fondBottom(render);
 
   /* Pièces rapportées sur le flanc, triées par profondeur. */
   const pieces: { depth: number; node: ReactNode }[] = [];
@@ -86,21 +91,19 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
   const derriere = pieces.filter((piece) => piece.depth < 0).map((piece) => piece.node);
   const devant = pieces.filter((piece) => piece.depth >= 0).map((piece) => piece.node);
 
-  /* Ombre au sol : elle suit la silhouette, large de face, mince par la tranche. */
-  const largeur = Math.min(1, Math.abs(p.c) + 0.3 * Math.abs(p.s));
-  const ombre = (
-    <g data-layer="ombre">
-      <ellipse cx={n(520 - 10 * p.s)} cy="538" rx={n((coussin ? 470 : 440) * largeur)} ry="430" fill={`url(#${id}-shadow)`} opacity={n(1 - 0.55 * Math.abs(p.s))} />
-      <ellipse cx={n(507 - 6 * p.s)} cy="511" rx={n((coussin ? 432 : 392) * largeur)} ry={coussin ? 420 : 392} fill={`url(#${id}-shadow-contact)`} opacity={n(1 - 0.75 * Math.abs(p.s))} />
-    </g>
-  );
+  /* Étage de chaque aiguille : un glissement de `−lift·sin θ` à l'écran, écrit
+     dans le repère du groupe (resserré de `cf`). À plat, aucun étage. */
+  const decalages: Partial<Record<HandRole, string>> = {};
+  if (p.s !== 0) {
+    for (const role of ["gmt", "minute", "seconde"] as const) decalages[role] = `translate(${n((-HAND_LIFT[role] * p.s) / p.cf)} 0)`;
+  }
 
   const bagues = { uid: id, render, p, detail };
 
   return (
     <g data-view="projection" data-yaw={n(p.theta)}>
       <Defs3D uid={id} render={render} p={p} detail={detail} />
-      {ombre}
+      <OmbreSol uid={id} p={p} frame={frame} coussin={coussin} strapThickness={STRAP_THICKNESS[render.strapKind]} />
 
       {!coussin && <Lugs3D {...bagues} which="far" />}
       <Strap3D uid={id} kind={render.strapKind} color={render.strapColor} metal={render.caseMetal} detail={detail} frame={frame} p={p} />
@@ -108,7 +111,7 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
 
       {p.front ? (
         <>
-          {full && <FondBand {...bagues} />}
+          <FondBand {...bagues} />
           {coussin ? <CushionFlank {...bagues} /> : <CarrureBand {...bagues} />}
           {!coussin && <Lugs3D {...bagues} which="near" />}
           {coussin ? <CushionTop {...bagues} /> : <Plat {...bagues} />}
@@ -131,11 +134,12 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
 
           {/* Sous le verre : cadran, index et aiguilles, chacun à son altitude, vus
               à travers l'ouverture de la lunette — ce qu'elle cache par parallaxe
-              reste caché. */}
+              reste caché. Le groupe porte un `id` : le verre épais en reprend le
+              bord, réfracté. */}
           <clipPath id={`${id}-pj-ouverture`}>
             <circle cx={C} cy={C} r={n(R_BEZEL_IN * k)} transform={flat(p, zLunette)} />
           </clipPath>
-          <g data-layer="sous-verre" clipPath={`url(#${id}-pj-ouverture)`}>
+          <g id={`${id}-pj-sous-verre`} data-layer="sous-verre" clipPath={`url(#${id}-pj-ouverture)`}>
             <g transform={`${flat(p, Z.cadran)}${kT}`}>
               <Dial
                 uid={id}
@@ -154,7 +158,8 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
                 compactSignature={render.indexStyle === "terrain-24h"}
               />
             </g>
-            <g transform={`${flat(p, Z.index)}${kT}`} filter={full ? `url(#${id}-pj-index-shadow)` : undefined}>
+            {showDate && full && p.s !== 0 && <Guichet3D uid={id} p={p} k={k} jourDate={(render.dateWindow ?? "date") === "jour-date"} clair={isLight(render.dialColor)} cyclops={cyclops && full} />}
+            <IndexEtage uid={id} p={p} full={full} kT={kT} applique={render.indexStyle === "batons" || render.indexStyle === "plongee" || render.indexStyle === "montagne"}>
               <Indices
                 detail={full ? "full" : "compact"}
                 style={render.indexStyle}
@@ -165,7 +170,7 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
                 innerRadius={flank.boussole ? 194 : gmtScale ? 196 : undefined}
                 skipHour={showDate ? 3 : undefined}
               />
-            </g>
+            </IndexEtage>
             <g transform={`${flat(p, Z.aiguilles)}${kT}`}>
               <Hands
                 uid={id}
@@ -177,11 +182,13 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
                 detail={detail}
                 accent={render.accentHandColor}
                 vivante={render.time === undefined}
+                decalages={p.s !== 0 ? decalages : undefined}
+                ombres={p.s !== 0 ? { basse: `${id}-pj-ombre-aiguille-basse`, haute: `${id}-pj-ombre-aiguille-haute` } : undefined}
               />
             </g>
           </g>
 
-          {full && <InnerWall {...bagues} k={k} />}
+          <InnerWall {...bagues} k={k} />
           <BezelBand {...bagues} />
           <Crystal3D uid={id} render={render} p={p} k={k} sheen={sheen} cyclops={cyclops} detail={detail} />
         </>
@@ -191,18 +198,144 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
           {coussin ? <CushionFlank {...bagues} /> : <CarrureBand {...bagues} />}
           {!coussin && <Lugs3D {...bagues} which="near" />}
           {coussin ? <CushionBottom {...bagues} /> : <Underside {...bagues} />}
-          {full && <FondBand {...bagues} />}
-          {/* Fond vissé : le dessin de dos, limité au fond lui-même — carrure et cornes sont déjà en volume. */}
-          <g transform={flat(p, zFondBas)} clipPath={`url(#${id}-pj-clip-fond)`}>
-            <clipPath id={`${id}-pj-clip-fond`}>
-              <circle cx={C} cy={C} r={R_FOND + 1} />
-            </clipPath>
-            <BackView uid={id} render={render} />
-          </g>
+          <FondBand {...bagues} />
+          <FondFace3D uid={id} render={render} p={p} />
         </>
       )}
 
       {devant}
+    </g>
+  );
+}
+
+/**
+ * Index appliqués, en épaisseur (bâtons, plots de plongée, chiffres et pointes
+ * de montagne). Le dessin est défini une fois ; vu de biais,
+ * sa silhouette est d'abord posée au pied (`Z.cadran`), teintée comme la
+ * facette latérale qui regarde vers nous, puis le dessus à son altitude avec
+ * son ombre de contact : entre les deux dépasse le flanc de chaque bloc.
+ */
+function IndexEtage({ uid, p, full, kT, applique, children }: { uid: string; p: Pose; full: boolean; kT: string; applique: boolean; children: ReactNode }) {
+  const ombre = full ? `url(#${uid}-pj-index-shadow)` : undefined;
+  // Des chiffres imprimés n'ont pas d'épaisseur : seuls les index appliqués sont extrudés.
+  if (!full || !applique || p.s === 0) {
+    return (
+      <g transform={`${flat(p, Z.index)}${kT}`} filter={ombre}>
+        {children}
+      </g>
+    );
+  }
+  const id = `${uid}-pj-index`;
+  return (
+    <>
+      <defs>
+        <g id={id}>{children}</g>
+      </defs>
+      <use href={`#${id}`} transform={`${flat(p, Z.cadran + 1)}${kT}`} filter={`url(#${uid}-pj-index-flanc)`} />
+      <g transform={`${flat(p, Z.index)}${kT}`} filter={ombre}>
+        <use href={`#${id}`} />
+      </g>
+    </>
+  );
+}
+
+/**
+ * Le guichet en épaisseur : le cadre appliqué a une hauteur (`Z.guichet`), le
+ * disque de quantième tourne en retrait sous le cadran (`Z.guichetDisque`).
+ * Vu de biais, on voit le flanc extérieur du cadre du côté qui regarde vers
+ * nous, et, dans l'ouverture, la paroi intérieure opposée qui mord sur le
+ * disque — le quantième est au fond d'un puits. La loupe, elle, porte son
+ * ombre sur le cadran, décalée de sa hauteur au-dessus du verre.
+ */
+function Guichet3D({ uid, p, k, jourDate, clair, cyclops }: { uid: string; p: Pose; k: number; jourDate: boolean; clair: boolean; cyclops: boolean }) {
+  // Cotes de `DateWindow` (`parts/dial.tsx`), ramenées à l'échelle du cadran.
+  const w = jourDate ? 136 : 68;
+  const sx = (x: number) => C + (x - C) * k;
+  const x0 = sx(C + 232 - w);
+  const x1 = sx(C + 232);
+  const y0 = sx(C - 25);
+  const y1 = sx(C + 25);
+  const nx: 1 | -1 = p.s > 0 ? 1 : -1;
+  // Flanc extérieur du cadre : l'arête qui regarde vers nous.
+  const flanc = wallPath(p, nx > 0 ? x1 : x0, y0, y1, Z.cadran, Z.guichet, nx);
+  // Paroi intérieure opposée, du dessus du cadre jusqu'au disque : elle regarde vers nous aussi.
+  const paroi = wallPath(p, nx > 0 ? x0 + 5 * k : x1 - 5 * k, y0 + 5 * k, y1 - 5 * k, Z.guichetDisque, Z.guichet, nx);
+  const sombre = INK;
+  const loupe = cyclops
+    ? quad(
+        [px(p, sx(LOUPE.cx - LOUPE.w / 2) + 4, Z.cadran), sx(LOUPE.cy - LOUPE.h / 2) + 6],
+        [px(p, sx(LOUPE.cx + LOUPE.w / 2) + 4, Z.cadran), sx(LOUPE.cy - LOUPE.h / 2) + 6],
+        [px(p, sx(LOUPE.cx + LOUPE.w / 2) + 4, Z.cadran), sx(LOUPE.cy + LOUPE.h / 2) + 6],
+        [px(p, sx(LOUPE.cx - LOUPE.w / 2) + 4, Z.cadran), sx(LOUPE.cy + LOUPE.h / 2) + 6],
+      )
+    : null;
+  return (
+    <g data-layer="guichet-3d">
+      {loupe && <path d={loupe} fill={sombre} fillOpacity="0.28" filter={`url(#${uid}-soft)`} />}
+      {paroi && <path d={paroi} fill={sombre} fillOpacity={clair ? 0.5 : 0.7} />}
+      {flanc && <path d={flanc} fill={`url(#${uid}-pj-paroi)`} stroke={sombre} strokeOpacity="0.5" strokeWidth="0.8" strokeLinejoin="round" />}
+    </g>
+  );
+}
+
+/**
+ * Le fond, vu de dos : le dessin de dos (`BackView`) est défini une fois puis
+ * repris en trois couronnes, chacune posée à l'altitude de son étage sur le
+ * bombé (`fondFaces`) — le rebord à encoches près du plan de joint, la
+ * couronne gravée un peu plus bas, le médaillon au plus bas. À 180° les trois
+ * se superposent exactement : c'est la vue de dos.
+ */
+function FondFace3D({ uid, render, p }: { uid: string; render: WatchRender; p: Pose }) {
+  const id = `${uid}-pj-dos`;
+  const faces = fondFaces(render);
+  if (p.s === 0) {
+    return (
+      <g data-layer="fond-face" transform={flat(p, faces[faces.length - 1]![2])} clipPath={`url(#${uid}-pj-clip-fond)`}>
+        <clipPath id={`${uid}-pj-clip-fond`}>
+          <circle cx={C} cy={C} r={R_FOND + 1} />
+        </clipPath>
+        <BackView uid={uid} render={render} />
+      </g>
+    );
+  }
+  return (
+    <g data-layer="fond-face">
+      <defs>
+        <g id={id}>
+          <BackView uid={uid} render={render} />
+        </g>
+        {faces.map(([rOut, rIn], i) => (
+          <clipPath key={i} id={`${uid}-pj-clip-fond-${i}`}>
+            {rIn > 0 ? <path d={annulus(rOut, rIn)} clipRule="evenodd" /> : <circle cx={C} cy={C} r={rOut} />}
+          </clipPath>
+        ))}
+      </defs>
+      {faces.map(([, , z], i) => (
+        <use key={i} href={`#${id}`} clipPath={`url(#${uid}-pj-clip-fond-${i})`} transform={flat(p, z)} />
+      ))}
+    </g>
+  );
+}
+
+/**
+ * Ombre au sol : la silhouette réelle de l'objet — carrure (l'enveloppe de
+ * ses deux faces), cornes et bracelet — décalée vers le bas-droit, la lumière
+ * venant du haut-gauche, et floutée deux fois (nappe large, contact serré).
+ * De profil elle s'amincit d'elle-même, puisque la silhouette s'amincit.
+ */
+function OmbreSol({ uid, p, frame, coussin, strapThickness }: { uid: string; p: Pose; frame: number; coussin: boolean; strapThickness: number }) {
+  const rCase = coussin ? R_CASE + 40 : R_CASE;
+  const xs = (half: number, zs: number[]) => {
+    const all = zs.flatMap((z) => [px(p, C - half, z), px(p, C + half, z)]);
+    return [Math.min(...all), Math.max(...all)] as const;
+  };
+  const [bx0, bx1] = xs(176, [Z.bracelet, Z.bracelet - strapThickness]);
+  const [lx0, lx1] = xs(coussin ? 236 : 235, [Z.carrure, Z.fond]);
+  return (
+    <g data-layer="ombre" transform="translate(20 34)" filter={`url(#${uid}-pj-ombre-sol)`} opacity="0.3" fill={INK}>
+      <path d={bandPath(p, rCase, Z.carrure, rCase, Z.fond)} />
+      <rect x={n(lx0)} y={C - R_LUG_TIP + 10} width={n(Math.max(1, lx1 - lx0))} height={2 * R_LUG_TIP - 20} rx="30" />
+      <rect x={n(bx0)} y={n(C - frame + 40)} width={n(Math.max(1, bx1 - bx0))} height={n(2 * frame - 80)} rx="20" />
     </g>
   );
 }

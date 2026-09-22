@@ -11,7 +11,7 @@ import { pose } from "./geometry3d";
 const ANGLES = [0, 45, 90, 135, 180, 225, 270, 315] as const;
 const DETAILS = ["full", "compact"] as const;
 /** Bornes du poids d'un rendu (éléments SVG, `<defs>` compris). */
-const NOEUDS_MAX = { full: 2600, compact: 900 } as const;
+const NOEUDS_MAX = { full: 2800, compact: 900 } as const;
 
 const nodes = (svg: string) => (svg.match(/<[a-zA-Z]/g) ?? []).length;
 const ids = (svg: string) => [...svg.matchAll(/ id="([^"]+)"/g)].map((m) => m[1] as string);
@@ -105,14 +105,67 @@ describe("vue projetée", () => {
     expect(rendre(montre.uid, montre.render, 45, "full")).toBe(rendre(montre.uid, montre.render, 45, "full"));
   });
 
-  it("à 0° reprend le cadran et les aiguilles de la vue de face à l'identique", () => {
+  it("à 0° reprend le cadran, les index et les aiguilles de la vue de face à l'identique", () => {
     for (const montre of montres.slice(0, 6)) {
       const face = renderToStaticMarkup(createElement(WatchSvg, { id: montre.uid, render: montre.render, label: "face" }));
       const projetee = rendre(montre.uid, montre.render, 0, "full");
-      for (const couche of ["cadran", "aiguilles", "lunette"]) {
+      for (const couche of ["cadran", "index", "aiguilles", "lunette"]) {
         const extrait = new RegExp(`<g[^>]*data-layer="${couche}"[\\s\\S]*?</g>`).exec(face)?.[0];
         expect(extrait, `${montre.nom} : couche ${couche}`).toBeTruthy();
         expect(projetee, `${montre.nom} : couche ${couche} à 0°`).toContain(extrait!.slice(0, 400));
+      }
+      // Aucun étage d'aiguille à plat : le rendu de face n'est pas touché.
+      expect(projetee).not.toContain("data-etage=");
+      expect(projetee).not.toContain("pj-index-flanc");
+    }
+  });
+
+  it("à 180° reprend le dessin de dos à l'identique", () => {
+    for (const montre of montres.slice(0, 6)) {
+      const dos = renderToStaticMarkup(createElement(WatchSvg, { id: montre.uid, render: montre.render, view: "dos", label: "dos" }));
+      const projetee = rendre(montre.uid, montre.render, 180, "full");
+      const extrait = /<g data-view="dos">[\s\S]*?<\/g>/.exec(dos)?.[0];
+      expect(extrait, `${montre.nom} : vue de dos`).toBeTruthy();
+      expect(projetee, `${montre.nom} : dos à 180°`).toContain(extrait!.slice(0, 600));
+    }
+  });
+
+  it("dessine les volumes propres à la vue de biais", () => {
+    for (const montre of montres) {
+      const face = rendre(montre.uid, montre.render, 60, "full");
+      for (const couche of ["ombre", "fond-flanc", "lunette-flanc", "bracelet-tranche", "rehaut-paroi", montre.render.caseShape === "coussin" ? "coussin-flanc" : "corne-flanc"]) {
+        expect(face, `${montre.nom} à 60° : ${couche}`).toContain(`data-layer="${couche}"`);
+      }
+      // Chaque aiguille au-dessus de l'heure a son étage ; l'heure reste au niveau du groupe.
+      expect(face).toContain('data-etage="minute"');
+      expect(face).toContain('data-etage="seconde"');
+      expect(face).not.toContain('data-etage="heure"');
+      const dos = rendre(montre.uid, montre.render, 240, "full");
+      for (const couche of ["bracelet-dessous", "fond-face", "fond-flanc"]) expect(dos, `${montre.nom} à 240° : ${couche}`).toContain(`data-layer="${couche}"`);
+      // Le dessin de dos n'est défini qu'une fois, repris par `<use>` en trois couronnes.
+      expect(dos.match(/data-view="dos"/g)).toHaveLength(1);
+      expect(dos.match(new RegExp(`href="#${montre.uid}-pj-dos"`, "g"))).toHaveLength(3);
+    }
+  });
+
+  it("garde les groupes `data-aiguille` là où l'horloge vivante les attend, sous un étage qui ne tourne pas", () => {
+    for (const montre of montres) {
+      for (const yaw of [0, 45, 300]) {
+        const svg = rendre(montre.uid, montre.render, yaw, "full");
+        const debut = svg.indexOf(`id="${montre.uid}-aiguilles"`);
+        expect(debut, `${montre.nom} : groupe des aiguilles`).toBeGreaterThan(-1);
+        for (const m of svg.matchAll(/(<g data-etage="(\w+)" transform="([^"]+)">)?<g data-aiguille="(\w+)" transform="([^"]+)">/g)) {
+          const [, etage, roleEtage, transformEtage, role, transform] = m;
+          expect(m.index!, `${montre.nom} à ${yaw}° : ${role} dans le groupe des aiguilles`).toBeGreaterThan(debut);
+          // Le groupe tournant ne porte qu'une rotation : l'horloge la réécrit telle quelle.
+          expect(transform, `${montre.nom} à ${yaw}° : ${role}`).toMatch(/^rotate\(-?[\d.]+\)$/);
+          if (etage) {
+            expect(roleEtage).toBe(role);
+            expect(transformEtage, `${montre.nom} à ${yaw}° : étage ${role}`).toMatch(/^translate\(-?[\d.]+ 0\)$/);
+          }
+        }
+        // Les compteurs du cadran (petite seconde, totalisateur) restent eux aussi de simples rotations.
+        for (const m of svg.matchAll(/<path data-aiguille="([\w-]+)"[^>]*transform="([^"]+)"/g)) expect(m[2]).toMatch(/^rotate\(-?[\d.]+\)$/);
       }
     }
   });

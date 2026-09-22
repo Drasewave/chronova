@@ -78,6 +78,7 @@ export function GalerieModele({ vues, nom, render }: { vues: VueGalerie[]; nom: 
                   vue={vuePlatine}
                   surVue={surVue}
                   commandes={platine}
+                  render={render}
                   libelle={`${nom} : montre à faire tourner`}
                   className="h-full w-full"
                   classeCouche="h-full w-full"

@@ -1069,14 +1069,14 @@
 }
 
 /* Rail d'un repère qui glisse le long d'une rangée (ou d'une colonne, avec
-   `data-axe="y"`) de cases égales séparées par `--ecart`. On translate le rail,
-   qui a la taille du groupe : un pas vaut (100 % + écart) / n. */
+   `data-axe="y"`) de cases égales séparées par `--ecart`. Le rail reste immobile
+   et ne sert que de repère de taille ; seul le cadre se déplace, d'un pas égal à
+   sa propre taille plus l'écart. Translater le rail entier (aussi large que la
+   rangée) le faisait déborder de la page sur téléphone. */
 .rail-repere {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  transform: translateX(calc(var(--i, 0) * (100% + var(--ecart, 0px)) / var(--n, 1)));
-  transition: transform var(--d-base) var(--ease-passage);
 }
 
 .rail-repere > * {
@@ -1085,15 +1085,14 @@
   left: 0;
   width: calc((100% - (var(--n, 1) - 1) * var(--ecart, 0px)) / var(--n, 1));
   aspect-ratio: 1;
+  transform: translateX(calc(var(--i, 0) * (100% + var(--ecart, 0px))));
+  transition: transform var(--d-base) var(--ease-passage);
 }
 
 @media (min-width: 1024px) {
-  .rail-repere[data-axe-lg="y"] {
-    transform: translateY(calc(var(--i, 0) * (100% + var(--ecart, 0px)) / var(--n, 1)));
-  }
-
   .rail-repere[data-axe-lg="y"] > * {
     width: 100%;
+    transform: translateY(calc(var(--i, 0) * (100% + var(--ecart, 0px))));
   }
 }
 
@@ -1395,15 +1394,22 @@
 
 /* ─────────────────────────────── Platine ──────────────────────────────────
    Platine tournante (`platine-montre.tsx`) : la montre se manipule du doigt.
-   Le dessin est la vue projetée du moteur, montée par poses de 15°. Le script
-   n'écrit que des `transform` et des `opacity` sur ces conteneurs : la scène
-   (inclinaison) et chaque pose (léger étirement en largeur, fondu vers la
-   voisine). Tout le reste — boutons, indice — est décrit ici. */
+   Au repos, le dessin est la vue projetée du moteur (SVG vivant). Pendant le
+   geste, la platine dessine des poses rastérisées sur un canevas
+   (`.platine-raster`) et pose par-dessus un petit SVG vivant — aiguilles,
+   verre — dans le carré du dessin (`.platine-vivant`) ; à défaut de bitmap,
+   des poses SVG à 15°. Le script n'écrit que des `transform` et des `opacity`
+   sur ces conteneurs : la scène (inclinaison), chaque pose (léger étirement en
+   largeur, fondu vers la voisine) et le canevas. Tout le reste — boutons,
+   indice — est décrit ici. */
 .platine {
   position: relative;
   /* L'inclinaison fait déborder un peu le dessin : le cadre coupe, et `clip`
      (pas `hidden`) n'ouvre aucune zone de défilement. */
   overflow: clip;
+  /* Fondu du dessin rastérisé vers le dessin vivant, au repos : court, les
+     deux images sont les mêmes à l'heure près — et l'heure est la même. */
+  --d-fondu-platine: 180ms;
 }
 
 .platine-zone {
@@ -1427,6 +1433,7 @@
 /* La scène porte l'inclinaison ; chaque pose s'y empile dans la même cellule :
    la hauteur du cadre ne dépend jamais du nombre de poses montées. */
 .platine-scene {
+  position: relative;
   grid-area: 1 / 1;
   display: grid;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
@@ -1452,7 +1459,46 @@
   overflow: visible;
 }
 
-.platine[data-mouvement] :is(.platine-scene, .platine-pose) {
+/* Le dessin rastérisé du geste : le canevas couvre la scène, le calque vivant
+   est posé par le script dans le carré exact du dessin. Montré d'un coup au
+   départ d'un geste ; au repos, il s'efface en fondu sur le dessin vivant. */
+.platine-raster {
+  position: relative;
+  grid-area: 1 / 1;
+  z-index: 3;
+  min-width: 0;
+  min-height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
+.platine-raster[data-visible] {
+  visibility: visible;
+}
+
+.platine-toile {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.platine-vivant {
+  position: absolute;
+}
+
+.platine-vivant svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.platine[data-fondu] :is(.platine-raster, .platine-pose) {
+  transition: opacity var(--d-fondu-platine) var(--ease);
+}
+
+.platine[data-mouvement] :is(.platine-scene, .platine-pose, .platine-raster) {
   will-change: transform, opacity;
 }
 
