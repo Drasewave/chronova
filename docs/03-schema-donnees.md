@@ -167,7 +167,7 @@ model Option {
   description     String?
   colorHex        String?                      // teinte de la pastille
   colorName       String?                      // toujours affiché, jamais la couleur seule
-  svgPartKey      String                       // pièce du registre de rendu
+  svgPartKey      String                       // pièce dessinable dans `src/watch/parts`
   renderMeta      Json?                        // finition, texture, luminova…
   priceDeltaCents Int     @default(0)
   partId          String?                      // pièce de stock liée

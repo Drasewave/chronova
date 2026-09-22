@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-21T21:07:16.692Z",
+  "generatedAt": "2026-09-22T06:08:31.690Z",
   "title": "Design System: Chronova",
   "extensions": {
     "colorMeta": {
@@ -511,6 +511,16 @@
         "purpose": "Approche de la montre au survol d'une carte, d'un bloc de gamme, d'un gros plan ; reflet de carte (× 1,3)."
       },
       {
+        "name": "d-scene",
+        "value": "850ms",
+        "purpose": "Changement de scène : défilé du héros, lignes du titre, fondu des textes du défilé."
+      },
+      {
+        "name": "d-defile",
+        "value": "5000ms",
+        "purpose": "Tenue d'un modèle dans le défilé du héros."
+      },
+      {
         "name": "d-decalage",
         "value": "90ms",
         "purpose": "Écart entre deux voisins qui entrent l'un après l'autre."
@@ -527,8 +537,23 @@
       },
       {
         "name": "arrivee-montre",
-        "value": "1100ms ; rotate(-7deg) scale(0.9) blur(12px) vers net ; aiguilles balayées en 1250ms ; couronne graduée 1500ms",
-        "purpose": "Entrée de la montre du héros."
+        "value": "1100ms ; rotate(-7deg) scale(0.9) blur(12px) vers net ; couronne graduée 1500ms",
+        "purpose": "Entrée de la montre du héros ; les aiguilles ne sont plus animées en CSS."
+      },
+      {
+        "name": "horloge-vivante",
+        "value": "rAF unique ; trotteuse 6 pas/s (1° par pas) ; heures et minutes recalées chaque seconde ; balayage d'arrivée 1200ms, sens le plus court, (1-p)^3(1+3p) ; VK64 à zéro, seconde au compteur",
+        "purpose": "Toutes les montres à l'heure et à la date du visiteur, ensemble ; seules les visibles sont écrites."
+      },
+      {
+        "name": "platine",
+        "value": "crans 0/90/180/270° ; inclinaison ±18° à rappel critique ; inertie par friction puis calage sur --ease ; clavier ← → (quart), Maj (15°), Origine",
+        "purpose": "La montre se tourne du doigt (configurateur, zoom, galerie) ; trois dessins montés comme une boîte CSS 3D, deux au plus."
+      },
+      {
+        "name": "montre-arrivee",
+        "value": "d-reveal ease, fondu",
+        "purpose": "Un dessin différé (MontreDifferee) ou un second coloris entre en fondu dans sa boîte déjà à sa taille."
       },
       {
         "name": "leve-ligne / montee-texte",
@@ -537,7 +562,7 @@
       },
       {
         "name": "defile",
-        "value": "sortie 700ms (−40px, 0,96) ; entrée 850ms (48px, 0,97, flou 6px au départ) ; exposition 5000ms ; graduation 30° par modèle",
+        "value": "sortie 700ms (−40px, 0,96) ; entrée d-scene (48px, 0,97, flou 6px au départ) ; exposition d-defile ; graduation 30° par modèle",
         "purpose": "Carrousel des modèles du héros."
       },
       {
@@ -572,7 +597,7 @@
       },
       {
         "name": "prefers-reduced-motion",
-        "value": "animations et transitions à 0,01ms, retards à 0, ouverture sautée, défilé à l'arrêt, fondu de studio immédiat, Lenis non monté",
+        "value": "animations et transitions à 0,01ms, retards à 0, ouverture sautée, défilé à l'arrêt, fondu de studio immédiat, aiguilles posées sans balayage et trotteuses immobiles, platine sans 3D ni inertie, Lenis non monté",
         "purpose": "Tout mouvement est coupé ; le contenu reste complet."
       }
     ],
@@ -733,7 +758,7 @@
   ],
   "narrative": {
     "northStar": "La Vitrine",
-    "overview": "La montre est photographiée, la page s'efface. Le système reprend sans détour le standard des grandes maisons horlogères, en noir, blanc et un bleu profond : des pages blanches où la pièce est posée sur un fond de studio, des scènes noires où l'acier brille, et le bleu comme unique accent — profond sur le blanc, clair sur le noir. Rien ne passe devant le produit : ni texture, ni illustration, ni effet de carte. Le seul visuel de la marque est le rendu SVG paramétrique de la montre, exactement celle que le client a composée.\n\nLes proportions sont resserrées : titres légers en Jost qui culminent à 4 rem, texte de lecture à 16 px en Hanken Grotesk, rythme de section de 56 à 104 px, conteneur de 84 rem, grilles de modèles à quatre colonnes. Les étiquettes techniques sont en petites capitales espacées, comme une gravure de fond de boîte. Le CRM de l'atelier hérite du même monde en mode outil : titres à échelle réduite, cibles de 44 px, thème clair ou nuit au choix.\n\nLe mouvement suit une seule grammaire, sans rebond ni élastique : ce qui entre se pose, ce qui sort accélère et dure un cran de moins, ce qui se déplace glisse. Le système ne montre que ce qui existe. Aucune photographie inventée : un emplacement photo décrit la prise de vue attendue. Aucun avis inventé : la section reste un emplacement explicite tant qu'aucun client n'a écrit. Toute donnée fictive porte la pastille « Exemple ».",
+    "overview": "La montre est photographiée, la page s'efface. Le système reprend sans détour le standard des grandes maisons horlogères, en noir, blanc et un bleu profond : des pages blanches où la pièce est posée sur un fond de studio, des scènes noires où l'acier brille, et le bleu comme unique accent — profond sur le blanc, clair sur le noir. Rien ne passe devant le produit : ni texture, ni illustration, ni effet de carte. Le seul visuel de la marque est le rendu SVG paramétrique de la montre, exactement celle que le client a composée.\n\nLes proportions sont resserrées : titres légers en Jost qui culminent à 4 rem, texte de lecture à 16 px en Hanken Grotesk, rythme de section de 56 à 104 px, conteneur de 84 rem, grilles de modèles à quatre colonnes. Les étiquettes techniques sont en petites capitales espacées, comme une gravure de fond de boîte. Le CRM de l'atelier hérite du même monde en mode outil : titres à échelle réduite, cibles de 44 px, thème clair ou nuit au choix.\n\nLe mouvement suit une seule grammaire, sans rebond ni élastique : ce qui entre se pose, ce qui sort accélère et dure un cran de moins, ce qui se déplace glisse. Les montres sont vivantes : une horloge unique les met toutes à l'heure du visiteur et les y tient, trotteuse à six pas par seconde ; et la montre se manipule comme un objet, sur une platine tournante. Le système ne montre que ce qui existe. Aucune photographie inventée : un emplacement photo décrit la prise de vue attendue. Aucun avis inventé : la section reste un emplacement explicite tant qu'aucun client n'a écrit. Toute donnée fictive porte la pastille « Exemple ».",
     "keyCharacteristics": [
       "Noir, blanc, et le bleu comme unique accent ; le sapin et le grenat ne sont que des statuts.",
       "Deux scènes : page blanche (`papier`) et scène noire (`nuit`), basculées par `data-theme=\"night\"` ; les composants ne consomment que des tokens sémantiques.",
@@ -742,6 +767,7 @@
       "Tuiles de montre : un dégradé radial de studio, sans bordure ni ombre.",
       "Une bordure ou une ombre, jamais les deux ; l'ombre est réservée aux éléments flottants.",
       "Aucun surtitre au-dessus des titres du site public.",
+      "Toutes les montres battent ensemble, à l'heure et à la date du visiteur ; la montre du configurateur et de la fiche se tourne du doigt.",
       "Plancher typographique de 13 px ; `prefers-reduced-motion` coupe tout mouvement."
     ],
     "rules": [
@@ -795,8 +821,10 @@
       "Do marquer toute donnée fictive de la pastille « Exemple », et toute information manquante d'un bloc `À remplir`.",
       "Do décrire une photo absente par un emplacement en pointillés qui dit quoi photographier.",
       "Do garder un focus visible partout (2 px, décalage 3 px) et des cibles d'au moins 44 px pour les commandes isolées.",
+      "Do laisser l'horloge vivante tenir les aiguilles : jamais d'aiguille animée en CSS ni réécrite par React ; une nouvelle montre se déclare par `data-aiguille`, `data-guichet` et `data-facette`.",
       "Do animer avec les tokens de mouvement : `--ease` pour ce qui entre, `--ease-sortie` et un cran de durée en moins pour ce qui sort, `--ease-passage` pour ce qui se déplace ; un seul repère qui glisse plutôt que deux états repeints.",
-      "Do prévoir le rendu sans mouvement : `prefers-reduced-motion` coupe animations, transitions, ouverture, défilé et défilement doux ; le contenu reste complet.",
+      "Do prévoir le rendu sans mouvement : `prefers-reduced-motion` coupe animations, transitions, ouverture, défilé, balayage des aiguilles, inertie de la platine et défilement doux ; le contenu reste complet.",
+      "Do différer le dessin d'une montre loin sous la ligne de flottaison (`MontreDifferee`), dans une boîte déjà à sa taille.",
       "Do vérifier tout nouveau couple texte / fond dans `src/design/tokens.test.ts` (AA, 4,5:1)."
     ],
     "donts": [
@@ -805,6 +833,7 @@
       "Don't écrire en bleu clair sur le blanc (2,51:1) ni en bleu profond sur le noir (1,96:1) : chaque fond a son bleu.",
       "Don't introduire un second accent ni une autre teinte que le noir, le blanc et le bleu ; les couleurs appartiennent aux montres.",
       "Don't ajouter d'ornement : ni texture, ni grain, ni illustration, ni pictogramme dans un cercle coloré.",
+      "Don't monter le défilement doux dans un outil : ni le CRM, ni le configurateur, où le défilement reste natif.",
       "Don't utiliser de rebond ni d'élastique, ni animer autre chose que transform, opacité et flou léger — hauteur d'accordéon exceptée.",
       "Don't inventer une photographie, un avis client ou un chiffre.",
       "Don't descendre sous 13 px.",

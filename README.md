@@ -16,17 +16,25 @@ Le lire avant d'ajouter quoi que ce soit fait gagner du temps.
 | | |
 |---|---|
 | Vitrine | accueil, collection, fiches modèles, l'horloger, entretien, FAQ, contact, sur-mesure, pages légales |
-| Configurateur | 9 étapes, 83 options, 27 règles de compatibilité, rendu SVG en calques, lien partageable |
+| Configurateur | 9 étapes, options et règles de compatibilité éditables depuis l'atelier, calibres NH35 / NH36 / NH34 / NH38 / VK64, rendu SVG en calques sur platine tournante, montres à l'heure du visiteur, lien partageable |
 | Commerce | panier, paiement Stripe, compte client avec suivi d'assemblage |
 | Atelier | tableau de bord, kanban des commandes, fiche d'atelier, stock et journal, fournisseurs et bons de commande, clients et RGPD, demandes et devis, après-vente, catalogue éditable, paramètres |
 
-Deux choses à savoir avant de lire le code :
+Trois choses à savoir avant de lire le code :
 
 **Le panier ne fixe aucun prix.** Il vit dans le navigateur et conserve un
 instantané de chaque configuration, mais au départ vers le paiement le serveur
 ne reçoit que le modèle, la configuration et la quantité, puis refait tout le
 chiffrage depuis le catalogue en base. Un panier vieux de trois semaines, ou
 trafiqué, ne peut pas imposer son tarif.
+
+**Le catalogue ne traverse pas la frontière serveur → client tel quel.** Tout ce qui
+est passé en prop à un composant client finit sérialisé dans le HTML de la page ;
+le catalogue complet y exposait prix d'achat, fournisseurs et quantités en stock.
+`src/lib/configurateur/public.ts` (`versCataloguePublic`, type `CataloguePublic`)
+est la seule projection autorisée : une liste blanche champ par champ, où le stock
+devient un état (disponible, dernière pièce, de retour bientôt). Un champ ajouté
+en base ne fuit pas tant qu'il n'est pas recopié là explicitement.
 
 **Le stock est un journal, pas un compteur.** Chaque entrée, réservation, sortie
 d'assemblage et perte laisse un mouvement daté ; les deux quantités portées par
@@ -141,6 +149,24 @@ npm run db:reset     # purge puis réamorce
 npm run db:verifier  # contrôle de cohérence de la base
 ```
 
+Scripts ponctuels, à lancer avec `npx tsx` (ils chargent `.env` eux-mêmes) :
+
+```bash
+npx tsx prisma/ajout-calibre-nh36.ts                        # ajoute le calibre NH36
+npx tsx prisma/annuler-commandes-essai.ts CHR-2026-0008 …   # annule des commandes d'essai
+```
+
+`ajout-calibre-nh36.ts` est strictement additif et relançable : il crée la pièce
+de stock, l'option et la règle « le jour-date exige le NH36 » (dans la famille NH,
+seul le NH36 porte un disque des jours ; NH35 et NH34 n'ont que le quantième),
+puis bascule sur NH36 les modèles d'exemple qui portent le jour-date. Un libellé
+modifié depuis le CRM est conservé ; rien n'est supprimé.
+
+`annuler-commandes-essai.ts` rend leurs pièces au stock comme le veut le journal :
+un mouvement LIBERATION en face de chaque RESERVATION, la commande passe à
+ANNULEE avec une note interne. Seules les commandes du compte d'essai de
+l'atelier, non expédiées, sont acceptées ; relancer ne fait rien de plus.
+
 `db:verifier` vérifie la base réelle, ce qu'aucun test en mémoire ne peut faire :
 compteurs de stock contre journal, réservations contre commandes ouvertes,
 configurations figées réaffichables, règles sans message. Il liste aussi ce qui
@@ -190,25 +216,33 @@ prisma/
   seed.ts              données d'exemple, toutes marquées isSample
   purge.ts             vide les tables applicatives
   verifier.ts          contrôle de cohérence de la base
+  ajout-calibre-nh36.ts, annuler-commandes-essai.ts   scripts ponctuels (npx tsx)
 src/app/
   (site)/              site public
   atelier/             CRM, réservé au rôle ADMIN
   actions/             Server Actions, rôle revérifié à chaque écriture
   api/                 webhook Stripe, exports RGPD et CSV
   globals.css          TOUS les tokens du design system
+  icon.svg             favicon
+next.config.ts         en-têtes de sécurité (CSP, HSTS, Referrer-Policy…)
 src/components/
-  ui/                  primitives (boutons, pastilles, sections, pictos)
-  layout/              en-tête, pied de page, grain, cookies, défilement doux
-  home/                sections de la page d'accueil
-  intro/               animation d'entrée
+  ui/                  primitives (boutons, pastilles, sections, pictos, rendu différé des montres)
+  layout/              en-tête, pied de page, défilement doux
+  home/                sections de la page d'accueil, défilé des modèles, cadrages des gros plans
+  collection/          blocs de gamme, galerie de fiche, grille et filtres de modèles
+  intro/               ouverture du site
+  motion/              apparition au défilement, platine tournante, fondu de studio
   configurateur/       étapes, grilles d'options, scène de la montre
   atelier/             coquille du CRM, champs, panneaux, graphiques
 src/watch/             moteur de rendu SVG de la montre
   parts/               un fichier par calque
   types.ts             frontière code / base (`WatchRender`)
   geometry.ts          repère, rayons, échelles
+  horloge-vivante.tsx  l'horloge unique qui met toutes les montres à l'heure
+  facettes.ts          ombrage des aiguilles, partagé serveur / navigateur
 src/lib/
-  configurateur/       prix, règles, nomenclature, stock, URL
+  configurateur/       prix, règles, nomenclature, stock, URL, projection publique
+  securite/            limitation de débit
   commandes/           étapes, création, réservation, confirmation
   atelier/             journal de stock, libellés, navigation
 ```
@@ -227,7 +261,13 @@ src/lib/
   chacune revérifie. Un compte client reçoit un 404, jamais un 403 — répondre
   « interdit » confirmerait que l'adresse existe.
 - **Mouvement.** Toute animation est coupée sous `prefers-reduced-motion` :
-  rideau d'entrée sauté, défilement doux non monté, transitions de vue à zéro.
+  ouverture sautée, défilement doux non monté, transitions de vue à zéro,
+  trotteuses immobiles, platine sans inertie. Le défilement doux est aussi absent
+  du CRM et du configurateur, où il doit rester natif.
+- **Sécurité.** En-têtes posés par `next.config.ts` (CSP, `X-Frame-Options: DENY`,
+  HSTS en production) ; limitation de débit en mémoire (`src/lib/securite/`) sur
+  les liens magiques, les formulaires et la création de commande — par IP et par
+  une clé que l'attaquant ne choisit pas (e-mail visé, compte).
 - **Accessibilité.** Un `<h1>` par page, hiérarchie sans saut, lien d'évitement
   en tête de tabulation, focus toujours visible, cibles tactiles d'au moins
   24 px et de 44 px dans le CRM, qui sert sur une tablette posée à l'établi.

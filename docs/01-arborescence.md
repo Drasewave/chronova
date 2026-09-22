@@ -6,13 +6,13 @@
 
 | Sujet | Choix | Raison |
 |---|---|---|
-| Framework | **Next.js 15**, App Router, React 19, TypeScript strict | Server Components pour le catalogue et le CRM (pas de JSON inutile envoyé au client), Server Actions pour les mutations, streaming pour le tableau de bord. |
+| Framework | **Next.js 16**, App Router, React 19, TypeScript strict | Server Components pour le catalogue et le CRM (pas de JSON inutile envoyé au client), Server Actions pour les mutations, streaming pour le tableau de bord. |
 | CSS | **Tailwind v4** (configuration CSS-first `@theme`) | Les tokens du design system sont *littéralement* des variables CSS, réutilisables hors Tailwind (SVG de la montre, e-mails). Pas de `tailwind.config.js` à maintenir en double. |
 | Base de données | **PostgreSQL + Prisma**, en local comme en production | Voir §4. |
 | Auth | **Auth.js v5** (adaptateur Prisma), lien magique par e-mail | Aucun mot de passe stocké, donc aucune fuite possible. Le rôle `ADMIN` ouvre `/atelier`, vérifié dans le middleware **et** dans chaque Server Action. |
 | Paiement | **Stripe Checkout** + webhook signé | La commande n'est créée en base qu'au webhook `checkout.session.completed`, jamais au retour navigateur. |
 | E-mails | **Resend** + **React Email** | Les gabarits sont modifiables depuis le CRM (corps en Markdown + variables), le rendu reste maîtrisé. |
-| Animation | **Motion** (transforms/opacity), **Lenis** (défilement doux, désactivé dans le CRM et sous `prefers-reduced-motion`), **View Transitions API** en progressive enhancement | |
+| Animation | Transitions CSS et Web Animations sur les tokens de `globals.css`, **Lenis** (défilement doux sur les pages de vitrine seulement : absent du CRM, de `/composer/*` et sous `prefers-reduced-motion`), **View Transitions API** en progressive enhancement, horloge unique des montres (`src/watch/horloge-vivante.tsx`) | |
 | Tests | **Vitest** sur la logique pure (prix, compatibilités, stock, encodage d'URL), **Playwright** sur 3 parcours critiques | Chromium est déjà présent sur l'environnement. |
 | Hébergement | **Vercel** + Postgres managé (Neon ou Supabase Postgres) | |
 
@@ -20,8 +20,9 @@
 
 ```
 /                                  Accueil
-/collection                        La collection (filtres : style, diamètre, mouvement, prix)
-/collection/[modele]               Fiche modèle — éditorial, specs, vue éclatée, photos
+/collection                        Vue d'ensemble : un bloc par gamme, puis « Tous les modèles » (filtres : style, diamètre, mouvement, prix)
+/gammes/[style]                    Page de gamme — scène nuit, repères, modèles, autres gammes
+/collection/[modele]               Fiche modèle — galerie sur platine tournante, fiche technique, deux montres sur le même boîtier
 /composer                          Choix du modèle de base (si on arrive sans modèle)
 /composer/[modele]                 LE CONFIGURATEUR — rendu SVG + étapes + prix en direct
                                    Configuration portée par l'URL : ?c=boitier:40-brosse~cadran:bleu-abysse~…
@@ -42,12 +43,13 @@
 /faq
 /mentions-legales
 /cgv
+/cgu
 /confidentialite
 /cookies                           Gestion fine des consentements
-/sitemap.xml  /robots.txt  /opengraph-image  /composer/[modele]/opengraph-image (rendu de la config partagée)
+/sitemap.xml  /robots.txt  /llms.txt  /icon.svg
 ```
 
-**Note sur `/atelier`** — tu as réservé `/atelier` au CRM. La page publique « à propos » ne peut donc pas porter cette URL. Proposition : page publique = `/l-horloger`, libellée « L'horloger » dans la navigation. Alternative si tu préfères garder « L'atelier » en public : déplacer le CRM sur `/etabli`. À trancher.
+**Note sur `/atelier`** — `/atelier` est réservé au CRM ; la page publique « à propos » est `/l-horloger`, libellée « L'horloger » dans la navigation. La navigation « Collection » ouvre un panneau des gammes (`/gammes/[style]`).
 
 ## 3. Arborescence du CRM (`/atelier`, rôle `ADMIN` requis)
 
@@ -90,3 +92,6 @@ Le schéma s'appuie sur des `enum` et des colonnes `Json` (instantanés de confi
 - **Instantané de commande** : chaque ligne de commande garde une copie figée des libellés et des prix. Modifier le catalogue demain ne réécrit pas l'historique d'hier.
 - **Le webhook Stripe fait foi** pour le passage à l'état payé.
 - **Géométrie SVG dans le code, apparence dans la base** : voir `02-design-system.md` §7.
+- **Projection publique du catalogue** (`src/lib/configurateur/public.ts`) : la seule forme du catalogue autorisée à traverser la frontière serveur → client (props d'un composant `"use client"`, donc sérialisée dans le HTML). Liste blanche champ par champ : ni prix d'achat, ni fournisseur, ni quantité ni référence de pièce ; le stock devient un état (disponible, dernière pièce, de retour bientôt + délai). Jamais de `...option`.
+- **En-têtes de sécurité** posés par `next.config.ts` sur toutes les routes : `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `X-DNS-Prefetch-Control`, HSTS hors développement.
+- **Limitation de débit** (`src/lib/securite/`) : fenêtre glissante en mémoire par clé (`action:ip`, `action:email`), appliquée aux liens magiques, formulaires et créations de commande ; l'adresse IP vient de `X-Forwarded-For` et n'est fiable que derrière un proxy qui l'écrase, d'où une seconde clé que l'attaquant ne choisit pas. Mémoire du processus : à remplacer par Postgres ou Redis le jour où il y a plusieurs instances.
