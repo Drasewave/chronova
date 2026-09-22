@@ -54,12 +54,13 @@ export function WatchStage({
   // Rendus stables : la platine les garde en cache, un seuil de montage ne
   // redessine donc pas la vue déjà en place.
   const rendreScene = useCallback(
-    (vueAffichee: WatchView) => (
+    (vueAffichee: WatchView, yaw: number) => (
       <InteractiveWatch
-        // Deux vues coexistent pendant la rotation : chacune a ses propres `id` SVG.
-        id={`configurateur-${vueAffichee}`}
+        // Deux poses coexistent pendant la rotation : chacune a ses propres `id` SVG.
+        id={`configurateur-${yaw}`}
         render={render}
         view={vueAffichee}
+        yaw={yaw}
         label={label}
         className="flex h-full w-full items-center justify-center"
         svgClassName="h-full w-auto lg:h-auto lg:w-full"
@@ -68,8 +69,8 @@ export function WatchStage({
     [render, label],
   );
   const rendreZoom = useCallback(
-    (vueAffichee: WatchView) => (
-      <WatchSvg id={`zoom-${vueAffichee}`} render={render} view={vueAffichee} label={label} className="h-auto w-full" />
+    (vueAffichee: WatchView, yaw: number) => (
+      <WatchSvg id={`zoom-${yaw}`} render={render} view={vueAffichee} yaw={yaw} label={label} className="h-auto w-full" />
     ),
     [render, label],
   );

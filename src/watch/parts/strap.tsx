@@ -106,17 +106,19 @@ function StrapDefs({ uid, kind, metal, detail, frame }: StrapProps) {
             <clipPath id={`${uid}-strap-${half}`}>
               <path d={outline(dir, isSteel || kind === "nato" ? D_UNDER_CASE : D_LOOP, isSteel || kind === "nato" ? 0 : 12)} />
             </clipPath>
-            {/* Le brin roulé autour de la barrette : un cylindre couché. */}
-            <AxisGradient
-              id={`${uid}-strap-roll-${half}`}
-              dir={dir}
-              stops={[
-                [0, INK, 0.5],
-                [0.42, PAPER, 0.2],
-                [0.7, PAPER, 0],
-                [1, INK, 0.28],
-              ]}
-            />
+            {/* Le brin roulé autour de la barrette : un cylindre couché (cuir, caoutchouc, NATO). */}
+            {!isSteel && (
+              <AxisGradient
+                id={`${uid}-strap-roll-${half}`}
+                dir={dir}
+                stops={[
+                  [0, INK, 0.5],
+                  [0.42, PAPER, 0.2],
+                  [0.7, PAPER, 0],
+                  [1, INK, 0.28],
+                ]}
+              />
+            )}
             {/* Ce qui passe sous la carrure plonge dans son ombre. */}
             <AxisGradient
               id={`${uid}-strap-under-${half}`}
@@ -128,16 +130,18 @@ function StrapDefs({ uid, kind, metal, detail, frame }: StrapProps) {
               ]}
             />
             {/* Pièce de bout : creusée contre le boîtier, bombée vers la pointe. */}
-            <AxisGradient
-              id={`${uid}-strap-endlink-${half}`}
-              dir={dir}
-              stops={[
-                [0, INK, 0.58],
-                [0.4, INK, 0.12],
-                [0.72, PAPER, 0.16],
-                [1, INK, 0.2],
-              ]}
-            />
+            {isSteel && (
+              <AxisGradient
+                id={`${uid}-strap-endlink-${half}`}
+                dir={dir}
+                stops={[
+                  [0, INK, 0.58],
+                  [0.4, INK, 0.12],
+                  [0.72, PAPER, 0.16],
+                  [1, INK, 0.2],
+                ]}
+              />
+            )}
           </Fragment>
         );
       })}
@@ -171,20 +175,24 @@ function StrapDefs({ uid, kind, metal, detail, frame }: StrapProps) {
       </linearGradient>
 
       {/* Maillon bombé, éclairé par le haut de l'image sur les deux brins. */}
-      <linearGradient id={`${uid}-link-round`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor={INK} stopOpacity="0.28" />
-        <stop offset="0.1" stopColor={PAPER} stopOpacity="0.75" />
-        <stop offset="0.3" stopColor={PAPER} stopOpacity="0.08" />
-        <stop offset="0.7" stopColor={INK} stopOpacity="0.06" />
-        <stop offset="1" stopColor={INK} stopOpacity="0.58" />
-      </linearGradient>
+      {isSteel && (
+        <linearGradient id={`${uid}-link-round`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={INK} stopOpacity="0.28" />
+          <stop offset="0.1" stopColor={PAPER} stopOpacity="0.75" />
+          <stop offset="0.3" stopColor={PAPER} stopOpacity="0.08" />
+          <stop offset="0.7" stopColor={INK} stopOpacity="0.06" />
+          <stop offset="1" stopColor={INK} stopOpacity="0.58" />
+        </linearGradient>
+      )}
       {/* Maillon poli : le même galbe, avec un reflet franc. */}
-      <linearGradient id={`${uid}-link-polished`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor={INK} stopOpacity="0.2" />
-        <stop offset="0.2" stopColor={PAPER} stopOpacity="0.85" />
-        <stop offset="0.4" stopColor={PAPER} stopOpacity="0.1" />
-        <stop offset="1" stopColor={INK} stopOpacity="0.55" />
-      </linearGradient>
+      {kind === "acier-jubile" && (
+        <linearGradient id={`${uid}-link-polished`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={INK} stopOpacity="0.2" />
+          <stop offset="0.2" stopColor={PAPER} stopOpacity="0.85" />
+          <stop offset="0.4" stopColor={PAPER} stopOpacity="0.1" />
+          <stop offset="1" stopColor={INK} stopOpacity="0.55" />
+        </linearGradient>
+      )}
 
       {detail === "full" && (
         <>
@@ -280,6 +288,7 @@ function SteelBracelet({
   detail,
   dir,
   half,
+  frame,
   pitch,
   columns,
 }: BandProps & { pitch: number; columns: number[] }) {
@@ -303,6 +312,9 @@ function SteelBracelet({
   // maillon de rive. C'est ce rythme serré de petits galets polis entre deux
   // rives brossées qui fait reconnaître le bracelet.
   const grain = pitch / 2;
+  // Chaque maillon tient en deux ou trois nœuds : la matière, le brossage en
+  // plein détail, puis le galbe qui porte aussi le filet de contour. Un
+  // maillon n'a pas besoin d'un groupe à lui.
   const link = (key: string, col: number, d0: number, length = pitch) => {
     const d1 = d0 + length - (jubilee ? 3 : gap);
     const mid = (d0 + d1) / 2;
@@ -311,20 +323,22 @@ function SteelBracelet({
     const polished = jubilee && isCentre(col);
     const box = { x: n(x), width: n(width), rx: polished ? 11 : jubilee ? 10 : 6, ...span(dir, d0, d1) };
     return (
-      <g key={key}>
+      <Fragment key={key}>
         <rect {...box} fill={polished ? ramp.mid : metalFill} />
         {brush && !polished && <rect {...box} fill={brush} />}
-        <rect {...box} fill={`url(#${uid}-link-${polished ? "polished" : "round"})`} />
+        <rect {...box} fill={`url(#${uid}-link-${polished ? "polished" : "round"})`} stroke={ramp.edge} strokeOpacity="0.55" strokeWidth="1.2" />
         {/* Grain poli : un éclat ponctuel en haut à gauche, comme sur une perle. */}
         {polished && detail === "full" && (
           <ellipse cx={n(x + width * 0.34)} cy={n(box.y + box.height * 0.3)} rx={n(width * 0.2)} ry="2.6" fill={PAPER} fillOpacity="0.85" />
         )}
-        <rect {...box} fill="none" stroke={ramp.edge} strokeOpacity="0.55" strokeWidth="1.2" />
-      </g>
+      </Fragment>
     );
   };
 
-  const rows = Math.ceil((D_EDGE - D_END_LINK) / pitch) + 1;
+  // On ne dessine que les rangs qui entrent dans le cadre : le brin s'y éteint
+  // (`strap-fade`) bien avant `D_EDGE`, et un maillon hors champ coûte autant
+  // qu'un maillon visible.
+  const rows = Math.ceil((frame - D_END_LINK) / pitch);
 
   return (
     <g>
@@ -353,14 +367,27 @@ function SteelBracelet({
         const box = { x: n(x), width: n(width), ...span(dir, D_UNDER_CASE, dTip) };
         const polished = jubilee && isCentre(col);
         return (
-          <g key={col}>
+          <Fragment key={col}>
             <rect {...box} fill={polished ? ramp.light : metalFill} />
             {brush && !polished && <rect {...box} fill={brush} />}
-            <rect {...box} fill={`url(#${uid}-strap-endlink-${half})`} />
-            <rect {...box} fill="none" stroke={ramp.edge} strokeOpacity="0.6" strokeWidth="1.2" />
-          </g>
+            <rect {...box} fill={`url(#${uid}-strap-endlink-${half})`} stroke={ramp.edge} strokeOpacity="0.6" strokeWidth="1.2" />
+          </Fragment>
         );
       })}
+
+      {/* Goupilles : chaque articulation est traversée d'une goupille dont on
+          voit la tête sur le flanc, un point sombre à chaque rang. */}
+      {detail === "full" &&
+        Array.from({ length: rows }, (_, row) => {
+          const d = D_END_LINK + row * pitch + gap / 2;
+          if (d > frame) return null;
+          return (
+            <Fragment key={row}>
+              <circle cx={n(C - halfAt(d) + 3.2)} cy={y(dir, d)} r="1.7" fill={INK} fillOpacity="0.6" />
+              <circle cx={n(C + halfAt(d) - 3.2)} cy={y(dir, d)} r="1.7" fill={INK} fillOpacity="0.45" />
+            </Fragment>
+          );
+        })}
 
       {/* Flancs polis du bracelet. */}
       <line

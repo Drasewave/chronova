@@ -3,9 +3,11 @@
 import Link from "next/link";
 import {
   createContext,
+  memo,
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -34,19 +36,27 @@ import type { WatchRender } from "@/watch/types";
  *   <LienComposerModele>   « Composer ce modèle », à côté des boutons du héros
  *   <DefileFiche>          la fiche de pied de scène
  *
- * Chronologie d'un changement (850 ms, `var(--ease)`, voir globals.css) :
+ * Chronologie d'un passage (1 200 ms, `--d-passage`, voir « Défilé » dans
+ * globals.css). Trois plans, qui ne bougent ni de la même amplitude ni au même
+ * instant :
  *
- *   −600 ms  lecture auto seulement : la montre suivante est montée, invisible,
- *            pour que ses ≈ 1 500 nœuds ne tombent pas dans la transition
- *      0 ms  la sortante recule (0,96), glisse de 40 px et s'éteint (700 ms) ;
- *            l'entrante arrive de l'autre côté, 48 px, 0,97 → 1, floue de 6 px
- *            au départ seulement (850 ms) ; la couronne graduée tourne de 30° ;
- *            nom et fiche passent en fondu enchaîné
- *    850 ms  la sortante est démontée ; le minuteur de 5 s repart
+ *   −600 ms  lecture auto seulement : la montre suivante est montée, invisible
+ *            (`attente`), pour que ses ≈ 1 500 nœuds ne tombent pas dans le
+ *            passage
+ *      0 ms  `amorce` : la sortante commence à s'éloigner dans la pénombre ; si
+ *            l'entrante n'était pas montée, elle l'est maintenant, en `attente`,
+ *            et son style est calculé avant le pas suivant
+ *     +1 rendu `transition` : l'entrante vient de la lumière et se pose au net
+ *            sur la courbe la plus longue ; une bande de reflet la balaie ; la
+ *            couronne graduée prend ses 30° sur toute la durée ; le halo et
+ *            l'ombre au sol respirent ; nom, style, fiche et prix se relaient en
+ *            cascade
+ *   1200 ms  la sortante est démontée ; le minuteur de 5 s repart
  *
- * Jamais plus de deux montres montées. La première est rendue côté serveur et
- * garde l'entrée du héros (`.entree-montre`) ; sans JavaScript elle reste là,
- * fixe, avec sa fiche.
+ * Tout est en transitions CSS : un clic pendant le passage repart de l'état
+ * courant, sans saut. Jamais plus de deux montres montées. La première est
+ * rendue côté serveur et garde l'entrée du héros (`.entree-montre`) ; sans
+ * JavaScript elle reste là, fixe, avec sa fiche.
  */
 
 export interface ModeleDefile {
@@ -67,11 +77,11 @@ export interface ModeleDefile {
 }
 
 /** Temps d'exposition d'un modèle, transition non comprise. */
-// Ces deux durées doublent `--d-defile` et `--d-scene` de globals.css : le
-// minuteur JS et la barre de progression CSS doivent finir ensemble.
+// Ces deux durées doublent `--d-defile` et `--d-passage` de globals.css : le
+// minuteur JS et les transitions CSS doivent finir ensemble.
 const INTERVALLE_MS = 5000;
-/** Durée de la transition : doit couvrir `defile-entre` (globals.css). */
-const TRANSITION_MS = 850;
+/** Durée du passage : `--d-passage` = `--d-scene` (850 ms) + `--d-base` (350 ms). */
+const TRANSITION_MS = 1200;
 /** Avance avec laquelle la montre suivante est montée, invisible. */
 const PREMONTAGE_MS = 600;
 /** Attente avant le premier départ : le rideau puis l'entrée du héros (≈ 2,3 s). */
@@ -80,12 +90,15 @@ const ATTENTE_SANS_RIDEAU_MS = 1500;
 const SEUIL_BALAYAGE_PX = 40;
 
 type Sens = 1 | -1;
+/** Opacités calculées des deux montres d'un passage, au moment d'un clic. */
+type Jauge = () => { sortante: number; entrante: number };
 type Frein = "survol" | "focus" | "masque" | "horsEcran";
 
 interface Etat {
   courant: number;
   entrant: { index: number; sens: Sens } | null;
-  phase: "repos" | "transition";
+  /** `amorce` : l'entrante est montée en attente, le temps d'un calcul de style. */
+  phase: "repos" | "amorce" | "transition";
   /** Crans parcourus par la couronne graduée : 30° chacun. */
   crans: number;
   /** Vrai tant qu'aucun changement n'a eu lieu : la première montre garde son entrée. */
@@ -103,6 +116,13 @@ interface Defile {
   reduit: boolean;
   aller: (index: number, sens: Sens) => void;
   pas: (sens: Sens) => void;
+  /** Fin de l'amorce : la scène a calculé le style de l'entrante, le passage peut partir. */
+  lancer: () => void;
+  /**
+   * La scène confie ici sa lecture des opacités à l'écran : un clic pendant un
+   * passage garde la montre la plus visible et relaie l'autre.
+   */
+  jauger: (lecture: Jauge | null) => void;
   basculerLecture: () => void;
   freiner: (frein: Frein, actif: boolean) => void;
 }
@@ -144,6 +164,7 @@ export function DefileModeles({
   const [annonce, setAnnonce] = useState("");
   const reste = useRef(INTERVALLE_MS);
   const reduitRef = useRef(false);
+  const jauge = useRef<Jauge | null>(null);
 
   // Mouvement réduit : ni lecture automatique, ni transition.
   useEffect(() => {
@@ -176,15 +197,35 @@ export function DefileModeles({
   }, []);
 
   const changer = useCallback((cible: (courant: number) => number, sens: Sens) => {
+    // Un clic pendant un passage le solde depuis l'état courant : tant que la
+    // sortante est la plus visible à l'écran, elle continue de partir et c'est
+    // l'entrante, à peine là, qui est relayée ; ensuite c'est l'entrante,
+    // presque posée, qui devient la sortante. Lu ici, hors de la mise à jour.
+    const lu = jauge.current?.();
+    const sortanteVisible = lu !== undefined && lu.sortante > lu.entrante;
     setEtat((e) => {
-      // Un clic pendant une transition la solde d'abord : on repart de l'entrant.
-      const courant = e.phase === "transition" && e.entrant ? e.entrant.index : e.courant;
-      const index = cible(courant);
-      if (index === courant) return e.phase === "transition" ? { ...e, courant, entrant: null, phase: "repos" } : e;
+      const enCours = e.phase !== "repos" && e.entrant ? e.entrant : null;
+      const jeune = enCours !== null && sortanteVisible;
+      const base = enCours && !jeune ? enCours.index : e.courant;
+      const index = cible(base);
+      if (index === base) {
+        // Retour sur la montre qui partait : elle revient de là où elle est.
+        if (jeune && enCours) return { ...e, entrant: null, phase: "repos", crans: e.crans + sens };
+        return e;
+      }
+      if (jeune && enCours && index === enCours.index) return e;
       const crans = e.crans + sens;
       if (reduitRef.current) return { courant: index, entrant: null, phase: "repos", crans, vierge: false };
-      return { courant, entrant: { index, sens }, phase: "transition", crans, vierge: false };
+      return { courant: base, entrant: { index, sens }, phase: "amorce", crans, vierge: false };
     });
+  }, []);
+
+  const lancer = useCallback(() => {
+    setEtat((e) => (e.phase === "amorce" ? { ...e, phase: "transition" } : e));
+  }, []);
+
+  const jauger = useCallback((lecture: Jauge | null) => {
+    jauge.current = lecture;
   }, []);
 
   const annoncer = useCallback(
@@ -206,7 +247,7 @@ export function DefileModeles({
 
   const pas = useCallback(
     (sens: Sens) => {
-      const base = etat.phase === "transition" && etat.entrant ? etat.entrant.index : etat.courant;
+      const base = etat.phase !== "repos" && etat.entrant ? etat.entrant.index : etat.courant;
       const index = (base + sens + total) % total;
       changer(() => index, sens);
       annoncer(index);
@@ -265,7 +306,7 @@ export function DefileModeles({
     };
   }, [enMarche, etat.phase, etat.courant, total, changer]);
 
-  const affiche = etat.phase === "transition" && etat.entrant ? etat.entrant.index : etat.courant;
+  const affiche = etat.phase !== "repos" && etat.entrant ? etat.entrant.index : etat.courant;
 
   const valeur = useMemo<Defile>(
     () => ({
@@ -278,10 +319,12 @@ export function DefileModeles({
       reduit,
       aller,
       pas,
+      lancer,
+      jauger,
       basculerLecture,
       freiner,
     }),
-    [modeles, depart, etat, affiche, enMarche, pauseUtilisateur, reduit, aller, pas, basculerLecture, freiner],
+    [modeles, depart, etat, affiche, enMarche, pauseUtilisateur, reduit, aller, pas, lancer, jauger, basculerLecture, freiner],
   );
 
   return (
@@ -298,13 +341,32 @@ export function DefileModeles({
 /**
  * La montre courante, en grand, dans un carré réservé ; la couronne graduée
  * (fournie par le héros) tourne d'un cran derrière elle ; les commandes dessous.
+ *
+ * Les plans, du fond vers l'avant : le halo qui respire, la couronne graduée,
+ * l'ombre au sol, puis les montres (deux au plus, chacune avec sa bande de
+ * reflet). Seuls ces conteneurs HTML bougent : le SVG reste à l'horloge
+ * vivante, qui écrit les `transform` de ses aiguilles.
  */
 export function DefileScene({ graduation }: { graduation: ReactNode }) {
-  const { modeles, depart, etat, affiche, enMarche, pauseUtilisateur, reduit, aller, pas, basculerLecture, freiner } =
-    useDefile();
+  const {
+    modeles,
+    depart,
+    etat,
+    affiche,
+    enMarche,
+    pauseUtilisateur,
+    reduit,
+    aller,
+    pas,
+    lancer,
+    jauger,
+    basculerLecture,
+    freiner,
+  } = useDefile();
   const total = modeles.length;
   const region = useRef<HTMLDivElement>(null);
   const appui = useRef<{ x: number; y: number } | null>(null);
+  const passage = etat.phase !== "repos";
 
   useEffect(() => {
     const noeud = region.current;
@@ -318,6 +380,28 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
     observateur.observe(noeud);
     return () => observateur.disconnect();
   }, [freiner]);
+
+  // Ce que l'écran montre vraiment des deux montres : une transition composée
+  // peut partir une trame après le style, et un montage retenir le fil ; seule
+  // l'opacité calculée dit laquelle est la plus visible au moment d'un clic.
+  useEffect(() => {
+    const opacite = (role: string) => {
+      const noeud = region.current?.querySelector<HTMLElement>(`[data-defile="${role}"]`);
+      return noeud ? Number(getComputedStyle(noeud).opacity) : 0;
+    };
+    jauger(() => ({ sortante: opacite("sortante"), entrante: opacite("entrante") }));
+    return () => jauger(null);
+  }, [jauger]);
+
+  // Amorce : l'entrante vient d'être montée en attente. On force le calcul de
+  // son style (pas de mise en page) pour que le pas suivant, `entrante`, parte
+  // en transition depuis cet état plutôt que d'apparaître d'un coup.
+  useLayoutEffect(() => {
+    if (etat.phase !== "amorce") return;
+    const attente = region.current?.querySelector<HTMLElement>('[data-defile="attente"]');
+    if (attente) void getComputedStyle(attente).opacity;
+    lancer();
+  }, [etat.phase, lancer]);
 
   const surTouche = (event: KeyboardEvent<HTMLDivElement>) => {
     if (total < 2 || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -344,10 +428,11 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
     if (Math.abs(dx) >= SEUIL_BALAYAGE_PX && Math.abs(dx) > Math.abs(dy) * 1.2) pas(dx < 0 ? 1 : -1);
   };
 
+  const sens: Sens = etat.entrant?.sens ?? 1;
   const couches = [
-    { index: etat.courant, role: etat.phase === "transition" ? ("sortante" as const) : ("courante" as const), sens: etat.entrant?.sens ?? 1 },
+    { index: etat.courant, role: passage ? ("sortante" as const) : ("courante" as const) },
     ...(etat.entrant
-      ? [{ index: etat.entrant.index, role: etat.phase === "transition" ? ("entrante" as const) : ("attente" as const), sens: etat.entrant.sens }]
+      ? [{ index: etat.entrant.index, role: etat.phase === "transition" ? ("entrante" as const) : ("attente" as const) }]
       : []),
   ];
 
@@ -360,7 +445,10 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
       role="group"
       aria-roledescription="carrousel"
       aria-label="Les modèles de la collection"
+      className="defile-scene"
       data-lecture={enMarche ? "marche" : "arret"}
+      data-passage={passage ? "" : undefined}
+      style={{ "--sens": sens } as CSSProperties}
       onKeyDown={surTouche}
       onPointerEnter={(event) => event.pointerType === "mouse" && freiner("survol", true)}
       onPointerLeave={() => freiner("survol", false)}
@@ -378,8 +466,11 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
       )}
 
       <div className="relative mx-auto w-[min(92%,30rem)] lg:w-[min(100%,35rem)]">
+        {/* Plan de fond : le halo de la scène, qui respire d'un cran pendant le passage. */}
+        <span aria-hidden="true" className="defile-halo" />
+
         <div
-          className="pointer-events-none absolute inset-0 -z-10 transition-transform duration-(--d-scene) ease-(--ease)"
+          className="defile-graduation pointer-events-none absolute inset-0 -z-10"
           style={{ transform: `rotate(${etat.crans * 30}deg)` }}
         >
           {graduation}
@@ -392,7 +483,10 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
           onPointerUp={surRelache}
           onPointerCancel={() => (appui.current = null)}
         >
-          {couches.map(({ index, role, sens }) => {
+          {/* L'ombre au sol, qui s'allonge puis se rassemble. */}
+          <span aria-hidden="true" className="defile-ombre" />
+
+          {couches.map(({ index, role }) => {
             const modele = modeles[index];
             if (!modele) return null;
             const visible = role === "courante" || role === "entrante";
@@ -404,15 +498,13 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
                 aria-label={`${index + 1} sur ${total} : ${modele.name}`}
                 aria-hidden={visible ? undefined : true}
                 data-defile={role}
-                className={cn(
-                  "absolute inset-0",
-                  role === "sortante" && "defile-sort",
-                  role === "entrante" && "defile-entre z-10",
-                  role === "attente" && "invisible opacity-0 will-change-[transform,opacity,filter]",
-                )}
-                style={{ "--sens": sens } as CSSProperties}
+                className="defile-couche"
               >
-                <InteractiveWatch id={`hero-${modele.slug}`} render={modele.render} label={modele.label} className="w-full" />
+                <MontreCouche modele={modele} />
+                {/* Passage de lumière sur l'entrante, masqué à l'ellipse. */}
+                <span aria-hidden="true" className="defile-lueur">
+                  <span />
+                </span>
               </div>
             );
           })}
@@ -433,10 +525,10 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
               aria-label={`${modeleAffiche.name}, voir le modèle`}
               className="type-title-2 inline-block text-fg transition-colors duration-200 ease-atelier hover:text-accent-ink"
             >
-              <Pile valeurs={modeles.map((m) => m.name)} actif={affiche} centre />
+              <Pile valeurs={modeles.map((m) => m.name)} actif={affiche} rang={0} centre />
             </Link>
             <p className="type-mono mt-1 text-fg-soft">
-              <Pile valeurs={modeles.map((m) => m.styleLabel)} actif={affiche} centre />
+              <Pile valeurs={modeles.map((m) => m.styleLabel)} actif={affiche} rang={1} centre />
             </p>
           </div>
 
@@ -464,7 +556,7 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
                     <span className="relative block h-0.5 w-full overflow-hidden rounded-pill bg-fg-soft/35 transition-colors duration-200 ease-atelier group-hover:bg-fg-soft">
                       {actif && (
                         <span
-                          key={`${index}-${etat.phase}-${pauseUtilisateur}`}
+                          key={`${index}-${passage}-${pauseUtilisateur}`}
                           className={cn(
                             "absolute inset-0 origin-left bg-accent-ink",
                             !(reduit || pauseUtilisateur) && "defile-progression",
@@ -472,7 +564,7 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
                           style={
                             reduit || pauseUtilisateur
                               ? undefined
-                              : etat.phase === "transition"
+                              : passage
                                 ? { animationName: "none", transform: "scaleX(0)" }
                                 : { animationPlayState: enMarche ? "running" : "paused" }
                           }
@@ -486,7 +578,9 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
 
             <p className="type-mono hidden whitespace-nowrap text-fg-soft min-[480px]:block" data-numeric>
               <span className="sr-only">Modèle </span>
-              <span className="text-fg">{String(affiche + 1).padStart(2, "0")}</span>
+              <span className="text-fg">
+                <Pile valeurs={modeles.map((_, index) => String(index + 1).padStart(2, "0"))} actif={affiche} rang={1} />
+              </span>
               <span aria-hidden="true"> / </span>
               <span className="sr-only"> sur </span>
               {String(total).padStart(2, "0")}
@@ -508,6 +602,15 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
   );
 }
 
+/**
+ * La montre d'une couche, mémoïsée : ses ≈ 1 500 nœuds ne sont pas réconciliés
+ * à chaque rendu du défilé (rôle de la couche, freins, phase). Seul le
+ * conteneur autour d'elle change de style.
+ */
+const MontreCouche = memo(function MontreCouche({ modele }: { modele: ModeleDefile }) {
+  return <InteractiveWatch id={`hero-${modele.slug}`} render={modele.render} label={modele.label} className="w-full" />;
+});
+
 /** « Composer ce modèle » : suit le modèle affiché, sans changer de largeur. */
 export function LienComposerModele() {
   const { modeles, affiche } = useDefile();
@@ -520,20 +623,23 @@ export function LienComposerModele() {
   );
 }
 
-/** Fiche de la pièce photographiée : ce que l'on regarde, et son prix. */
+/**
+ * Fiche de la pièce photographiée : ce que l'on regarde, et son prix. Les
+ * colonnes se relaient en vague (`rang` 2 à 2,75), le prix ferme la marche.
+ */
 export function DefileFiche() {
   const { modeles, affiche } = useDefile();
   const exemple = modeles[affiche]?.isSample ?? false;
   return (
     <dl className="grid grid-cols-2 gap-x-6 gap-y-5 py-6 sm:grid-cols-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end">
-      <Spec terme="Modèle" valeurs={modeles.map((m) => m.name)} actif={affiche} />
-      <Spec terme="Boîtier" valeurs={modeles.map((m) => `${m.diameterMm} mm, acier 316L`)} actif={affiche} />
-      <Spec terme="Étanchéité" valeurs={modeles.map((m) => `${m.waterResistM} m`)} actif={affiche} />
-      <Spec terme="Calibre" valeurs={modeles.map((m) => m.movement)} actif={affiche} />
+      <Spec terme="Modèle" valeurs={modeles.map((m) => m.name)} actif={affiche} rang={2} />
+      <Spec terme="Boîtier" valeurs={modeles.map((m) => `${m.diameterMm} mm, acier 316L`)} actif={affiche} rang={2.25} />
+      <Spec terme="Étanchéité" valeurs={modeles.map((m) => `${m.waterResistM} m`)} actif={affiche} rang={2.5} />
+      <Spec terme="Calibre" valeurs={modeles.map((m) => m.movement)} actif={affiche} rang={2.75} />
       <div className="col-span-2 flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1 lg:justify-end">
         <dt className="sr-only">Prix</dt>
         <dd className="type-title-2 text-fg" data-numeric>
-          <Pile valeurs={modeles.map((m) => `À partir de ${m.priceLabel}`)} actif={affiche} />
+          <Pile valeurs={modeles.map((m) => `À partir de ${m.priceLabel}`)} actif={affiche} rang={3.25} />
         </dd>
         {exemple && <SamplePill />}
       </div>
@@ -541,12 +647,12 @@ export function DefileFiche() {
   );
 }
 
-function Spec({ terme, valeurs, actif }: { terme: string; valeurs: string[]; actif: number }) {
+function Spec({ terme, valeurs, actif, rang }: { terme: string; valeurs: string[]; actif: number; rang: number }) {
   return (
     <div>
       <dt className="type-mono text-fg-soft">{terme}</dt>
       <dd className="type-ui mt-1.5 text-fg" data-numeric>
-        <Pile valeurs={valeurs} actif={actif} />
+        <Pile valeurs={valeurs} actif={actif} rang={rang} />
       </dd>
     </div>
   );
@@ -554,25 +660,44 @@ function Spec({ terme, valeurs, actif }: { terme: string; valeurs: string[]; act
 
 /**
  * Valeurs superposées dans une même case de grille : la case prend d'emblée la
- * taille de la plus longue, donc rien ne saute quand la valeur change, et le
- * fondu enchaîné se résume à une opacité (`.defile-texte`). Les valeurs
- * identiques sont fusionnées : « 100 m » vers « 100 m » ne clignote pas.
+ * taille de la plus longue, donc rien ne saute quand la valeur change. L'active
+ * monte de son masque, celle qu'elle remplace (`data-actif="sort"`) s'efface
+ * par le haut (`.defile-texte`), avec le retard de son `rang` dans la cascade.
+ * Les valeurs identiques sont fusionnées : « 100 m » vers « 100 m » ne bouge pas.
  */
-function Pile({ valeurs, actif, centre = false }: { valeurs: string[]; actif: number; centre?: boolean }) {
+function Pile({
+  valeurs,
+  actif,
+  rang,
+  centre = false,
+}: {
+  valeurs: string[];
+  actif: number;
+  rang: number;
+  centre?: boolean;
+}) {
   const uniques = useMemo(() => Array.from(new Set(valeurs)), [valeurs]);
   const courante = valeurs[actif];
+  // La valeur précédente, tenue pendant le rendu (et non dans un effet) pour
+  // qu'elle sorte dans le même rendu que celui où l'active entre.
+  const [historique, setHistorique] = useState({ courante, avant: undefined as string | undefined });
+  if (historique.courante !== courante) setHistorique({ courante, avant: historique.courante });
+  const avant = historique.avant;
   return (
-    <span className={cn("inline-grid align-bottom", centre && "justify-items-center")}>
-      {uniques.map((valeur) => (
-        <span
-          key={valeur}
-          data-actif={valeur === courante}
-          aria-hidden={valeur === courante ? undefined : true}
-          className="defile-texte col-start-1 row-start-1 whitespace-nowrap"
-        >
-          {valeur}
-        </span>
-      ))}
+    <span className={cn("inline-grid align-bottom", centre && "justify-items-center")} style={{ "--rang": rang } as CSSProperties}>
+      {uniques.map((valeur) => {
+        const etat = valeur === courante ? "true" : valeur === avant ? "sort" : "false";
+        return (
+          <span
+            key={valeur}
+            data-actif={etat}
+            aria-hidden={etat === "true" ? undefined : true}
+            className="defile-texte col-start-1 row-start-1 whitespace-nowrap"
+          >
+            {valeur}
+          </span>
+        );
+      })}
     </span>
   );
 }

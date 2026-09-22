@@ -1,4 +1,4 @@
-import { LUME_EDGE, LUME_FILL, METALS, isLight, rampAt, shade, tint, type MetalRamp } from "../palette";
+import { INK, LUME_EDGE, LUME_FILL, METALS, isLight, rampAt, shade, tint, type MetalRamp } from "../palette";
 import { C, R_INDEX_IN, R_INDEX_OUT, n, polar } from "../geometry";
 import type { IndexStyle, MetalTone } from "../types";
 import { studioLum } from "./conic";
@@ -14,6 +14,8 @@ interface IndicesProps {
   innerRadius?: number;
   /** Position horaire supprimée, remplacée par le guichet de date. */
   skipHour?: number;
+  /** `full` : relief du luminova et arêtes polies ; `compact` (vignettes) s'en passe. */
+  detail?: "full" | "compact";
 }
 
 export function Indices({
@@ -24,9 +26,11 @@ export function Indices({
   outerRadius = R_INDEX_OUT,
   innerRadius = R_INDEX_IN,
   skipHour,
+  detail = "full",
 }: IndicesProps) {
+  const relief = detail === "full";
   if (style === "plongee") {
-    return <Plongee metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} />;
+    return <Plongee metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} relief={relief} />;
   }
   if (style === "montagne") {
     return <Montagne metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} />;
@@ -35,7 +39,7 @@ export function Indices({
     return <Terrain24 dialColor={dialColor} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} />;
   }
   return style === "batons" ? (
-    <Batons metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} />
+    <Batons metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} relief={relief} />
   ) : (
     <Arabes
       metal={metal}
@@ -53,6 +57,52 @@ function facet(ramp: MetalRamp, normal: number): string {
   return rampAt(ramp, 0.24 + 0.76 * studioLum(normal, "poli"));
 }
 
+/** Direction de la boîte à lumière principale (0° = midi, sens horaire). */
+const LUMIERE = 315;
+const RAD = Math.PI / 180;
+
+/**
+ * Relief d'une cuvette de luminova, en plein détail. Le luminova est coulé en
+ * retrait dans son sertissage : la paroi tournée vers la lumière porte une
+ * ombre sur la matière, la paroi opposée lui fait face et s'éclaire. Deux
+ * traits par cuvette, choisis parmi les quatre bords d'un rectangle dessiné
+ * dans le repère tourné de l'index (`angle`, 0° = midi) : le bord dont la
+ * normale regarde le plus vers la lumière reçoit l'ombre, son opposé l'éclat.
+ */
+function cuvette(x0: number, y0: number, x1: number, y1: number, angle: number, inset = 1.2) {
+  const bords: Array<{ normal: number; d: [number, number, number, number] }> = [
+    { normal: angle, d: [x0 + inset, y0 + inset, x1 - inset, y0 + inset] },
+    { normal: angle + 180, d: [x0 + inset, y1 - inset, x1 - inset, y1 - inset] },
+    { normal: angle - 90, d: [x0 + inset, y0 + inset, x0 + inset, y1 - inset] },
+    { normal: angle + 90, d: [x1 - inset, y0 + inset, x1 - inset, y1 - inset] },
+  ];
+  const poids = (normal: number, vers: number) => Math.max(0, Math.cos((normal - vers) * RAD));
+  const ombre = bords.reduce((a, b) => (poids(b.normal, LUMIERE) > poids(a.normal, LUMIERE) ? b : a));
+  const eclat = bords.reduce((a, b) => (poids(b.normal, LUMIERE + 180) > poids(a.normal, LUMIERE + 180) ? b : a));
+  const [ax, ay, bx, by] = ombre.d;
+  const [cx, cy, dx, dy] = eclat.d;
+  return (
+    <>
+      <line x1={n(ax)} y1={n(ay)} x2={n(bx)} y2={n(by)} stroke={INK} strokeOpacity={n(0.5 * poids(ombre.normal, LUMIERE))} strokeWidth="1.7" strokeLinecap="round" />
+      <line x1={n(cx)} y1={n(cy)} x2={n(dx)} y2={n(dy)} stroke="#FFFFFF" strokeOpacity={n(0.55 * poids(eclat.normal, LUMIERE + 180))} strokeWidth="1.1" strokeLinecap="round" />
+    </>
+  );
+}
+
+/** Même relief pour une cuvette ronde : un arc d'ombre côté lumière, un arc d'éclat à l'opposé. */
+function cuvetteRonde(cx: number, cy: number, r: number, angle: number) {
+  const p = (a: number) => `${n(cx + r * Math.sin(a * RAD))} ${n(cy - r * Math.cos(a * RAD))}`;
+  const arc = (centre: number, demi: number) => `M ${p(centre - demi)} A ${n(r)} ${n(r)} 0 0 1 ${p(centre + demi)}`;
+  // Le repère de l'index est tourné de `angle` : la lumière y arrive de 315° − angle.
+  const vers = LUMIERE - angle;
+  return (
+    <>
+      <path d={arc(vers, 62)} fill="none" stroke={INK} strokeOpacity="0.42" strokeWidth="1.8" strokeLinecap="round" />
+      <path d={arc(vers + 180, 55)} fill="none" stroke="#FFFFFF" strokeOpacity="0.5" strokeWidth="1.2" strokeLinecap="round" />
+    </>
+  );
+}
+
 /**
  * Index bâtons appliqués : un bloc de métal biseauté sur ses quatre côtés, le
  * luminova coulé dans sa cuvette. Chaque biseau prend la couleur de ce qu'il
@@ -64,12 +114,14 @@ function Batons({
   outer,
   inner,
   skipHour,
+  relief,
 }: {
   metal: MetalTone;
   lume: boolean;
   outer: number;
   inner: number;
   skipHour?: number;
+  relief: boolean;
 }) {
   const ramp = METALS[metal];
   const b = 4.2;
@@ -79,6 +131,11 @@ function Batons({
     const x1 = offsetX + width / 2;
     const y0 = -outer;
     const y1 = -inner;
+    // Le long biseau qui regarde la boîte à lumière : son arête avec le dessus
+    // est la ligne la plus vive de l'index, celle qu'une photo produit accroche.
+    const gaucheVif = studioLum(angle - 90, "poli") >= studioLum(angle + 90, "poli");
+    const xArete = gaucheVif ? x0 + b : x1 - b;
+    const vif = Math.max(studioLum(angle - 90, "poli"), studioLum(angle + 90, "poli"));
     return (
       <g>
         <path d={`M ${x0} ${y0} L ${x0 + b} ${y0 + b} L ${x0 + b} ${y1 - b} L ${x0} ${y1} Z`} fill={facet(ramp, angle - 90)} />
@@ -86,7 +143,10 @@ function Batons({
         <path d={`M ${x0} ${y0} L ${x1} ${y0} L ${x1 - b} ${y0 + b} L ${x0 + b} ${y0 + b} Z`} fill={facet(ramp, angle)} />
         <path d={`M ${x0} ${y1} L ${x1} ${y1} L ${x1 - b} ${y1 - b} L ${x0 + b} ${y1 - b} Z`} fill={facet(ramp, angle + 180)} />
         {lume ? (
-          <rect x={x0 + b} y={y0 + b} width={width - b * 2} height={y1 - y0 - b * 2} fill={LUME_FILL} stroke={LUME_EDGE} strokeOpacity="0.7" strokeWidth="0.8" />
+          <>
+            <rect x={x0 + b} y={y0 + b} width={width - b * 2} height={y1 - y0 - b * 2} fill={LUME_FILL} stroke={LUME_EDGE} strokeOpacity="0.7" strokeWidth="0.8" />
+            {relief && cuvette(x0 + b, y0 + b, x1 - b, y1 - b, angle)}
+          </>
         ) : (
           <>
             {/* Sans luminova, le dessus est taillé en toit : deux longs versants
@@ -96,6 +156,9 @@ function Batons({
             <rect x={offsetX} y={y0 + b} width={width / 2 - b} height={y1 - y0 - b * 2} fill={rampAt(ramp, 0.2 + 0.8 * studioLum(angle + 90, "poli"))} />
             <line x1={offsetX} y1={y0 + b} x2={offsetX} y2={y1 - b} stroke={ramp.hi} strokeOpacity="0.9" strokeWidth="0.9" />
           </>
+        )}
+        {relief && (
+          <line x1={xArete} y1={y0 + b} x2={xArete} y2={y1 - b} stroke={ramp.hi} strokeOpacity={n(0.25 + 0.65 * vif)} strokeWidth="0.9" />
         )}
         <rect x={x0} y={y0} width={width} height={y1 - y0} fill="none" stroke={ramp.edge} strokeOpacity="0.75" strokeWidth="0.9" />
       </g>
@@ -139,12 +202,14 @@ function Plongee({
   outer,
   inner,
   skipHour,
+  relief,
 }: {
   metal: MetalTone;
   lume: boolean;
   outer: number;
   inner: number;
   skipHour?: number;
+  relief: boolean;
 }) {
   const ramp = METALS[metal];
   const fill = lume ? LUME_FILL : rampAt(ramp, 0.72);
@@ -185,6 +250,7 @@ function Plongee({
                 strokeWidth="0.8"
                 strokeLinejoin="round"
               />
+              {relief && lume && cuvette(-c + b, y0 + b, c - b, y1 - b, angle)}
             </g>
           );
         }
@@ -200,6 +266,7 @@ function Plongee({
               <rect x={-h} y={y0} width={w} height={y1 - y0} rx={h} fill={shaded} {...cadre} />
               <path d={`M 0 ${y0} A ${h} ${h} 0 0 0 ${-h} ${y0 + h} L ${-h} ${y1 - h} A ${h} ${h} 0 0 0 0 ${y1} Z`} fill={lit} />
               <rect x={-h + b} y={y0 + b} width={w - b * 2} height={y1 - y0 - b * 2} rx={h - b} fill={fill} stroke={stroke} strokeWidth="0.8" />
+              {relief && lume && cuvette(-h + b, y0 + b + (h - b) * 0.6, h - b, y1 - b - (h - b) * 0.6, angle)}
             </g>
           );
         }
@@ -209,6 +276,7 @@ function Plongee({
             <circle cy={-mid} r={r} fill={shaded} {...cadre} />
             <path d={`M ${-r} ${-mid} A ${r} ${r} 0 0 1 0 ${-mid - r} L 0 ${-mid} Z`} fill={lit} />
             <circle cy={-mid} r={r - b} fill={fill} stroke={stroke} strokeWidth="0.8" />
+            {relief && lume && cuvetteRonde(0, -mid, r - b - 1.3, angle)}
           </g>
         );
       })}

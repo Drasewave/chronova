@@ -11,9 +11,9 @@ import { CushionBody } from "./cushion";
  * corne dans son quadrant sans retourner l'éclairage, contrairement à un
  * `rotate` ou un `scale(-1)`.
  */
-const LUG_INNER = 181;
+export const LUG_INNER = 181;
 
-function lugPath(sx: 1 | -1, sy: 1 | -1): string {
+export function lugPath(sx: 1 | -1, sy: 1 | -1): string {
   const p = (x: number, d: number) => `${C + sx * x} ${C + sy * d}`;
   return [
     `M ${p(LUG_INNER, 290)}`,
@@ -31,7 +31,7 @@ function lugPath(sx: 1 | -1, sy: 1 | -1): string {
  * Chanfrein poli le long du flanc extérieur : une vraie facette, fermée, entre
  * l'arête de la corne et son plat brossé — pas un trait posé dessus.
  */
-function lugBevel(sx: 1 | -1, sy: 1 | -1): string {
+export function lugBevel(sx: 1 | -1, sy: 1 | -1): string {
   const p = (x: number, d: number) => `${C + sx * x} ${C + sy * d}`;
   return [
     `M ${p(235, LUG_TIP - 26)}`,
@@ -43,7 +43,7 @@ function lugBevel(sx: 1 | -1, sy: 1 | -1): string {
 }
 
 /** Arête vive entre le plat et le chanfrein. */
-function lugRidge(sx: 1 | -1, sy: 1 | -1): string {
+export function lugRidge(sx: 1 | -1, sy: 1 | -1): string {
   const p = (x: number, d: number) => `${C + sx * x} ${C + sy * d}`;
   return `M ${p(221, LUG_TIP - 24)} C ${p(227, 352)} ${p(254, 256)} ${p(294, 172)}`;
 }

@@ -14,12 +14,12 @@ import type { CaseFinish, MetalTone } from "../types";
  * rapport au centre, puis reporté par symétrie — jamais par `scale(-1)`, qui
  * retournerait aussi la lumière.
  */
-const LUG_INNER = 181; // même entrecorne que la carrure ronde : le bracelet ne change pas
-const D_NOTCH = 300; // fond de l'entrecorne
-const D_TIP = 424; // pointe des cornes, plus courte que sur la carrure ronde
-const X_TIP = 236; // largeur du plat de la pointe
+export const LUG_INNER = 181; // même entrecorne que la carrure ronde : le bracelet ne change pas
+export const D_NOTCH = 300; // fond de l'entrecorne
+export const D_TIP = 424; // pointe des cornes, plus courte que sur la carrure ronde
+export const X_TIP = 236; // largeur du plat de la pointe
 /** Flanc bombé, de l'angle de la corne jusqu'à 3 h : une seule courbe de Bézier. */
-const FLANK: readonly [readonly [number, number], readonly [number, number], readonly [number, number], readonly [number, number]] = [
+export const FLANK: readonly [readonly [number, number], readonly [number, number], readonly [number, number], readonly [number, number]] = [
   [272, 398],
   [322, 346],
   [392, 214],
@@ -27,7 +27,7 @@ const FLANK: readonly [readonly [number, number], readonly [number, number], rea
 ];
 
 /** Contour fermé du coussin ; `kx`/`ky` le rétrécissent autour du centre (plat intérieur). */
-function cushionOutline(kx = 1, ky = 1): string {
+export function cushionOutline(kx = 1, ky = 1): string {
   const p = (sx: number, sy: number, x: number, d: number) => `${n(C + sx * x * kx)} ${n(C + sy * d * ky)}`;
   const [f0, f1, f2, f3] = FLANK;
   // Un demi-côté, de l'entrecorne vers 3 h ou 9 h, puis son retour symétrique.

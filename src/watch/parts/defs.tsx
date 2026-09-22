@@ -30,9 +30,14 @@ export function Defs({
   const insert = render.insertColor ?? "#1B2B45";
   const ceramic = (render.insertMaterial ?? "ceramique") === "ceramique";
 
+  // Seuls les métaux réellement montés ont besoin de leur cylindre poli :
+  // canon des aiguilles, couronne, poussoirs — et l'acier des passants et de
+  // la pile, toujours.
+  const tones = [...new Set<MetalTone>(["acier", render.caseMetal, render.crownMetal, render.handMetal])];
+
   return (
     <defs>
-      {(["acier", "dore", "noir", "bleui"] as MetalTone[]).map((tone) => (
+      {tones.map((tone) => (
         <MetalGradient key={tone} id={`${uid}-metal-${tone}`} tone={tone} />
       ))}
 
@@ -40,7 +45,7 @@ export function Defs({
           Le brossé reçoit en plus un grain de stries, secteur par secteur. */}
       <ConicDisk
         id={`${uid}-conic-case`}
-        count={finish === "brosse" ? (full ? 240 : 90) : full ? 120 : 60}
+        count={finish === "brosse" ? (full ? 240 : 48) : full ? 120 : 40}
         colorAt={(angle, i) =>
           rampAt(ramp, studioLum(angle, finish) + (finish === "brosse" ? (jitter(i) - 0.5) * 0.16 : 0))
         }
@@ -49,7 +54,7 @@ export function Defs({
           que soit la finition des flancs. */}
       <ConicDisk
         id={`${uid}-conic-poli`}
-        count={full ? 120 : 60}
+        count={full ? 120 : 36}
         colorAt={(angle) => rampAt(ramp, studioLum(angle, "poli"))}
       />
       {(render.bezelStyle === "plongee" || render.bezelStyle === "gmt" || render.bezelStyle === "tachymetre") &&
@@ -64,7 +69,7 @@ export function Defs({
           <ConicDisk
             key={id}
             id={id}
-            count={full ? 120 : 60}
+            count={full ? 120 : 36}
             colorAt={(angle) =>
               ceramic
                 ? mix(shade(teinte, 0.38), tint(teinte, 0.6), studioLum(angle, "ceramique"))
@@ -77,7 +82,7 @@ export function Defs({
       {render.dialTexture === "soleille" && (
         <ConicDisk
           id={`${uid}-conic-dial`}
-          count={full ? 240 : 90}
+          count={full ? 240 : 48}
           radius={300}
           colorAt={(angle, i) => {
             const bow = 0.5 + 0.5 * Math.cos((2 * (angle - 318) * Math.PI) / 180);
@@ -96,7 +101,7 @@ export function Defs({
       {render.dialTexture === "soleil-profond" && (
         <ConicDisk
           id={`${uid}-conic-dial`}
-          count={full ? 360 : 120}
+          count={full ? 360 : 72}
           radius={300}
           colorAt={(angle, i) => {
             const bow = 0.5 + 0.5 * Math.cos((2 * (angle - 318) * Math.PI) / 180);
@@ -236,6 +241,16 @@ export function Defs({
         <circle cx="1.5" cy="1.5" r="0.7" fill={INK} fillOpacity="0.12" />
         <circle cx="3.8" cy="3.6" r="0.6" fill={PAPER} fillOpacity="0.16" />
       </pattern>
+
+      {/* Grain d'un cadran mat : une laque granuleuse, à peine plus fine que le
+          microbillage, qui casse l'aplat sans le salir. Plein détail seulement. */}
+      {full && render.dialTexture === "mat" && (
+        <pattern id={`${uid}-dial-grain`} width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(17)">
+          <circle cx="1" cy="1.2" r="0.55" fill={INK} fillOpacity="0.09" />
+          <circle cx="2.9" cy="3" r="0.5" fill={PAPER} fillOpacity="0.11" />
+          <circle cx="3.2" cy="0.6" r="0.35" fill={INK} fillOpacity="0.06" />
+        </pattern>
+      )}
 
       <filter id={`${uid}-soft`} x="-30%" y="-30%" width="160%" height="160%">
         <feGaussianBlur stdDeviation="7" />

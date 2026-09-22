@@ -3,7 +3,8 @@
 import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { FonduStudio } from "@/components/motion/vue-montre";
 import { PlatineMontre, type CommandesPlatine } from "@/components/motion/platine-montre";
-import type { WatchView } from "@/watch/types";
+import { MontreCliente } from "@/components/ui/montre-differee";
+import type { WatchRender, WatchView } from "@/watch/types";
 import { cn } from "@/lib/utils";
 
 /** Les vues qui sont des faces de l'objet : elles se relaient en tournant. */
@@ -26,21 +27,30 @@ export interface VueGalerie {
  * objet : ils vivent sur la platine tournante du configurateur
  * (`PlatineMontre`), qu'on manipule du doigt ; leurs vignettes la font tourner
  * jusqu'à la vue voulue et reflètent celle où elle s'est calée. La platine
- * défait le recadrage de ces dessins pour qu'ils gardent la même échelle en
- * tournant. Les autres vues (« Cadran ») sont des gros plans fixes : on y passe
- * par le fondu de studio (`FonduStudio`). Le repère de la vignette active est
- * un seul cadre qui glisse de l'une à l'autre.
+ * dessine la montre sous chaque angle à partir de `render` (vue projetée) ; la
+ * vue de face rendue par le serveur reste celle de la pose 0. Les autres vues
+ * (« Cadran ») sont des gros plans fixes : on y passe par le fondu de studio
+ * (`FonduStudio`). Le repère de la vignette active est un seul cadre qui glisse
+ * de l'une à l'autre.
  */
-export function GalerieModele({ vues, nom }: { vues: VueGalerie[]; nom: string }) {
+export function GalerieModele({ vues, nom, render }: { vues: VueGalerie[]; nom: string; render?: WatchRender }) {
   const [active, setActive] = useState(vues[0]?.cle);
   // La dernière vue montrée par la platine : c'est d'elle qu'elle repart
   // quand on revient d'un gros plan.
   const [vuePlatine, setVuePlatine] = useState<WatchView>("face");
   const platine = useRef<CommandesPlatine>(null);
-  const tournante = vues.filter((vue) => VUES_PLATINE.includes(vue.cle)).length >= 2;
+  const tournante = render !== undefined && vues.filter((vue) => VUES_PLATINE.includes(vue.cle)).length >= 2;
   const surPlatine = tournante && active !== undefined && VUES_PLATINE.includes(active);
 
-  const rendreVue = useCallback((cle: WatchView) => vues.find((vue) => vue.cle === cle)?.grande, [vues]);
+  const rendreVue = useCallback(
+    (cle: WatchView, yaw: number) => {
+      const face = vues.find((vue) => vue.cle === "face")?.grande;
+      if (yaw === 0 && face) return face;
+      if (!render) return vues.find((vue) => vue.cle === cle)?.grande;
+      return <MontreCliente id={`galerie-${yaw}`} render={render} view={cle} yaw={yaw} label={`${nom}, tournée de ${yaw} degrés`} className="block h-full w-full" />;
+    },
+    [vues, render, nom],
+  );
   const surVue = useCallback((vue: WatchView) => {
     setVuePlatine(vue);
     setActive(vue);

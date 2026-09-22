@@ -12,6 +12,7 @@ import { ProfileView } from "./parts/profile";
 import { BackView } from "./parts/back";
 import { cushionRadius } from "./parts/cushion";
 import { DEFAULT_TIME, FRAME_SCALE, R_BEZEL_IN, R_CASE, SIZE_SCALE, dialScale, n } from "./geometry";
+import { ProjectedView } from "./projection/projected-view";
 import type { WatchRender, WatchView } from "./types";
 
 /**
@@ -51,6 +52,13 @@ export interface WatchSvgProps {
   render: WatchRender;
   /** Face, profil ou dos. Les trois partagent le même repère et les mêmes dégradés. */
   view?: WatchView;
+  /**
+   * Lacet en degrés autour de l'axe 12 h – 6 h : 0 de face, 90 le flanc de
+   * 3 h, 180 le dos, 270 le flanc de 9 h. Défini, il remplace `view` par la
+   * vue projetée (`projection/`), continue à tout angle — y compris 0, 90, 180
+   * et 270, pour que la platine tournante ne change jamais de dessin en route.
+   */
+  yaw?: number;
   /** `compact` allège la trame (cartes, miniatures du panier et du CRM). */
   detail?: "full" | "compact";
   /** Décalage du reflet, -1 à 1. Piloté par le pointeur dans `InteractiveWatch`. */
@@ -72,8 +80,9 @@ export interface WatchSvgProps {
  * client (configurateur). Changer une option ne remonte jamais l'arbre : seuls
  * des attributs `fill` et `transform` changent.
  */
-export function WatchSvg({ id, render, view = "face", detail = "full", sheen, crop, className, label }: WatchSvgProps) {
-  const scale = (SIZE_SCALE[render.caseSize] ?? 1) * (view === "profil" ? 1 : FRAME_SCALE);
+export function WatchSvg({ id, render, view = "face", detail = "full", sheen, crop, className, label, yaw }: WatchSvgProps) {
+  const projete = yaw !== undefined && Number.isFinite(yaw);
+  const scale = (SIZE_SCALE[render.caseSize] ?? 1) * (view === "profil" && !projete ? 1 : FRAME_SCALE);
   const time = render.time ?? DEFAULT_TIME;
   const flank = flankLayout(render);
   const isGmt = render.movement === "NH34";
@@ -105,8 +114,8 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
       <Defs uid={id} render={render} detail={detail} />
 
       {/* Ombre portée sous une montre posée à plat. De profil la montre est
-          au poignet, en l'air : aucune ombre au sol. */}
-      {view === "profil" ? null : (
+          au poignet, en l'air : aucune ombre au sol. La vue projetée porte la sienne. */}
+      {view === "profil" || projete ? null : (
         <>
           {/* La lumière vient du haut-gauche : la nappe d'ombre glisse en bas à
               droite, l'occlusion de contact reste sous la carrure. */}
@@ -116,7 +125,21 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
       )}
 
       <g transform={`translate(500 500) scale(${scale}) translate(-500 -500)`}>
-        {view === "profil" ? (
+        {projete ? (
+          <ProjectedView
+            uid={id}
+            render={render}
+            detail={detail}
+            frame={500 / scale}
+            sheen={sheen}
+            time={time}
+            flank={flank}
+            isGmt={isGmt}
+            isChrono={isChrono}
+            showDate={showDate}
+            yaw={yaw}
+          />
+        ) : view === "profil" ? (
           <ProfileView uid={id} render={render} />
         ) : view === "dos" ? (
           <>
@@ -257,6 +280,7 @@ function FaceView({
 
         <g filter={`url(#${id}-contact-shadow)`}>
           <Indices
+            detail={detail}
             style={render.indexStyle}
             metal={render.indexMetal ?? render.caseMetal}
             dialColor={render.dialColor}

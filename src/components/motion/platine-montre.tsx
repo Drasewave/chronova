@@ -29,14 +29,9 @@ export interface CommandesPlatine {
 
 /* ───────────────────────────── Géométrie ─────────────────────────────────
    L'angle court dans le sens où l'on pousse la montre VERS LA GAUCHE :
-   0° face, 90° flanc de 3 h, 180° dos, 270° flanc de 9 h.
-
-   Les trois dessins sont les faces d'une boîte qui tourne autour de l'axe
-   12 h – 6 h : face et dos à une demi-épaisseur de l'axe, le profil sur le
-   flanc, à un rayon de boîte. Chaque dessin est donc tourné de son angle
-   résiduel (`angle − cran`) PUIS poussé le long de sa normale : en tournant,
-   la face se décale du côté du verre et laisse paraître le flanc derrière
-   elle, comme sur un objet épais. */
+   0° face, 90° flanc de 3 h, 180° dos, 270° flanc de 9 h. C'est le lacet
+   `yaw` de la vue projetée du moteur (`src/watch/projection`) : à chaque
+   angle correspond un vrai dessin de l'objet tourné, pas trois cartes. */
 const CRANS = [
   { angle: 0, vue: "face", cote: "3h" },
   { angle: 90, vue: "profil", cote: "3h" },
@@ -44,32 +39,21 @@ const CRANS = [
   { angle: 270, vue: "profil", cote: "9h" },
 ] as const satisfies readonly { angle: number; vue: WatchView; cote: CotePlatine }[];
 
+/* ─────────────────────────────── Poses ───────────────────────────────────
+   Un dessin fait 1 500 à 2 500 nœuds : en redessiner un à chaque image du
+   geste serait trop lourd. La platine ne monte donc que des POSES à pas fixe
+   de 15° (24 par tour) : la pose la plus proche de l'angle courant, et sa
+   voisine dans le sens du mouvement, prémontée. Entre deux poses, le passage
+   se fait en CSS : la pose voisine se fond par-dessus (au plus 0,5 à
+   mi-chemin, où les rôles s'échangent — la composition est la même des deux
+   côtés, rien ne saute) et chaque pose s'étire un peu en largeur (≤ 4 %) pour
+   suivre la silhouette. Au repos une seule pose est montée. */
+const PAS = 15;
+/** Le fondu croisé commence à cet écart de la pose et est à mi-chemin à `PAS / 2` : dix degrés de trajet en tout. */
+const FONDU_DEBUT = 2.5;
+const ETIREMENT_MAX = 0.04;
+
 const PERSPECTIVE = 1200;
-/** Distances à l'axe, en fraction du côté du cadre. */
-const D_PLAT = 0.085;
-const D_PROFIL = 0.23;
-/** Le profil est dessiné plus petit que la face (`CADRAGE` × 0,58 contre `FRAME_SCALE`). */
-const ECHELLE_PROFIL = 1.19;
-/** Mi-épaisseur de la carrure dans le dessin de profil : c'est elle qui se pose sur l'axe. */
-const CENTRE_PROFIL = { x: 500, y: 485 };
-const CENTRE = { x: 500, y: 500 };
-
-/** Une vue à plat s'efface entre 64° et 86° d'écart, sur un profil déjà opaque :
-    le fond ne transparaît jamais. Le profil, lui, n'a presque pas besoin de
-    fondu : il passe DERRIÈRE la vue à plat et n'en dépasse vraiment que vers
-    35°. Un fondu court (60° → 46° d'écart au sien, soit 30° → 44° de rotation)
-    couvre son arrivée ; avant, seuls ses bouts de cornes dépasseraient. */
-const FONDU_PLAT = [64, 86] as const;
-const FONDU_PROFIL = [46, 60] as const;
-/** Au-delà, la vue est démontée : le profil est donc prémonté vers 25° de rotation. */
-const MONTE_PLAT = 87;
-const MONTE_PROFIL = 65;
-
-/** Fenêtre du profil : elle déborde la couche de 3 rem de chaque côté (`.platine-fenetre`),
-    et son masque reste opaque jusqu'à 86 % de sa largeur. */
-const MARGE_FENETRE = 48;
-const BORD_FENETRE = 0.86;
-
 const INCLINAISON_MAX = 18;
 /** Constante de temps de la friction (ms) : la lancée parcourt `vitesse × FRICTION`. */
 const FRICTION = 325;
@@ -93,9 +77,8 @@ function ecart(angle: number, cran: number): number {
   return mod(angle - cran + 180, 360) - 180;
 }
 
-function lisse(a: number, b: number, x: number): number {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
+function borne(x: number, a: number, b: number): number {
+  return Math.min(b, Math.max(a, x));
 }
 
 function arrondi(valeur: number, decimales = 2): number {
@@ -107,8 +90,21 @@ function cranProche(angle: number) {
   return CRANS[mod(Math.round(angle / 90), 4)] ?? CRANS[0];
 }
 
+function poseProche(angle: number): number {
+  return mod(Math.round(angle / PAS) * PAS, 360);
+}
+
 function angleDe(vue: WatchView, cote: CotePlatine): number {
   return vue === "face" ? 0 : vue === "dos" ? 180 : cote === "9h" ? 270 : 90;
+}
+
+/**
+ * Largeur relative de la silhouette à un angle : la tête de montre de face,
+ * son épaisseur par la tranche (voir `Z` dans `geometry3d.ts` : ~0,3 du diamètre).
+ */
+function largeur(angle: number): number {
+  const r = (angle * Math.PI) / 180;
+  return Math.abs(Math.cos(r)) + 0.3 * Math.abs(Math.sin(r));
 }
 
 /** Courbe de Bézier cubique de CSS, résolue en x par Newton puis dichotomie. */
@@ -165,18 +161,10 @@ interface Animation {
 
 interface Couche {
   noeud: HTMLDivElement;
-  contenu: HTMLDivElement | null;
-  miroir: HTMLDivElement | null;
-  fenetre: HTMLDivElement | null;
-  contre: HTMLDivElement | null;
-  voile: HTMLElement | null;
-  reflet: HTMLElement | null;
-  /** Recadrage du SVG (`viewBox`), lu une fois au montage. */
-  cadrage: { x: number; y: number; largeur: number } | null;
   /** Dernières valeurs écrites : on n'écrit que ce qui change. */
-  plan: string;
-  ouverture: number;
-  cote: string;
+  opacite: string;
+  transform: string;
+  ordre: string;
   cache: string;
 }
 
@@ -189,25 +177,20 @@ interface Couche {
  * sur sa lancée et se cale sur la vue la plus proche, d'UN seul mouvement : la
  * courbe `--ease` part à la vitesse du geste et se pose sans dépassement.
  *
- * Il n'y a pas de moteur 3D : ce sont les trois dessins existants (face,
- * profil, dos), montés comme les faces d'une boîte en CSS 3D — voir
- * « Géométrie ». Au plus DEUX dessins sont montés : celui qu'on regarde et, dès
- * ~25°, son voisin. Le profil passe DERRIÈRE la vue à plat : il paraît d'abord
- * comme le flanc qui dépasse, puis la vue à plat s'efface sur lui (jamais les
- * deux translucides à la fois : le fond ne transparaît pas). Un voile côté
- * fuyant, un reflet qui glisse et l'ombre portée suivent l'angle.
- *
- * Pendant le geste rien ne passe par React : l'état vit dans des refs, une
- * boucle `requestAnimationFrame` n'écrit que des `transform` et des `opacity`
- * sur des conteneurs HTML — jamais dans le SVG, dont les aiguilles continuent
- * de tourner. React n'intervient qu'aux seuils de montage.
+ * Le dessin est la vue projetée du moteur, demandée à `children(vue, yaw)`
+ * pour chaque pose montée (voir « Poses »). Pendant le geste rien ne passe par
+ * React : l'état vit dans des refs, une boucle `requestAnimationFrame` n'écrit
+ * que des `transform` et des `opacity` sur des conteneurs HTML — jamais dans
+ * le SVG, dont les aiguilles continuent de battre. React n'intervient qu'aux
+ * changements de pose (montage, démontage), et les rendus déjà faits restent
+ * en cache tant que `children` ne change pas.
  *
  * Clavier : ← → d'un quart de tour, Maj + ← → par pas de 15°, Origine pour la
  * face. `touch-action: pan-y` laisse la page défiler au doigt. Sous
- * `prefers-reduced-motion` : ni 3D ni inertie, on passe d'une vue à l'autre.
+ * `prefers-reduced-motion` : ni inertie ni fondu, on passe d'une vue à l'autre.
  *
  * `children` doit être stable (`useCallback`) : ses rendus sont mis en cache,
- * pour qu'un seuil de montage ne redessine pas le SVG déjà en place.
+ * pour qu'un changement de pose ne redessine pas le SVG déjà en place.
  */
 export function PlatineMontre({
   vue,
@@ -228,7 +211,8 @@ export function PlatineMontre({
   surVue: (vue: WatchView, cote: CotePlatine) => void;
   /** Clic ou tap sans glisser. */
   surClic?: () => void;
-  children: (vue: WatchView) => ReactNode;
+  /** Rendu d'une pose : la vue cardinale la plus proche, et le lacet exact (multiple de 15°). */
+  children: (vue: WatchView, yaw: number) => ReactNode;
   /** Nom du groupe, lu par les lecteurs d'écran. */
   libelle: string;
   /** Boutons posés en haut à droite du cadre (agrandir…). */
@@ -238,18 +222,19 @@ export function PlatineMontre({
   classeCouche?: string;
   commandes?: Ref<CommandesPlatine>;
 }) {
-  const [montees, setMontees] = useState<WatchView[]>([vue]);
+  const angleInitial = angleDe(vue, cote ?? "3h");
+  const [montees, setMontees] = useState<number[]>([angleInitial]);
   const [annonce, setAnnonce] = useState("");
   const [indice, setIndice] = useState(false);
   const idConsigne = useId();
 
   const racine = useRef<HTMLDivElement>(null);
   const zone = useRef<HTMLDivElement>(null);
-  const ombre = useRef<HTMLSpanElement>(null);
-  const couches = useRef(new Map<WatchView, Couche>());
-  const refsCouches = useRef<Partial<Record<WatchView, (noeud: HTMLDivElement | null) => void>>>({});
-  const monteesRef = useRef<WatchView[]>([vue]);
-  const rendus = useRef<{ source: unknown; noeuds: Map<WatchView, ReactNode> }>({ source: null, noeuds: new Map() });
+  const scene = useRef<HTMLDivElement>(null);
+  const couches = useRef(new Map<number, Couche>());
+  const refsCouches = useRef(new Map<number, (noeud: HTMLDivElement | null) => void>());
+  const monteesRef = useRef<number[]>([angleInitial]);
+  const rendus = useRef<{ source: unknown; noeuds: Map<number, ReactNode> }>({ source: null, noeuds: new Map() });
   const surVueRef = useRef(surVue);
   const surClicRef = useRef(surClic);
   useEffect(() => {
@@ -258,10 +243,11 @@ export function PlatineMontre({
   });
 
   const etat = useRef({
-    angle: angleDe(vue, cote ?? "3h"),
+    angle: angleInitial,
     inclinaison: 0,
+    /** Sens du mouvement en cours (+1, −1) ou 0 au repos : décide de la pose prémontée. */
+    sens: 0,
     taille: 0,
-    largeur: 0,
     calme: false,
     glisse: false,
     anim: null as Animation | null,
@@ -273,35 +259,46 @@ export function PlatineMontre({
   /* ─────────────────────────── Écriture d'une image ─────────────────────── */
   const appliquer = useCallback(() => {
     const e = etat.current;
-    const cote_ = e.taille;
-    const voulues: WatchView[] = [];
-    for (const cran of CRANS) {
-      const a = Math.abs(ecart(e.angle, cran.angle));
-      if (a < (cran.vue === "profil" ? MONTE_PROFIL : MONTE_PLAT) && !voulues.includes(cran.vue)) voulues.push(cran.vue);
-    }
+    const a = mod(e.angle, 360);
+    const proche = poseProche(a);
+    const d = ecart(a, proche);
+    // Entre deux poses, la voisine est celle vers laquelle on va ; sur une
+    // pose, celle du sens du mouvement — aucune au repos ou en mouvement réduit.
+    const sens = Math.sign(d) || e.sens;
+    const voisine = sens && !e.calme ? mod(proche + sens * PAS, 360) : null;
+    // Ordre stable (croissant) : l'empilement se règle par `z-index`, React ne
+    // déplace donc jamais un dessin déjà monté dans le DOM.
+    const voulues = voisine === null ? [proche] : [proche, voisine].sort((a, b) => a - b);
     if (voulues.join() !== monteesRef.current.join()) {
       monteesRef.current = voulues;
       setMontees(voulues);
     }
 
-    const proche = cranProche(e.angle);
-    racine.current?.setAttribute("data-vue", proche.vue);
-    racine.current?.setAttribute("data-cote", proche.cote);
+    const cran = cranProche(e.angle);
+    racine.current?.setAttribute("data-vue", cran.vue);
+    racine.current?.setAttribute("data-cote", cran.cote);
+    if (scene.current) scene.current.style.transform = Math.abs(e.inclinaison) < 0.01 ? "" : `rotateX(${arrondi(e.inclinaison)}deg)`;
 
-    for (const [vueCouche, couche] of couches.current) {
-      const plat = vueCouche !== "profil";
-      const cran = plat ? (vueCouche === "face" ? 0 : 180) : Math.abs(ecart(e.angle, 90)) <= Math.abs(ecart(e.angle, 270)) ? 90 : 270;
-      const delta = ecart(e.angle, cran);
-      const a = Math.abs(delta);
-      const [debut, fin] = plat ? FONDU_PLAT : FONDU_PROFIL;
-      const opacite = a >= 90 ? 0 : 1 - lisse(debut, fin, a);
-      const d = (plat ? D_PLAT : D_PROFIL) * cote_;
-      const auRepos = a < 0.01 && Math.abs(e.inclinaison) < 0.01;
-
-      couche.noeud.style.opacity = opacite >= 0.999 ? "" : String(arrondi(opacite, 3));
-      couche.noeud.style.transform = auRepos
-        ? ""
-        : `rotateX(${arrondi(e.inclinaison)}deg) rotateY(${arrondi(-delta)}deg) translateZ(${arrondi(d, 1)}px) scale(${arrondi((PERSPECTIVE - d) / PERSPECTIVE, 4)})`;
+    // Part de la voisine à cet écart : nulle jusqu'à FONDU_DEBUT, la moitié à mi-chemin.
+    const fondu = 0.5 * borne((Math.abs(d) - FONDU_DEBUT) / (PAS / 2 - FONDU_DEBUT), 0, 1);
+    for (const [pose, couche] of couches.current) {
+      const opacite = pose === proche ? 1 : pose === voisine ? fondu : 0;
+      const k = borne(largeur(a) / largeur(pose), 1 - ETIREMENT_MAX, 1 + ETIREMENT_MAX);
+      const transform = Math.abs(k - 1) < 0.0005 ? "" : `scaleX(${arrondi(k, 4)})`;
+      const ordre = pose === voisine ? "2" : "1";
+      const texteOpacite = opacite >= 0.999 ? "" : String(arrondi(opacite, 3));
+      if (texteOpacite !== couche.opacite) {
+        couche.opacite = texteOpacite;
+        couche.noeud.style.opacity = texteOpacite;
+      }
+      if (transform !== couche.transform) {
+        couche.transform = transform;
+        couche.noeud.style.transform = transform;
+      }
+      if (ordre !== couche.ordre) {
+        couche.ordre = ordre;
+        couche.noeud.style.zIndex = ordre;
+      }
       const cache = opacite < 0.5 ? "true" : "";
       if (cache !== couche.cache) {
         couche.cache = cache;
@@ -309,72 +306,6 @@ export function PlatineMontre({
         else couche.noeud.removeAttribute("aria-hidden");
         couche.noeud.style.pointerEvents = cache ? "none" : "";
       }
-
-      // Mise à plat du dessin : miroir (flanc de 9 h), quart de tour du profil
-      // (12 h en haut, verre du côté de la face), recadrage défait.
-      const coteCouche = plat ? "" : cran === 270 ? "9h" : "3h";
-      if (coteCouche !== couche.cote) {
-        couche.cote = coteCouche;
-        if (coteCouche) couche.noeud.setAttribute("data-cote", coteCouche);
-        if (couche.miroir) couche.miroir.style.transform = coteCouche === "9h" ? "scaleX(-1)" : "";
-      }
-      if (couche.contenu) {
-        const cadrage = couche.cadrage ?? { x: 500, y: 500, largeur: 1000 };
-        const centre = plat ? CENTRE : CENTRE_PROFIL;
-        const k = (plat ? 1 : ECHELLE_PROFIL) * (cadrage.largeur / 1000);
-        const parUnite = (cote_ / cadrage.largeur) * k;
-        const tx = arrondi(-(centre.x - cadrage.x) * parUnite, 1);
-        const ty = arrondi(-(centre.y - cadrage.y) * parUnite, 1);
-        const neutre = k === 1 && tx === 0 && ty === 0;
-        const plan = plat
-          ? neutre
-            ? ""
-            : `translate(${tx}px, ${ty}px) scale(${arrondi(k, 4)})`
-          : `rotate(-90deg) translate(${tx}px, ${ty}px) scale(${arrondi(k, 4)})`;
-        if (plan !== couche.plan) {
-          couche.plan = plan;
-          couche.contenu.style.transform = plan;
-        }
-      }
-
-      // Le bracelet du profil est fermé, celui de la face posé à plat : montrés
-      // ensemble, ils se contredisent. La fenêtre du profil (masque fondu, voir
-      // `.platine-fenetre`) ne laisse d'abord voir que la carrure, puis s'ouvre
-      // vers le fond : les brins sortent de derrière la boîte à mesure qu'elle
-      // tourne. Fenêtre mise à l'échelle, contenu à l'échelle inverse : rien que
-      // des `transform`.
-      if (!plat && couche.fenetre && couche.contre) {
-        const boite = e.largeur + 2 * MARGE_FENETRE;
-        const ferme = Math.min(1, (boite / 2 + 0.13 * cote_) / (BORD_FENETRE * boite));
-        const ouverture = arrondi(ferme + (1 - ferme) * (1 - lisse(14, 50, a)), 4);
-        if (ouverture !== couche.ouverture) {
-          couche.ouverture = ouverture;
-          couche.fenetre.style.transform = ouverture >= 0.9999 ? "" : `scaleX(${ouverture})`;
-          couche.contre.style.transform = ouverture >= 0.9999 ? "" : `scaleX(${arrondi(1 / ouverture, 4)})`;
-        }
-      }
-
-      // Lumière : le côté qui fuit s'assombrit, un reflet traverse la pièce.
-      const fuite = Math.sin((Math.min(a, 90) * Math.PI) / 180);
-      if (couche.voile) {
-        // La lumière du studio vient de la gauche : tournée vers la droite, la pièce s'assombrit davantage.
-        couche.voile.style.opacity = String(arrondi(fuite * (delta < 0 ? 1 : 0.72), 3));
-        couche.voile.style.transform = delta < 0 ? "scaleX(-1)" : "";
-      }
-      if (couche.reflet) {
-        couche.reflet.style.opacity = String(arrondi(Math.sin((Math.min(a, 90) * Math.PI) / 90) * opacite, 3));
-        couche.reflet.style.transform = `translateX(${arrondi((-delta / 90) * (plat ? 85 : 24), 1)}%) skewX(-14deg)`;
-      }
-    }
-
-    // L'ombre portée épouse la silhouette : large de face, mince de profil. Les
-    // vues à plat portent déjà la leur dans le dessin : celle-ci prend le relais
-    // à mesure que le profil s'installe.
-    if (ombre.current) {
-      const rad = (e.angle * Math.PI) / 180;
-      const largeur = Math.abs(Math.cos(rad)) + (D_PLAT / D_PROFIL) * 1.4 * Math.abs(Math.sin(rad));
-      ombre.current.style.opacity = String(arrondi(Math.sin(rad) ** 2, 3));
-      ombre.current.style.transform = `translate(3%, 4%) scaleX(${arrondi(Math.min(1, largeur), 3)})`;
     }
   }, []);
 
@@ -382,9 +313,12 @@ export function PlatineMontre({
   const reposer = useCallback(() => {
     const e = etat.current;
     e.actif = false;
+    e.sens = 0;
     e.angle = mod(e.angle, 360);
     racine.current?.removeAttribute("data-mouvement");
-  }, []);
+    // Au repos, seule la pose courante reste montée.
+    appliquer();
+  }, [appliquer]);
 
   const battre = useCallback(
     (instant: number) => {
@@ -448,6 +382,7 @@ export function PlatineMontre({
         e.angle = cible;
         e.inclinaison = 0;
         e.rappel = null;
+        e.sens = 0;
         appliquer();
         if (!e.glisse) reposer();
         return;
@@ -457,15 +392,16 @@ export function PlatineMontre({
       // En route (lancée, touche répétée) : `--ease`, qui part vite et se pose.
       // Depuis l'arrêt (sélecteur, bouton) : `--ease-passage`, qui démarre en douceur.
       const points = enRoute ? lireBezier(tokens, "--ease", REPLI.ease) : lireBezier(tokens, "--ease-passage", REPLI.passage);
-      const scene = lireDuree(tokens, "--d-scene", REPLI.scene);
+      const duree0 = lireDuree(tokens, "--d-scene", REPLI.scene);
       const a = Math.abs(distance);
-      let duree = scene * (0.62 + a / 240);
+      let duree = duree0 * (0.62 + a / 240);
       if (Math.abs(vitesse) > 0.02 && Math.sign(vitesse) === Math.sign(distance) && points[0] > 0) {
         // La pente initiale de la courbe vaut y1/x1 : on choisit la durée pour
         // que l'animation parte exactement à la vitesse du doigt.
         const accordee = ((points[1] / points[0]) * a) / Math.abs(vitesse);
-        duree = Math.min(Math.max(accordee, scene * 0.5), scene * 0.6 + a * 4.2);
+        duree = Math.min(Math.max(accordee, duree0 * 0.5), duree0 * 0.6 + a * 4.2);
       }
+      e.sens = Math.sign(distance);
       e.anim = { de: e.angle, vers: cible, debut: performance.now(), duree, courbe: bezier(points) };
       reveiller();
     },
@@ -532,7 +468,6 @@ export function PlatineMontre({
     if (!noeud) return;
     const mesurer = () => {
       etat.current.taille = Math.min(noeud.clientWidth, noeud.clientHeight);
-      etat.current.largeur = noeud.clientWidth;
       appliquer();
     };
     mesurer();
@@ -563,7 +498,7 @@ export function PlatineMontre({
     };
   }, []);
 
-  // Une couche qui vient d'être montée reçoit sa pose avant la première image.
+  // Une pose qui vient d'être montée reçoit son opacité et son étirement avant la première image.
   useLayoutEffect(() => {
     appliquer();
   }, [montees, appliquer]);
@@ -637,7 +572,9 @@ export function PlatineMontre({
       const taille = e.taille || 1;
       if (!e.calme) {
         // La surface suit le doigt : un cadre de large ≈ 170°.
-        e.angle = appui.angle - (dx * 170) / taille;
+        const angle = appui.angle - (dx * 170) / taille;
+        if (angle !== e.angle) e.sens = Math.sign(angle - e.angle);
+        e.angle = angle;
         const brut = (-dy * 60) / taille;
         e.inclinaison = INCLINAISON_MAX * Math.tanh(brut / INCLINAISON_MAX);
       }
@@ -700,37 +637,29 @@ export function PlatineMontre({
   };
 
   /* ─────────────────────────────── Rendu ────────────────────────────────── */
-  // Les rendus sont gardés tant que `children` ne change pas : monter la vue
-  // voisine ne redessine pas celle qui est déjà là.
+  // Les rendus sont gardés par pose tant que `children` ne change pas : revenir
+  // sur une pose déjà vue ne la redessine pas, et monter la voisine ne touche
+  // pas à celle qui est là.
   if (rendus.current.source !== children) rendus.current = { source: children, noeuds: new Map() };
-  const rendre = (vueCouche: WatchView) => {
+  const rendre = (pose: number) => {
     const cache = rendus.current.noeuds;
-    if (!cache.has(vueCouche)) cache.set(vueCouche, children(vueCouche));
-    return cache.get(vueCouche);
+    if (!cache.has(pose)) cache.set(pose, children(cranProche(pose).vue, pose));
+    return cache.get(pose);
   };
-  const refCouche = (vueCouche: WatchView) =>
-    (refsCouches.current[vueCouche] ??= (noeud) => {
-      if (!noeud) {
-        couches.current.delete(vueCouche);
-        return;
-      }
-      const svg = noeud.querySelector("svg[viewBox]");
-      const boite = svg instanceof SVGSVGElement ? svg.viewBox.baseVal : null;
-      couches.current.set(vueCouche, {
-        noeud,
-        contenu: noeud.querySelector<HTMLDivElement>(".platine-dessin"),
-        miroir: noeud.querySelector<HTMLDivElement>(":scope > .platine-miroir"),
-        fenetre: noeud.querySelector<HTMLDivElement>(".platine-fenetre"),
-        contre: noeud.querySelector<HTMLDivElement>(".platine-contre"),
-        voile: noeud.querySelector<HTMLElement>(":scope > .platine-voile"),
-        reflet: noeud.querySelector<HTMLElement>(":scope > .platine-reflet"),
-        cadrage: boite && boite.width > 0 ? { x: boite.x + boite.width / 2, y: boite.y + boite.height / 2, largeur: boite.width } : null,
-        plan: "\u0000",
-        ouverture: -1,
-        cote: "\u0000",
-        cache: "\u0000",
-      });
-    });
+  const refCouche = (pose: number) => {
+    let ref = refsCouches.current.get(pose);
+    if (!ref) {
+      ref = (noeud) => {
+        if (!noeud) {
+          couches.current.delete(pose);
+          return;
+        }
+        couches.current.set(pose, { noeud, opacite: "\u0000", transform: "\u0000", ordre: "\u0000", cache: "\u0000" });
+      };
+      refsCouches.current.set(pose, ref);
+    }
+    return ref;
+  };
 
   return (
     <div ref={racine} className={cn("platine", className)} data-vue={vue}>
@@ -743,21 +672,15 @@ export function PlatineMontre({
         aria-describedby={idConsigne}
         onKeyDown={surTouche}
         style={{ perspective: `${PERSPECTIVE}px` }}
+        data-lenis-prevent=""
       >
-        <span ref={ombre} aria-hidden="true" className="platine-ombre" />
-        {montees.map((vueCouche) => (
-          <div key={vueCouche} ref={refCouche(vueCouche)} className="platine-couche" data-couche={vueCouche}>
-            <div className="platine-miroir">
-              <div className="platine-fenetre">
-                <div className="platine-contre">
-                  <div className={cn("platine-dessin", classeCouche)}>{rendre(vueCouche)}</div>
-                </div>
-              </div>
+        <div ref={scene} className="platine-scene">
+          {montees.map((pose) => (
+            <div key={pose} ref={refCouche(pose)} className="platine-pose" data-pose={pose}>
+              <div className={cn("platine-dessin", classeCouche)}>{rendre(pose)}</div>
             </div>
-            <span aria-hidden="true" className="platine-voile" />
-            <span aria-hidden="true" className="platine-reflet" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <p id={idConsigne} className="sr-only">

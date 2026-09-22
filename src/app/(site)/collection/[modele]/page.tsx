@@ -208,7 +208,7 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
 
       <Section fond="papier" compact>
         <div className="grid items-start gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-          <GalerieModele vues={vues} nom={model.name} />
+          <GalerieModele vues={vues} nom={model.name} render={base.render} />
 
           <div className="lg:sticky lg:top-28">
             <nav aria-label="Fil d'Ariane">

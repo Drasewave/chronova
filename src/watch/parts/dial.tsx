@@ -91,16 +91,35 @@ export function Dial({
           </>
         )}
         {texture === "emaille" && (
-          <ellipse
-            cx={C - 84}
-            cy={C - 104}
-            rx="250"
-            ry="180"
-            fill={`url(#${uid}-gloss)`}
-            opacity="0.6"
-            transform={`rotate(-24 ${C - 84} ${C - 104})`}
-          />
+          <>
+            <ellipse
+              cx={C - 84}
+              cy={C - 104}
+              rx="250"
+              ry="180"
+              fill={`url(#${uid}-gloss)`}
+              opacity="0.6"
+              transform={`rotate(-24 ${C - 84} ${C - 104})`}
+            />
+            {/* L'émail a de l'épaisseur : sous sa surface vitrifiée, la fenêtre
+                du studio se réfléchit une seconde fois, plus nette, près du bord. */}
+            {detail === "full" && (
+              <circle
+                cx={C}
+                cy={C}
+                r={R_DIAL - 22}
+                fill="none"
+                stroke="#FFFFFF"
+                strokeOpacity="0.22"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray={`${n(2 * Math.PI * (R_DIAL - 22) * 0.14)} ${n(2 * Math.PI * (R_DIAL - 22))}`}
+                transform={`rotate(-160 ${C} ${C})`}
+              />
+            )}
+          </>
         )}
+        {texture === "mat" && detail === "full" && <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial-grain)`} />}
       </g>
 
       <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial-vignette)`} />
@@ -188,6 +207,10 @@ function MinuteTrack({
         strokeOpacity="0.3"
         strokeWidth="1.5"
       />
+      {/* Chemin de fer : le second rail, côté centre, entre lequel courent les traits. */}
+      {detail === "full" && (
+        <circle cx={C} cy={C} r={radius + 4} fill="none" stroke={color} strokeOpacity="0.22" strokeWidth="1" />
+      )}
       {fine &&
         detail === "full" &&
         Array.from({ length: 180 }, (_, i) => {
@@ -494,9 +517,20 @@ function ChronoSubdials({ color, detail, secondsAngle }: { color: string; detail
       <circle r={radius} fill={color} />
       {full &&
         Array.from({ length: 12 }, (_, i) => (
-          <circle key={`az${i}`} r={8 + i * 5.6} fill="none" stroke={light ? INK : "#FFFFFF"} strokeOpacity={light ? 0.07 : 0.06} strokeWidth="1.2" />
+          <circle key={`az${i}`} r={8 + i * 5.6} fill="none" stroke={light ? INK : "#FFFFFF"} strokeOpacity={light ? 0.11 : 0.1} strokeWidth="1.2" />
         ))}
       <circle r={radius - 1} fill="none" stroke={INK} strokeOpacity="0.35" strokeWidth="3" transform="translate(1.2 1.8)" />
+      {/* Le bord opposé de la cuvette fait face à la lumière : un fin éclat en bas à droite. */}
+      {full && (
+        <path
+          d={`M ${n((radius - 2) * Math.sin(1.5))} ${n(-(radius - 2) * Math.cos(1.5))} A ${radius - 2} ${radius - 2} 0 0 1 ${n((radius - 2) * Math.sin(3.2))} ${n(-(radius - 2) * Math.cos(3.2))}`}
+          fill="none"
+          stroke="#FFFFFF"
+          strokeOpacity="0.35"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+      )}
       <circle r={radius} fill="none" stroke={ink} strokeOpacity="0.5" strokeWidth="1.6" />
       {Array.from({ length: full ? 60 : 12 }, (_, i) => {
         const pas = full ? 6 : 30;
@@ -560,9 +594,13 @@ function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: Da
   const encre = light ? "#15171A" : "#F1F2F4";
   const police = { fontFamily: "var(--font-ui)", fontWeight: 600 };
   return (
-    <g data-layer="guichet-date">
+    // `id` stable : la loupe (`crystal.tsx`) reprend ce groupe par `<use>`, grossi
+    // deux fois et demie — même disque, même quantième, mis à jour ensemble.
+    <g id={`${uid}-guichet`} data-layer="guichet-date">
       {/* Cadre appliqué, poli, puis le disque de quantième en retrait. */}
       <rect x={x} y={y} width={w} height="50" rx="3" fill={`url(#${uid}-case)`} stroke={INK} strokeOpacity="0.6" strokeWidth="0.9" />
+      {/* Arête polie du cadre, côté lumière. */}
+      <line x1={x + 3} y1={y + 1.4} x2={x + w - 3} y2={y + 1.4} stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1" strokeLinecap="round" />
       <rect x={x + 5} y={y + 5} width={w - 10} height="40" rx="1.5" fill={disque} />
       {/* Le cadre porte son ombre sur le disque, du côté de la lumière. */}
       <path d={`M ${x + 5} ${y + 45} L ${x + 5} ${y + 5} L ${x + w - 5} ${y + 5}`} fill="none" stroke={INK} strokeOpacity={light ? 0.3 : 0.7} strokeWidth="3" />

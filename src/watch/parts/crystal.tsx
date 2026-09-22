@@ -1,6 +1,9 @@
-import { INK, PAPER, isLight } from "../palette";
+import { INK, PAPER } from "../palette";
 import { C, R_DIAL } from "../geometry";
 import type { Crystal as CrystalKind } from "../types";
+
+/** Grossissement de la loupe de quantième : celui d'une lentille de plongeuse classique. */
+export const CYCLOPS_SCALE = 2.5;
 
 /**
  * Verre saphir. Un saphir traité ne voile pas le cadran : il ne se trahit que
@@ -15,7 +18,6 @@ export function Crystal({
   antiGlare,
   sheen = { x: 0, y: 0 },
   cyclops = false,
-  dialColor = "#1C1E21",
 }: {
   uid: string;
   kind: CrystalKind;
@@ -23,7 +25,10 @@ export function Crystal({
   sheen?: { x: number; y: number };
   /** Loupe de quantième collée sur le verre, au-dessus du guichet. */
   cyclops?: boolean;
-  /** Teinte du cadran : elle décide de celle du disque de quantième grossi. */
+  /**
+   * Teinte du cadran. La loupe n'en a plus besoin — elle reprend le vrai guichet
+   * par `<use>` — mais la prop reste acceptée : `watch-svg.tsx` la passe encore.
+   */
   dialColor?: string;
 }) {
   const circ = 2 * Math.PI * (R_DIAL - 3);
@@ -88,7 +93,7 @@ export function Crystal({
         transform={`rotate(-40 ${C - 150} ${C - 176})`}
       />
 
-      {cyclops && <Cyclops uid={uid} light={isLight(dialColor)} />}
+      {cyclops && <Cyclops uid={uid} />}
 
       <g
         data-sheen
@@ -114,17 +119,26 @@ export function Crystal({
 
 /**
  * Loupe de quantième : une lentille plan-convexe collée sur le verre, au droit
- * du guichet. Elle grossit le quantième deux fois et demie — on redessine donc
- * le chiffre agrandi dessous — et elle se trahit par son contour, un reflet en
- * croissant du côté de la lumière et une ombre portée sur le cadran.
+ * du guichet. Elle grossit deux fois et demie tout ce qui passe dessous — le
+ * disque de quantième, et les aiguilles quand elles croisent le guichet. On ne
+ * redessine rien : la lentille reprend par `<use>` le guichet (`dial.tsx`) puis
+ * le groupe des aiguilles (`hands.tsx`), dans cet ordre, agrandis autour du
+ * centre du guichet. Le `<use>` suit en direct le quantième que l'horloge
+ * vivante écrit dans le guichet et les rotations qu'elle écrit sur les
+ * aiguilles : la copie loupée bat avec l'original. Sans cela, une aiguille
+ * disparaissait sous la loupe — elle « passait sous la date ».
+ * La lentille se trahit par son contour, un reflet en croissant du côté de la
+ * lumière et une ombre portée sur le cadran.
  */
-function Cyclops({ uid, light }: { uid: string; light: boolean }) {
-  const x = C + 150;
-  const y = C - 37;
+function Cyclops({ uid }: { uid: string }) {
+  // Centre du guichet de quantième seul (voir `DateWindow` : x = 500 + 232 − 68 / 2).
+  const cx = C + 198;
+  const cy = C;
   const w = 90;
   const h = 74;
-  const disque = light ? "#F7F5EF" : "#15171A";
-  const encre = light ? "#15171A" : "#F1F2F4";
+  const x = cx - w / 2;
+  const y = cy - h / 2;
+  const grossi = `translate(${cx} ${cy}) scale(${CYCLOPS_SCALE}) translate(${-cx} ${-cy})`;
   return (
     <g data-layer="loupe">
       <rect x={x + 4} y={y + 6} width={w} height={h} rx="17" fill={INK} fillOpacity="0.3" filter={`url(#${uid}-soft)`} />
@@ -132,12 +146,9 @@ function Cyclops({ uid, light }: { uid: string; light: boolean }) {
         <rect x={x} y={y} width={w} height={h} rx="17" />
       </clipPath>
       <g clipPath={`url(#${uid}-clip-loupe)`}>
-        {/* Le guichet, grossi : il déborde de la lentille. */}
-        <rect x={x - 4} y={y + 4} width={w + 8} height={h - 8} fill={disque} />
-        {/* Même quantième que le guichet dessous : l'horloge vivante met les deux à jour ensemble. */}
-        <text data-guichet="quantieme" x={x + w / 2} y={y + h / 2 + 17} textAnchor="middle" fill={encre} style={{ fontFamily: "var(--font-ui)", fontWeight: 600, fontSize: 48 }}>
-          11
-        </text>
+        {/* Sous la lentille, grossis : le guichet, puis les aiguilles par-dessus. */}
+        <use href={`#${uid}-guichet`} transform={grossi} />
+        <use href={`#${uid}-aiguilles`} transform={grossi} />
         <rect x={x} y={y} width={w} height={h} fill={PAPER} fillOpacity="0.1" />
         {/* Bord de lentille : la lumière s'y courbe, sombre en bas à droite. */}
         <rect x={x + 2} y={y + 2} width={w - 4} height={h - 4} rx="15" fill="none" stroke={INK} strokeOpacity="0.28" strokeWidth="5" transform="translate(-2 -2)" />

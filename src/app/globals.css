@@ -105,7 +105,8 @@
   --d-slow: 500ms;
   --d-reveal: 700ms;
   --d-long: 900ms;
-  /* Changement de scène (défilé du héros, lignes du titre) et tenue d'un modèle. */
+  /* Changement de scène (lignes du titre ; le passage du défilé du héros y
+     ajoute `--d-base` : voir « Défilé ») et tenue d'un modèle. */
   --d-scene: 850ms;
   --d-defile: 5000ms;
   /* Écart entre deux voisins qui entrent l'un après l'autre. */
@@ -731,29 +732,207 @@
   }
 }
 
-/* Défilé des modèles du héros (`defile-modeles.tsx`). `--sens` vaut 1 quand on
-   avance, -1 quand on recule : la sortante part du côté d'où l'on vient,
-   l'entrante arrive de l'autre, floue au départ seulement. 850 ms en tout. */
-@keyframes defile-sort {
-  to {
-    opacity: 0;
-    transform: translateX(calc(var(--sens, 1) * -40px)) scale(0.96);
+/* ───────────────────────────────── Défilé ─────────────────────────────────
+   Défilé des modèles du héros (`defile-modeles.tsx`) : le passage d'une montre
+   à l'autre, 1 200 ms (`--d-passage` = `--d-scene` + `--d-base`), en trois
+   plans qui ne bougent ni de la même amplitude ni au même instant.
+
+     fond     la couronne graduée prend ses 30° sur toute la durée (`--ease`) ;
+              le halo de la scène respire d'un cran (`.defile-halo`) ; l'ombre
+              au sol s'allonge puis se rassemble (`.defile-ombre`)
+     montre   la sortante s'éloigne dans la pénombre : 0,9, 7 % de côté, flou
+              de profondeur de champ, voile `--bg` masqué à l'ellipse, dès la
+              première trame (`--ease`, 900 ms) ; dès 60 ms l'entrante vient de
+              la lumière (1,06, floue, surexposée) et se pose au net sur la
+              courbe la plus longue (1 200 ms) ; une bande de reflet la balaie
+              pendant qu'elle se pose
+     texte    nom, style, fiche, prix : chacun s'efface par le haut pendant que
+              le suivant monte de son masque, en cascade (`--rang` × `--d-decalage`)
+
+   Rien que des transitions CSS pour la montre et les textes : un clic en cours
+   de route repart de l'état courant. `--sens` vaut 1 en avançant, -1 en
+   reculant : tout suit le sens de navigation. Seuls des conteneurs HTML sont
+   animés : le SVG reste à l'horloge vivante, qui écrit les `transform` de ses
+   aiguilles.
+
+   Couches du compositeur : la montre courante garde en permanence sa couche
+   (`will-change: transform`, une seule), et la montre prémontée est tramée
+   pendant son attente (`opacity: 0`, pas `visibility: hidden`). Sinon les deux
+   couches naissent à la première trame du passage et l'écran attend leur
+   tramage (≈ 1 500 nœuds chacune) : le mouvement partait avec un quart de
+   seconde de retard. `opacity` et `filter` ne sont annoncés que pendant le
+   passage. */
+.defile-scene {
+  --d-passage: calc(var(--d-scene) + var(--d-base));
+}
+
+/* Plan de fond : la couronne graduée, sur la courbe la plus longue. */
+.defile-graduation {
+  transition: transform var(--d-passage) var(--ease);
+}
+
+/* Le halo de la scène nuit, doublé derrière la montre : invisible au repos,
+   il monte d'un cran pendant le passage. */
+.defile-halo {
+  position: absolute;
+  inset: -24%;
+  z-index: -20;
+  pointer-events: none;
+  opacity: 0;
+  background-image: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    color-mix(in srgb, var(--color-nuit-scene) 75%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* L'ombre au sol : la lumière vient du haut-gauche, la nappe s'étire en bas à
+   droite pendant que les montres se relaient, puis se rassemble. */
+.defile-ombre {
+  position: absolute;
+  inset: -4%;
+  pointer-events: none;
+  opacity: 0;
+  background-image: radial-gradient(
+    ellipse 44% 44% at 53% 55%,
+    color-mix(in srgb, var(--color-nuit-profonde) 60%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+[data-passage] .defile-halo {
+  will-change: opacity;
+  animation: defile-halo var(--d-passage) var(--ease-passage);
+}
+
+[data-passage] .defile-ombre {
+  will-change: transform, opacity;
+  animation: defile-ombre var(--d-passage) var(--ease-passage);
+}
+
+@keyframes defile-halo {
+  40% {
+    opacity: 1;
   }
 }
 
-@keyframes defile-entre {
+@keyframes defile-ombre {
+  45% {
+    opacity: 1;
+    transform: translate(calc(var(--sens, 1) * -3%), 2%) scale(1.22, 1.1);
+  }
+}
+
+/* Plan de la montre : une couche par montre, deux au plus. Le voile (::after)
+   assombrit la sortante, masqué à l'ellipse pour ne pas dessiner de rectangle
+   sur la scène. La base porte les transitions du retour au repos. */
+.defile-couche {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  transition:
+    opacity var(--d-slow) var(--ease),
+    transform var(--d-long) var(--ease),
+    filter var(--d-reveal) var(--ease);
+}
+
+.defile-couche::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background-color: color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, black 40%, transparent 100%);
+  transition: opacity var(--d-long) var(--ease);
+}
+
+/* Montée en attente : là d'où l'entrante partira, dans la lumière. */
+[data-defile="attente"] {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(calc(var(--sens, 1) * 6%)) scale(1.06);
+  filter: blur(6px) brightness(1.3);
+  will-change: transform, opacity, filter;
+}
+
+[data-defile="entrante"] {
+  z-index: 10;
+  opacity: 1;
+  transform: none;
+  filter: blur(0px) brightness(1);
+  will-change: transform, opacity, filter;
+  transition:
+    opacity var(--d-reveal) var(--ease-passage) 100ms,
+    filter var(--d-passage) var(--ease) 60ms,
+    transform var(--d-passage) var(--ease) 60ms;
+}
+
+[data-defile="sortante"] {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(calc(var(--sens, 1) * -7%)) scale(0.9);
+  filter: blur(3px) brightness(0.7);
+  will-change: transform, opacity, filter;
+  transition:
+    opacity var(--d-reveal) var(--ease-passage) 60ms,
+    transform var(--d-long) var(--ease),
+    filter var(--d-long) var(--ease);
+}
+
+[data-defile="sortante"]::after {
+  opacity: 1;
+}
+
+/* Passage de lumière sur l'entrante : une bande claire, inclinée, presque
+   transparente, masquée à l'ellipse pour ne se lire que sur la pièce. Elle
+   traverse dans le sens de navigation, pendant que la montre se pose. */
+.defile-lueur {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 45%, transparent 100%);
+}
+
+.defile-lueur > span {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 46%;
+  opacity: 0;
+  background-image: linear-gradient(
+    90deg,
+    transparent 12%,
+    color-mix(in srgb, var(--lueur) 24%, transparent) 50%,
+    transparent 88%
+  );
+  transform: translateX(calc(70% - var(--sens, 1) * 190%)) skewX(-16deg);
+  transition: opacity var(--d-fast) var(--ease-sortie);
+}
+
+[data-defile="entrante"] .defile-lueur > span {
+  will-change: transform, opacity;
+  animation: defile-lueur var(--d-long) var(--ease-passage) 200ms both;
+}
+
+@keyframes defile-lueur {
   from {
     opacity: 0;
-    transform: translateX(calc(var(--sens, 1) * 48px)) scale(0.97);
-    filter: blur(6px);
+    transform: translateX(calc(70% - var(--sens, 1) * 190%)) skewX(-16deg);
   }
-  55% {
-    filter: blur(0);
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
   }
   to {
-    opacity: 1;
-    transform: none;
-    filter: blur(0);
+    opacity: 0;
+    transform: translateX(calc(70% + var(--sens, 1) * 190%)) skewX(-16deg);
   }
 }
 
@@ -766,36 +945,73 @@
   }
 }
 
-/* `will-change` : la montre (≈ 1 500 nœuds) est tramée une fois, puis déplacée
-   par le compositeur ; il disparaît avec la classe, à la fin de la transition. */
-.defile-sort {
-  pointer-events: none;
-  will-change: transform, opacity;
-  animation: defile-sort var(--d-reveal) var(--ease-sortie) forwards;
-}
-
-.defile-entre {
-  will-change: transform, opacity, filter;
-  animation: defile-entre var(--d-scene) var(--ease) backwards;
-}
-
 .defile-progression {
   animation: defile-progression var(--d-defile) linear forwards;
 }
 
-/* Textes superposés du défilé : seul l'actif est visible, fondu enchaîné. */
+/* Premier plan : textes superposés du défilé. L'active monte de son masque
+   (comme `leve-ligne`), celle qu'elle remplace s'efface par le haut, chacune
+   avec le retard de son `rang` dans la cascade : nom, style, fiche, prix. */
 .defile-texte {
+  --retard-entree: calc(var(--d-fast) + var(--rang, 0) * var(--d-decalage));
+  --retard-sortie: calc(var(--rang, 0) * var(--d-decalage) / 2);
   opacity: 0;
   visibility: hidden;
-  transition:
-    opacity var(--d-scene) var(--ease),
-    visibility 0s linear var(--d-scene);
+  transform: translateY(0.6em);
+  clip-path: inset(0 -6% 100% -6%);
+  transition: none;
 }
 
 .defile-texte[data-actif="true"] {
   opacity: 1;
   visibility: visible;
-  transition-delay: 0s;
+  transform: none;
+  clip-path: inset(-15% -6% -30% -6%);
+  transition:
+    visibility 0s,
+    opacity var(--d-reveal) var(--ease) var(--retard-entree),
+    transform var(--d-long) var(--ease) var(--retard-entree),
+    clip-path var(--d-reveal) var(--ease) var(--retard-entree);
+}
+
+.defile-texte[data-actif="sort"] {
+  transform: translateY(-0.4em);
+  clip-path: inset(-15% -6% -30% -6%);
+  transition:
+    opacity var(--d-base) var(--ease-sortie) var(--retard-sortie),
+    transform var(--d-base) var(--ease-sortie) var(--retard-sortie),
+    visibility 0s linear calc(var(--retard-sortie) + var(--d-base));
+}
+
+/* Mouvement réduit : le composant substitue la montre d'un coup ; les textes
+   passent en fondu très court, sans déplacement ni masque. */
+@media (prefers-reduced-motion: reduce) {
+  .defile-texte,
+  .defile-texte[data-actif="true"],
+  .defile-texte[data-actif="sort"] {
+    transform: none;
+    clip-path: none;
+    transition:
+      opacity var(--d-fast) var(--ease),
+      visibility 0s linear var(--d-fast);
+  }
+
+  .defile-texte[data-actif="true"] {
+    transition-delay: 0s;
+  }
+
+  .defile-couche,
+  .defile-couche::after,
+  .defile-graduation,
+  .defile-lueur > span {
+    transition: none;
+  }
+
+  [data-passage] .defile-halo,
+  [data-passage] .defile-ombre,
+  [data-defile="entrante"] .defile-lueur > span {
+    animation: none;
+  }
 }
 
 /* ─────────────────────────────── Mouvement ────────────────────────────────
@@ -1179,15 +1395,14 @@
 
 /* ─────────────────────────────── Platine ──────────────────────────────────
    Platine tournante (`platine-montre.tsx`) : la montre se manipule du doigt.
-   Le script n'écrit que des `transform` et des `opacity` sur ces conteneurs ;
-   tout le reste — lumière, ombre, boutons, indice — est décrit ici. Aucune
-   couleur en dur : l'ombre est l'encre du thème clair ou le fond du thème nuit,
-   le reflet est `--lueur`. */
+   Le dessin est la vue projetée du moteur, montée par poses de 15°. Le script
+   n'écrit que des `transform` et des `opacity` sur ces conteneurs : la scène
+   (inclinaison) et chaque pose (léger étirement en largeur, fondu vers la
+   voisine). Tout le reste — boutons, indice — est décrit ici. */
 .platine {
-  --platine-ombre: light-dark(var(--fg), var(--bg));
   position: relative;
-  /* La perspective fait déborder les dessins en tournant : le cadre coupe, et
-     `clip` (pas `hidden`) n'ouvre aucune zone de défilement. */
+  /* L'inclinaison fait déborder un peu le dessin : le cadre coupe, et `clip`
+     (pas `hidden`) n'ouvre aucune zone de défilement. */
   overflow: clip;
 }
 
@@ -1209,119 +1424,42 @@
   cursor: grabbing;
 }
 
-.platine-couche {
+/* La scène porte l'inclinaison ; chaque pose s'y empile dans la même cellule :
+   la hauteur du cadre ne dépend jamais du nombre de poses montées. */
+.platine-scene {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  transform-origin: 50% 50%;
+}
+
+.platine-pose {
   position: relative;
   grid-area: 1 / 1;
   min-width: 0;
   min-height: 0;
-  z-index: 1;
+  transform-origin: 50% 50%;
 }
 
-/* Le profil est le flanc de la boîte : il passe derrière la face et le dos. */
-.platine-couche[data-couche="profil"] {
-  z-index: 0;
-}
-
-.platine-miroir,
-.platine-contre,
 .platine-dessin {
   width: 100%;
   height: 100%;
 }
 
-/* Fenêtre du dessin : elle déborde la couche de 3 rem de chaque côté sans en
-   changer la hauteur. Celle du profil porte un masque fondu côté fond de
-   boîte ; le script la referme (`scaleX`, contenu à l'échelle inverse) pour ne
-   laisser voir que la carrure tant que la face est encore là. */
-.platine-fenetre {
-  box-sizing: border-box;
-  width: calc(100% + 6rem);
-  height: 100%;
-  margin-inline: -3rem;
-  padding-inline: 3rem;
-  transform-origin: 0 50%;
-}
-
-.platine-contre {
-  transform-origin: -3rem 50%;
-}
-
-.platine-couche[data-couche="profil"] .platine-fenetre {
-  -webkit-mask-image: linear-gradient(90deg, black 86%, transparent 100%);
-  mask-image: linear-gradient(90deg, black 86%, transparent 100%);
-}
-
-/* Un dessin recadré (fiche modèle) est remis à l'échelle des autres : ce qui
-   sortait de son cadrage doit alors se voir. */
 .platine-dessin svg {
   overflow: visible;
 }
 
-/* Flanc de 9 h : le profil en miroir, sans ce qui ne vit qu'à 3 h. */
-.platine-couche[data-cote="9h"] :is([data-layer="couronne"], [data-layer="poussoir"], [data-layer="protege-couronne"]) {
-  display: none;
-}
-
-.platine[data-mouvement] :is(.platine-couche, .platine-fenetre, .platine-contre, .platine-ombre, .platine-voile, .platine-reflet) {
+.platine[data-mouvement] :is(.platine-scene, .platine-pose) {
   will-change: transform, opacity;
-}
-
-/* Lumière de la pièce qui tourne : le côté qui fuit s'assombrit, un reflet la
-   traverse. Deux taches fondues dans leur propre dégradé, sans masque : elles
-   ne se lisent que sur la pièce, jamais comme un rectangle. Un carré centré,
-   même dans un cadre large (téléphone). */
-.platine-voile,
-.platine-reflet {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  aspect-ratio: 1;
-  margin-inline: auto;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.platine-voile {
-  background-image: radial-gradient(
-    ellipse 31% 50% at 31% 50%,
-    color-mix(in srgb, var(--platine-ombre) 42%, transparent) 0%,
-    color-mix(in srgb, var(--platine-ombre) 20%, transparent) 50%,
-    transparent 100%
-  );
-}
-
-.platine-reflet {
-  background-image: radial-gradient(ellipse 13% 44% at 50% 50%, color-mix(in srgb, var(--lueur) 30%, transparent) 0%, transparent 100%);
-}
-
-.platine-couche[data-couche="profil"] > .platine-voile {
-  background-image: radial-gradient(
-    ellipse 20% 44% at 42% 50%,
-    color-mix(in srgb, var(--platine-ombre) 40%, transparent) 0%,
-    transparent 100%
-  );
-}
-
-.platine-couche[data-couche="profil"] > .platine-reflet {
-  background-image: radial-gradient(ellipse 7% 36% at 50% 50%, color-mix(in srgb, var(--lueur) 30%, transparent) 0%, transparent 100%);
-}
-
-/* Ombre portée sur le fond de studio, quand le dessin n'en porte pas (profil). */
-.platine-ombre {
-  grid-area: 1 / 1;
-  place-self: center;
-  height: 84%;
-  max-width: 100%;
-  aspect-ratio: 0.94;
-  opacity: 0;
-  pointer-events: none;
-  background-image: radial-gradient(closest-side, color-mix(in srgb, var(--platine-ombre) 24%, transparent) 0%, color-mix(in srgb, var(--platine-ombre) 9%, transparent) 55%, transparent 100%);
 }
 
 .platine-bouton {
   position: absolute;
   bottom: 0.75rem;
-  z-index: 2;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1354,7 +1492,7 @@
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  z-index: 2;
+  z-index: 3;
 }
 
 /* L'indice de la première fois : il se pose après la montre, et s'en va dès
@@ -1363,7 +1501,7 @@
   position: absolute;
   left: 50%;
   bottom: 1.125rem;
-  z-index: 2;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;

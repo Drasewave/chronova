@@ -197,7 +197,7 @@ function DiveInsert({
   // Gravure remplie : platine sur céramique, peinture claire sur aluminium.
   // Sur un insert bicolore, la même peinture doit rester lisible sur les deux teintes.
   const engraved = material === "ceramique" ? mix(PAPER, color, 0.08) : tint(color, secondColor ? 0.92 : 0.82);
-  const teeth = full ? 60 : 36;
+  const teeth = full ? 60 : 30;
   const w = 360 / teeth;
   const pt = (r: number, a: number) => {
     const p = polar(r, a);
@@ -270,6 +270,8 @@ function DiveInsert({
       <circle cx="500" cy="500" r={rInsertOut} fill="none" stroke={INK} strokeOpacity="0.6" strokeWidth="1.6" />
       <circle cx="500" cy="500" r={rInsertIn} fill="none" stroke={INK} strokeOpacity="0.5" strokeWidth="1.4" />
 
+      {full && material === "ceramique" && <InsertSheen rMid={rMid} width={width} />}
+
       {scale === "24h" && <Scale24 rMid={rMid} width={width} engraved={engraved} detail={detail} />}
 
       {scale === "60min" &&
@@ -324,6 +326,25 @@ function DiveInsert({
       />
       <circle cx={n(500 - width * 0.06)} cy={n(500 - rMid - 4 - width * 0.07)} r={n(width * 0.05)} fill="#FFFFFF" fillOpacity="0.7" />
     </g>
+  );
+}
+
+/**
+ * Reflet en bande d'un insert céramique : la surface est un vernis dur, elle
+ * renvoie la fenêtre de la boîte à lumière en un arc large et doux, doublé d'un
+ * fil plus vif sur son bord. Dessiné sous la gravure : la peinture (ou le
+ * platine) est dans le creux, le reflet sur la surface — l'un ne voile pas
+ * l'autre, mais le reflet passe par-dessus le fond.
+ */
+function InsertSheen({ rMid, width }: { rMid: number; width: number }) {
+  const circ = 2 * Math.PI * rMid;
+  return (
+    <>
+      {/* Nappe large et très douce : on la devine plus qu'on ne la voit. */}
+      <circle cx="500" cy="500" r={rMid} fill="none" stroke="#FFFFFF" strokeOpacity="0.055" strokeWidth={n(width * 0.8)} strokeLinecap="round" strokeDasharray={`${n(circ * 0.3)} ${n(circ)}`} transform="rotate(-190 500 500)" />
+      {/* Le fil vif : l'arête de la fenêtre du studio, qui suit la courbure du vernis. */}
+      <circle cx="500" cy="500" r={n(rMid - width * 0.3)} fill="none" stroke="#FFFFFF" strokeOpacity="0.3" strokeWidth="1.8" strokeLinecap="round" strokeDasharray={`${n(circ * 0.1)} ${n(circ)}`} transform="rotate(-158 500 500)" />
+    </>
   );
 }
 
@@ -409,6 +430,7 @@ function TachymeterInsert({
       )}
       <circle cx="500" cy="500" r={rInsertOut} fill="none" stroke={INK} strokeOpacity="0.6" strokeWidth="1.6" />
       <circle cx="500" cy="500" r={rInsertIn} fill="none" stroke={INK} strokeOpacity="0.5" strokeWidth="1.4" />
+      {full && <InsertSheen rMid={(rInsertOut + rInsertIn) / 2} width={width} />}
 
       {/* Repères : un trait au bord extérieur pour chaque vitesse gravée, et en
           plein détail les subdivisions intermédiaires. */}

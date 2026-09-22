@@ -69,7 +69,10 @@ export function Hands({ uid, shape, metal, lume, movement, time, detail = "full"
   const [hourLen, hourW, minW] = PROPORTIONS[shape];
 
   return (
-    <g data-layer="aiguilles" data-calibre={movement} data-heure={vivante ? "vivante" : "fixe"} transform={`translate(${C} ${C})`}>
+    // `id` stable : la loupe de quantième (`crystal.tsx`) reprend ce groupe par
+    // `<use>` pour montrer, grossies, les aiguilles qui croisent le guichet. Un
+    // `<use>` suit en direct les `transform` que l'horloge vivante écrit ici.
+    <g id={`${uid}-aiguilles`} data-layer="aiguilles" data-calibre={movement} data-heure={vivante ? "vivante" : "fixe"} transform={`translate(${C} ${C})`}>
       <defs>
         <FacetGradient id={`${uid}-hand-heure`} role="heure" metal={metal} angle={angles.hour} />
         <FacetGradient id={`${uid}-hand-minute`} role="minute" metal={metal} angle={angles.minute} />
