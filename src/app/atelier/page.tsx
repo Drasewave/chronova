@@ -18,7 +18,7 @@ export default async function TableauDeBord() {
   const maintenant = new Date();
   const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
 
-  const [aFaire, parEtape, moisCourant, moisPrecedent, pieces, demandes, historique, sav] =
+  const [aFaire, parEtape, moisCourant, moisPrecedent, pieces, historique] =
     await Promise.all([
       // Ce qui doit avancer cette semaine : tout ce qui est déjà en atelier, plus
       // ce dont la date d'expédition annoncée approche.
@@ -63,16 +63,10 @@ export default async function TableauDeBord() {
           restockDays: true,
         },
       }),
-      prisma.inquiry.findMany({
-        where: { status: "NOUVEAU" },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
       prisma.order.findMany({
         where: { paidAt: { gte: new Date(maintenant.getFullYear(), maintenant.getMonth() - 5, 1) } },
         select: { paidAt: true, totalCents: true },
       }),
-      prisma.serviceCase.count({ where: { status: { notIn: ["TERMINE", "RENVOYE"] } } }),
     ]);
 
   const comptes = new Map(parEtape.map((ligne) => [ligne.status, ligne._count._all] as const));
@@ -135,12 +129,6 @@ export default async function TableauDeBord() {
             ton: sousSeuil.length > 0 ? "alerte" : "neutre",
             detail: sousSeuil.length > 0 ? "À recommander" : "Rien à recommander",
             href: sousSeuil.length > 0 ? "/atelier/stock?filtre=alertes" : "/atelier/stock",
-          },
-          {
-            terme: "Demandes non lues",
-            valeur: String(demandes.length),
-            detail: sav > 0 ? `${sav} dossier(s) SAV ouvert(s)` : "Aucun dossier SAV ouvert",
-            href: "/atelier/demandes",
           },
         ]}
       />
@@ -255,38 +243,6 @@ export default async function TableauDeBord() {
         </Panneau>
       </div>
 
-      {demandes.length > 0 && (
-        <div className="mt-4">
-          <Panneau
-            titre="Demandes non lues"
-            action={
-              <Link href="/atelier/demandes" className="type-ui lien-atelier link-underline text-accent-ink">
-                Toutes les demandes
-              </Link>
-            }
-          >
-            <ul className="flex flex-col">
-              {demandes.map((demande) => (
-                <li key={demande.id} className="border-b border-rule last:border-0">
-                  <Link
-                    href={`/atelier/demandes/${demande.id}`}
-                    className={LIGNE_LISTE}
-                  >
-                    <span className="type-ui text-fg">{demande.name}</span>
-                    <span className="type-caption flex-1 truncate text-fg-soft">
-                      {demande.message}
-                    </span>
-                    <Pill ton={demande.type === "SUR_MESURE" ? "accent" : "neutre"}>
-                      {demande.type === "SUR_MESURE" ? "Sur-mesure" : "Contact"}
-                    </Pill>
-                    <span className="type-caption text-fg-soft" data-numeric>{formatDate(demande.createdAt)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Panneau>
-        </div>
-      )}
     </div>
   );
 }

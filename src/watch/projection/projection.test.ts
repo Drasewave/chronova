@@ -11,7 +11,7 @@ import { pose } from "./geometry3d";
 const ANGLES = [0, 45, 90, 135, 180, 225, 270, 315] as const;
 const DETAILS = ["full", "compact"] as const;
 /** Bornes du poids d'un rendu (éléments SVG, `<defs>` compris). */
-const NOEUDS_MAX = { full: 2800, compact: 900 } as const;
+const NOEUDS_MAX = { full: 2800, compact: 1000 } as const;
 
 const nodes = (svg: string) => (svg.match(/<[a-zA-Z]/g) ?? []).length;
 const ids = (svg: string) => [...svg.matchAll(/ id="([^"]+)"/g)].map((m) => m[1] as string);

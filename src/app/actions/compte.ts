@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/db";
 import type { EtatFormulaire } from "@/lib/formulaires/etat";
+import { avecBase } from "@/lib/base-path";
 
 const ADRESSES_MAX = 10;
 
@@ -211,6 +212,7 @@ export async function anonymiserCompte(): Promise<void> {
         phone: null,
         preferences: null,
         crmNotes: null,
+        passwordHash: null,
         wristSizeMm: null,
         newsletter: false,
         anonymizedAt: new Date(),
@@ -219,5 +221,5 @@ export async function anonymiserCompte(): Promise<void> {
     }),
   ]);
 
-  await signOut({ redirectTo: "/" });
+  await signOut({ redirectTo: avecBase("/") });
 }

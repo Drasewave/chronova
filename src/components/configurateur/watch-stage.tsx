@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
 import { WatchSvg } from "@/watch/watch-svg";
+import { FonduStudio } from "@/components/motion/vue-montre";
 import { IconCroix, IconZoom } from "@/components/ui/icons";
-import { PlatineMontre, type CommandesPlatine, type CotePlatine } from "@/components/motion/platine-montre";
 import type { WatchRender, WatchView } from "@/watch/types";
 import { cn } from "@/lib/utils";
 
@@ -15,16 +15,11 @@ const VUES: { key: WatchView; label: string }[] = [
 ];
 
 /**
- * Scène de la montre : une platine tournante, et le zoom.
- *
- * La montre se manipule (`PlatineMontre`) : on la fait tourner du doigt, elle
- * se cale sur la face, un profil ou le dos. Le sélecteur reflète la vue calée ;
- * y cliquer fait TOURNER la montre jusqu'à la vue demandée. Un clic sans
- * glisser ouvre le zoom, qui reprend la même platine et la même vue.
- *
- * Le zoom utilise l'élément `<dialog>` natif — piégeage du focus, fermeture par
- * Échap et retour du focus au bouton sont gérés par le navigateur, sans une
- * ligne de gestion clavier de notre côté.
+ * Scène de la montre : trois vues fixes (face, profil, dos), choisies par le
+ * sélecteur — sans platine tournante ni glisser : un clic affiche directement
+ * le dessin complet de la vue demandée, dans un fondu de studio (`FonduStudio`),
+ * comme les gros plans d'une fiche modèle. Un clic sur la montre ouvre le zoom,
+ * qui reprend la même vue.
  */
 export function WatchStage({
   render,
@@ -35,45 +30,17 @@ export function WatchStage({
   label: string;
   className?: string;
 }) {
-  const [pose, setPose] = useState<{ vue: WatchView; cote: CotePlatine }>({ vue: "face", cote: "3h" });
+  const [vue, setVue] = useState<WatchView>("face");
   const [zoom, setZoom] = useState(false);
   // Le rendu du zoom reste monté après la première ouverture : il doit encore
   // être là pendant que le dialogue se referme en fondu.
   const [zoomMonte, setZoomMonte] = useState(false);
   const dialogue = useRef<HTMLDialogElement>(null);
-  const platine = useRef<CommandesPlatine>(null);
-  const platineZoom = useRef<CommandesPlatine>(null);
 
-  const surVue = useCallback((vue: WatchView, cote: CotePlatine) => {
-    setPose((courante) => (courante.vue === vue && courante.cote === cote ? courante : { vue, cote }));
-  }, []);
   const ouvrirZoom = useCallback(() => {
     setZoomMonte(true);
     setZoom(true);
   }, []);
-  // Rendus stables : la platine les garde en cache, un seuil de montage ne
-  // redessine donc pas la vue déjà en place.
-  const rendreScene = useCallback(
-    (vueAffichee: WatchView, yaw: number) => (
-      <InteractiveWatch
-        // Deux poses coexistent pendant la rotation : chacune a ses propres `id` SVG.
-        id={`configurateur-${yaw}`}
-        render={render}
-        view={vueAffichee}
-        yaw={yaw}
-        label={label}
-        className="flex h-full w-full items-center justify-center"
-        svgClassName="h-full w-auto lg:h-auto lg:w-full"
-      />
-    ),
-    [render, label],
-  );
-  const rendreZoom = useCallback(
-    (vueAffichee: WatchView, yaw: number) => (
-      <WatchSvg id={`zoom-${yaw}`} render={render} view={vueAffichee} yaw={yaw} label={label} className="h-auto w-full" />
-    ),
-    [render, label],
-  );
 
   useEffect(() => {
     const noeud = dialogue.current;
@@ -87,34 +54,32 @@ export function WatchStage({
       {/* Sur téléphone, la montre est bornée en HAUTEUR : collée en haut d'un
           écran de 780 px, une montre pleine largeur ne laisserait presque rien
           aux options qui défilent dessous. */}
-      {/* La hauteur doit traverser tous les conteneurs intermédiaires : un div
-          en hauteur automatique annulerait le `h-full` du SVG. */}
-      <PlatineMontre
-        vue={pose.vue}
-        cote={pose.cote}
-        surVue={surVue}
-        surClic={ouvrirZoom}
-        commandes={platine}
-        render={render}
-        libelle={`${label} : montre à faire tourner`}
-        className="cadre-montre h-[27vh] w-full lg:h-auto lg:p-6"
-        classeCouche="flex h-full w-full items-center justify-center"
-        actions={
-          <button
-            type="button"
-            onClick={ouvrirZoom}
-            className="inline-flex size-11 items-center justify-center rounded-pill border border-rule bg-panel text-fg-soft transition-colors duration-(--d-fast) ease-atelier hover:border-fg hover:text-accent-ink"
-            aria-label="Agrandir la montre"
-          >
-            <IconZoom />
-          </button>
-        }
-      >
-        {rendreScene}
-      </PlatineMontre>
+      <div className="cadre-montre relative h-[27vh] w-full lg:aspect-square lg:h-auto lg:p-6" role="group" aria-label={`${label} : montre`}>
+        <button
+          type="button"
+          onClick={ouvrirZoom}
+          className="absolute inset-0 z-0 h-full w-full cursor-zoom-in"
+          aria-label={`Agrandir la montre, vue ${LIBELLES[vue]}`}
+        >
+          <FonduStudio cle={vue} className="h-full w-full" classeCouche="flex h-full w-full items-center justify-center">
+            {(v) => (
+              <InteractiveWatch
+                id={`configurateur-${v}`}
+                render={render}
+                view={v}
+                label={label}
+                className="flex h-full w-full items-center justify-center"
+                svgClassName="h-full w-auto lg:h-auto lg:w-full"
+              />
+            )}
+          </FonduStudio>
+        </button>
+        <span className="pointer-events-none absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-pill border border-rule bg-panel text-fg-soft">
+          <IconZoom />
+        </span>
+      </div>
 
-      {/* La vue calée est annoncée par la platine elle-même (`aria-live`). */}
-      <SelecteurVue vue={pose.vue} platine={platine} className="mt-4" />
+      <SelecteurVue vue={vue} onChoisir={setVue} className="mt-4" />
 
       <dialog
         ref={dialogue}
@@ -136,39 +101,35 @@ export function WatchStage({
           {/* Le carré se borne à la hauteur du dialogue : le sélecteur reste
               visible sans défiler, même sur un écran large et bas. */}
           {zoomMonte && (
-            <PlatineMontre
-              vue={pose.vue}
-              cote={pose.cote}
-              surVue={surVue}
-              commandes={platineZoom}
-              render={render}
-              libelle={`${label}, agrandie : montre à faire tourner`}
+            <FonduStudio
+              cle={vue}
               className="mx-auto aspect-square w-full max-w-[calc(92dvh-11rem)] rounded-card"
+              classeCouche="h-full w-full"
             >
-              {rendreZoom}
-            </PlatineMontre>
+              {(v) => <WatchSvg id={`zoom-${v}`} render={render} view={v} label={label} className="h-auto w-full" />}
+            </FonduStudio>
           )}
-          <SelecteurVue vue={pose.vue} platine={platineZoom} className="mt-4" />
+          <SelecteurVue vue={vue} onChoisir={setVue} className="mt-4" />
         </div>
       </dialog>
     </div>
   );
 }
 
+const LIBELLES: Record<WatchView, string> = { face: "Face", profil: "Profil", dos: "Dos" };
+
 /**
- * Face / Profil / Dos : trois boutons à bascule, un seul enfoncé — celui de la
- * vue sur laquelle la montre est calée. Choisir une vue fait tourner la platine
- * jusqu'à elle, par le plus court chemin. La pastille
+ * Face / Profil / Dos : trois boutons à bascule, un seul enfoncé. La pastille
  * active est UN élément qui glisse d'une option à l'autre (`.segmente`) : les
  * options ont la même largeur, sa position se déduit du rang, sans mesure.
  */
 function SelecteurVue({
   vue,
-  platine,
+  onChoisir,
   className,
 }: {
   vue: WatchView;
-  platine: RefObject<CommandesPlatine | null>;
+  onChoisir: (vue: WatchView) => void;
   className?: string;
 }) {
   const rang = Math.max(0, VUES.findIndex((item) => item.key === vue));
@@ -184,7 +145,7 @@ function SelecteurVue({
         <button
           key={item.key}
           type="button"
-          onClick={() => platine.current?.montrer(item.key)}
+          onClick={() => onChoisir(item.key)}
           aria-pressed={vue === item.key}
           className={cn(
             "type-mono relative min-h-11 rounded-pill px-5 transition-colors duration-(--d-base) ease-atelier",

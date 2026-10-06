@@ -3,8 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { recomposerStock } from "@/lib/atelier/stock";
-import type { MovementType } from "@/generated/prisma/enums";
+import { ajouterMouvement, recalculer } from "@/lib/atelier/stock-service";
 
 async function exigerAdmin() {
   const session = await auth();
@@ -19,26 +18,6 @@ function entier(valeur: FormDataEntryValue | null): number {
 }
 
 /**
- * Recalcule les deux compteurs d'une pièce depuis son journal.
- *
- * Personne n'incrémente un compteur à la main : on réécrit ce que le journal
- * raconte. Une erreur de saisie se corrige donc en ajoutant un mouvement, pas
- * en retouchant un chiffre — l'historique reste lisible.
- */
-async function recalculer(partId: string) {
-  const mouvements = await prisma.stockMovement.findMany({
-    where: { partId },
-    select: { type: true, quantity: true },
-  });
-  const etat = recomposerStock(mouvements);
-  await prisma.part.update({
-    where: { id: partId },
-    data: { quantityOnHand: etat.enRayon, quantityReserved: etat.reserve },
-  });
-  return etat;
-}
-
-/**
  * Saisie d'un mouvement de stock : réception, perte ou correction d'inventaire.
  *
  * Le signe est imposé par le type, pas par l'horloger : une entrée est toujours
@@ -48,30 +27,17 @@ async function recalculer(partId: string) {
 export async function enregistrerMouvement(donnees: FormData): Promise<void> {
   const admin = await exigerAdmin();
   const reference = String(donnees.get("reference") ?? "");
-  const type = String(donnees.get("type") ?? "") as MovementType;
   const saisie = entier(donnees.get("quantite"));
-  const motif = String(donnees.get("motif") ?? "").trim();
-
-  if (!["ENTREE", "PERTE", "AJUSTEMENT"].includes(type)) {
-    throw new Error("Ce type de mouvement est écrit par les commandes, pas à la main.");
-  }
+  // Une quantité nulle ne change rien : on ne l'inscrit pas au journal.
   if (saisie === 0) return;
-
-  const piece = await prisma.part.findUniqueOrThrow({ where: { reference } });
-  const quantite =
-    type === "ENTREE" ? Math.abs(saisie) : type === "PERTE" ? -Math.abs(saisie) : saisie;
-
-  await prisma.stockMovement.create({
-    data: {
-      partId: piece.id,
-      type,
-      quantity: quantite,
-      actorId: admin.id,
-      reason: motif || null,
-    },
+  await ajouterMouvement({
+    reference,
+    type: String(donnees.get("type") ?? ""),
+    quantite: saisie,
+    acteurId: admin.id,
+    motif: String(donnees.get("motif") ?? ""),
   });
 
-  await recalculer(piece.id);
   revalidatePath("/atelier/stock");
   revalidatePath(`/atelier/stock/${reference}`);
   revalidatePath("/atelier");

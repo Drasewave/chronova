@@ -95,27 +95,3 @@ export const IconColis = (p: SVGProps<SVGSVGElement>) => (
     <path d="M4 8.5 12 13l8-4.5M12 13v7" />
   </Icon>
 );
-
-/** Platine tournante : une orbite autour de l'axe vertical de la montre. */
-export const IconRotation = (p: SVGProps<SVGSVGElement>) => (
-  <Icon {...p}>
-    <path d="M12 3v4M12 17v4" />
-    <path d="M8 9.1C5 9.7 3 10.8 3 12c0 1.9 4 3.5 9 3.5s9-1.6 9-3.5c0-1.2-2-2.3-5-2.9" />
-    <path d="M9.5 12.8 12 15.5l-2.5 2.7" />
-  </Icon>
-);
-
-/** Quart de tour vers la gauche : la flèche part par le haut et revient à gauche. */
-export const IconTournerGauche = (p: SVGProps<SVGSVGElement>) => (
-  <Icon {...p}>
-    <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />
-    <path d="M6.5 2.8V7h4.2" />
-  </Icon>
-);
-
-export const IconTournerDroite = (p: SVGProps<SVGSVGElement>) => (
-  <Icon {...p}>
-    <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" />
-    <path d="M17.5 2.8V7h-4.2" />
-  </Icon>
-);

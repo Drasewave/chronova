@@ -20,7 +20,10 @@ export function proxy(request: NextRequest) {
   const connecte = COOKIES_SESSION.some((nom) => request.cookies.has(nom));
   if (connecte) return NextResponse.next();
 
-  const connexion = new URL("/connexion", request.url);
+  // `clone()` garde le préfixe du site (`/chronova`) que `new URL("/connexion", …)` perdrait.
+  const connexion = request.nextUrl.clone();
+  connexion.pathname = "/connexion";
+  connexion.search = "";
   connexion.searchParams.set("suite", request.nextUrl.pathname);
   return NextResponse.redirect(connexion);
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { C, R_BEZEL_IN, R_CASE, R_LUG_TIP, dialScale, n } from "../geometry";
+import { dialLayout, heuresPrises } from "../dial-layout";
 import { INK, isLight } from "../palette";
 import { Bezel } from "../parts/bezel";
 import { Dial } from "../parts/dial";
@@ -7,7 +8,7 @@ import { Hands, type HandRole } from "../parts/hands";
 import { Indices } from "../parts/indices";
 import { BackView } from "../parts/back";
 import { annulus } from "../parts/conic";
-import type { WatchRender } from "../types";
+import type { IndexStyle, WatchRender } from "../types";
 import type { flankLayout } from "../watch-svg";
 import { HAND_LIFT, R_FOND, Z, bandPath, flat, pose, px, quad, wallPath, type Pose } from "./geometry3d";
 import { Defs3D } from "./defs3d";
@@ -15,6 +16,22 @@ import { BezelBand, CarrureBand, CushionBottom, CushionFlank, CushionTop, FondBa
 import { Crown3D, Guards3D, Pusher3D, flankDepth } from "./flank-parts3d";
 import { STRAP_THICKNESS, Strap3D } from "./strap3d";
 import { Crystal3D, LOUPE } from "./crystal3d";
+
+/**
+ * Les index en métal rapporté, dont on voit l'épaisseur de biais. Les chiffres
+ * laqués (`romains-chapitre`) et manuscrits (`fantaisie`) sont de l'encre : ils
+ * restent à plat.
+ */
+const INDEX_APPLIQUES: ReadonlySet<IndexStyle> = new Set<IndexStyle>([
+  "batons",
+  "plongee",
+  "montagne",
+  "romains",
+  "arabes-orientaux",
+  "arabes-chapitre",
+  "sky",
+  "diary",
+]);
 
 export interface ProjectedViewProps {
   uid: string;
@@ -61,6 +78,7 @@ export interface ProjectedViewProps {
 export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, isGmt, isChrono, showDate, yaw }: ProjectedViewProps) {
   const p = pose(yaw);
   const id = uid;
+  const layout = dialLayout(render.indexStyle);
   const full = detail === "full";
   const coussin = flank.coussin;
   const rehaut = flank.boussole ? "boussole" : render.indexStyle === "plongee" ? "minuterie" : "poli";
@@ -155,20 +173,22 @@ export function ProjectedView({ uid, render, detail, frame, sheen, time, flank, 
                 waterResistM={render.waterResistM}
                 metal={render.caseMetal}
                 smallSecondsAngle={time.seconds * 6}
-                compactSignature={render.indexStyle === "terrain-24h"}
+                layout={layout}
+                frameMetal={layout.cadreDate ? (render.indexMetal ?? render.caseMetal) : undefined}
               />
             </g>
             {showDate && full && p.s !== 0 && <Guichet3D uid={id} p={p} k={k} jourDate={(render.dateWindow ?? "date") === "jour-date"} clair={isLight(render.dialColor)} cyclops={cyclops && full} />}
-            <IndexEtage uid={id} p={p} full={full} kT={kT} applique={render.indexStyle === "batons" || render.indexStyle === "plongee" || render.indexStyle === "montagne"}>
+            <IndexEtage uid={id} p={p} full={full} kT={kT} applique={INDEX_APPLIQUES.has(render.indexStyle)}>
               <Indices
                 detail={full ? "full" : "compact"}
                 style={render.indexStyle}
                 metal={render.indexMetal ?? render.caseMetal}
                 dialColor={render.dialColor}
+                ink={render.indexInk}
                 lume={render.lume}
                 outerRadius={flank.boussole ? 227 : gmtScale ? 230 : undefined}
                 innerRadius={flank.boussole ? 194 : gmtScale ? 196 : undefined}
-                skipHour={showDate ? 3 : undefined}
+                skipHour={heuresPrises(render.movement, showDate)}
               />
             </IndexEtage>
             <g transform={`${flat(p, Z.aiguilles)}${kT}`}>

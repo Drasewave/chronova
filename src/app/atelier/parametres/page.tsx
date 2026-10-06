@@ -1,4 +1,4 @@
-import { enregistrerGabarit, enregistrerParametres } from "@/app/actions/atelier-relation";
+import { enregistrerGabarit, enregistrerParametres } from "@/app/actions/atelier-parametres";
 import { Bouton, CASE, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";

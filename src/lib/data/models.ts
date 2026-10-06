@@ -42,8 +42,7 @@ export interface WatchModelView {
 
 const COMMUN: Selections = {
   finition: "brosse",
-  "cadran-finition": "soleille",
-  index: "batons",
+  cadran: "romains-blanc-argent",
   date: "avec",
   "aiguilles-forme": "glaive",
   "aiguilles-metal": "acier",
@@ -72,7 +71,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     styleLabel: "Plongée",
     tagline: "Carrure coussin, couronne à 4 h, lunette 120 crans, 200 mètres.",
     summary:
-      "Une plongeuse à carrure coussin : un galet large aux cornes courtes, dont le flanc enveloppe une couronne vissée déportée à 4 h. Lunette unidirectionnelle à 120 crans, large insert céramique, aiguilles flèche et guichet jour-date.",
+      "Une plongeuse à carrure coussin : un galet large aux cornes courtes, dont le flanc enveloppe une couronne vissée déportée à 4 h. Lunette unidirectionnelle à 120 crans, large insert céramique, aiguilles flèche, cadran bleu à chiffres arabes orientaux et guichet jour-date.",
     diameterMm: 40,
     availableSizes: ["40"],
     lugToLugMm: 47.5,
@@ -91,8 +90,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // 4 h et noyée dans le flanc, large insert, aiguilles flèche, jour-date,
       // gros index ronds, deux lignes de texte en bas du cadran.
       "boitier-forme": "coussin",
-      "cadran-teinte": "bleu-abysse",
-      index: "plongee",
+      cadran: "arabes-chapitre-bleu",
       date: "jour-date",
       // Le jour de la semaine suppose le NH36 : le NH35 n'a que le quantième.
       mouvement: "nh36",
@@ -106,7 +104,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     },
     // Second coloris : la même en noir, sur caoutchouc gaufré.
     altSelections: {
-      "cadran-teinte": "noir-mat",
+      cadran: "arabes-chapitre-noir-or",
       "insert-teinte": "noir",
       "bracelet-type": "caoutchouc",
       "bracelet-teinte": "caoutchouc-noir",
@@ -117,9 +115,9 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Sentier 38",
     style: "terrain",
     styleLabel: "Pilote",
-    tagline: "Cadran vert, chiffres dorés appliqués, réhaut boussole, cuir chocolat.",
+    tagline: "Chiffres romains dorés sur cadran champagne, aiguilles cathédrale, cuir chocolat.",
     summary:
-      "Une montre de montagne : chiffres dorés appliqués aux heures paires et index en pointe sur un cadran vert soleillé, aiguilles cathédrale dorées à segments luminescents, et un réhaut boussole qu'une seconde couronne, à 4 h, fait tourner pour s'orienter au soleil.",
+      "Une montre de montagne habillée : chiffres romains dorés appliqués aux heures paires et bâtons fins aux heures impaires sur un cadran champagne soleillé, aiguilles cathédrale dorées à segments luminescents, boîtier poli.",
     diameterMm: 38,
     availableSizes: ["38", "39"],
     lugToLugMm: 45.2,
@@ -136,10 +134,8 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // Cible : la montre de montagne japonaise à cadran vert et index dorés,
       // deux couronnes (3 h et 4 h), réhaut boussole, boîtier poli.
       finition: "poli",
-      "cadran-teinte": "vert-montagne",
-      index: "montagne",
-      "index-metal": "dore",
-      rehaut: "boussole",
+      cadran: "romains-champagne",
+      rehaut: "aucun",
       "aiguilles-forme": "cathedrale",
       "aiguilles-metal": "dore",
       "couronne-signature": "lisse",
@@ -149,7 +145,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       "verre-forme": "bombe",
     },
     altSelections: {
-      "cadran-teinte": "creme",
+      cadran: "romains-noir-or",
       "bracelet-teinte": "fauve",
     },
   },
@@ -158,7 +154,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Méridien 39",
     style: "gmt",
     styleLabel: "GMT",
-    tagline: "Deuxième fuseau, lunette 24 h bicolore, aiguille GMT rouge, mouvement NH34.",
+    tagline: "Deuxième fuseau, disque 24 h, lunette 24 h bicolore, aiguille GMT rouge, mouvement NH34.",
     summary:
       "Une aiguille laquée rouge fait un tour de cadran en vingt-quatre heures et se règle indépendamment. Le second fuseau se lit sur la lunette bicolore, nuit en haut, jour en bas. Couronne à 4 h entre ses épaulements, loupe sur le quantième, jubilé à maillons centraux polis.",
     diameterMm: 39,
@@ -177,8 +173,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // Cible : le GMT sport bicolore japonais, bâti sur la boîte de la plongeuse
       // ronde à couronne 4 h. Lunette 24 h noir et gris, aiguille 24 h rouge,
       // quantième sous loupe, jubilé.
-      "cadran-teinte": "noir-mat",
-      index: "plongee",
+      cadran: "sky-noir-or",
       "aiguilles-forme": "fleche",
       "lunette-style": "gmt",
       "insert-matiere": "aluminium",
@@ -194,7 +189,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     },
     // Second coloris : cadran bleu, lunette bleu et rouge.
     altSelections: {
-      "cadran-teinte": "bleu-abysse",
+      cadran: "sky-blanc-or",
       "insert-teinte": "bleu-nuit",
       "insert-bicolore": "rouge",
     },
@@ -204,9 +199,9 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Soirée 37",
     style: "habillee",
     styleLabel: "Habillée",
-    tagline: "Cadran soleil profond bleu glacier, verre box, couronne oignon, cuir glacé.",
+    tagline: "Chiffres romains sur cadran blanc, index or, verre box, couronne oignon, cuir glacé.",
     summary:
-      "Un cadran bleu glacier au soleillage gaufré, qui passe du clair au presque noir quand le poignet tourne, sous un saphir box très bombé. Index bâtons facettés et aiguilles dauphine polis, sans luminova, quantième encadré à 3 h, couronne oignon et cuir glacé.",
+      "Un cadran blanc à chiffres romains dorés, sous un saphir box très bombé. Aiguilles dauphine polies, sans luminova, quantième encadré à 3 h, couronne oignon et cuir glacé.",
     diameterMm: 37,
     availableSizes: ["37", "38"],
     lugToLugMm: 43.8,
@@ -224,8 +219,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // Cible : l'habillée japonaise à cadran glacé. Cadran
       // très soleillé et bombé, index facettés, dauphine, quantième encadré,
       // grosse couronne oignon, verre box, cuir brillant.
-      "cadran-teinte": "bleu-glacier",
-      "cadran-finition": "soleil-profond",
+      cadran: "romains-blanc-or",
       "aiguilles-forme": "dauphine",
       luminova: "sans",
       "couronne-signature": "oignon",
@@ -237,7 +231,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       "fond-type": "transparent",
     },
     altSelections: {
-      "cadran-teinte": "saumon",
+      cadran: "romains-blanc-rose",
       "aiguilles-metal": "dore",
       "couronne-metal": "dore",
       "bracelet-teinte": "glace-brun",
@@ -248,9 +242,9 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Rallye 41",
     style: "chronographe",
     styleLabel: "Chronographe sport",
-    tagline: "Cadran panda, lunette tachymètre, poussoirs à piston, trotteuse rouge.",
+    tagline: "Cadran gris à bâtons fins, lunette tachymètre, poussoirs à piston, trotteuse rouge.",
     summary:
-      "Un mouvement méca-quartz entraîne mécaniquement la trotteuse et les deux compteurs, commandés par les deux poussoirs ; la minuterie reste au quartz, sans date. Cadran blanc cassé à compteurs noirs, lunette fixe à échelle tachymétrique, poussoirs à piston à 2 h et 4 h sur un boîtier de 41 mm.",
+      "Un mouvement méca-quartz entraîne mécaniquement la trotteuse et les deux compteurs, commandés par les deux poussoirs ; la minuterie reste au quartz, sans date. Cadran gris à bâtons fins et compteurs noirs, lunette fixe à échelle tachymétrique, poussoirs à piston à 2 h et 4 h sur un boîtier de 41 mm.",
     diameterMm: 41,
     availableSizes: ["41"],
     lugToLugMm: 48.4,
@@ -267,8 +261,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // Cible : le chronographe « panda » de sport japonais. Cadran blanc cassé,
       // compteurs noirs, lunette tachymètre noire, poussoirs à piston, aiguilles
       // bâtons luminescentes, trotteuse centrale rouge, bracelet acier.
-      "cadran-teinte": "creme",
-      "cadran-finition": "mat",
+      cadran: "diary-gris",
       "aiguilles-forme": "crayon",
       "lunette-style": "tachymetre",
       "couronne-signature": "lisse",
@@ -279,8 +272,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       compteurs: "inverse",
     },
     altSelections: {
-      "cadran-teinte": "argent",
-      "cadran-finition": "soleille",
+      cadran: "diary-noir-or",
     },
   },
   {
@@ -288,9 +280,9 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Piste 39",
     style: "terrain",
     styleLabel: "Pilote",
-    tagline: "Double échelle 12/24 h, cadran noir mat, couronne à 4 h, NATO kaki.",
+    tagline: "Bâtons fins sur cadran bleu, couronne à 4 h, NATO kaki.",
     summary:
-      "La version d'entrée de la ligne terrain : douze grands chiffres luminescents doublés d'une petite échelle de 13 à 24, cadran mat sans reflet, aiguilles flèche et guichet jour-date, sur un boîtier microbillé à couronne déportée à 4 h, avec une sangle NATO qui passe sous le boîtier.",
+      "La version d'entrée de la ligne terrain : cadran bleu à bâtons fins et minuterie fine, aiguilles flèche et guichet jour-date, sur un boîtier microbillé à couronne déportée à 4 h, avec une sangle NATO qui passe sous le boîtier.",
     diameterMm: 39,
     availableSizes: ["38", "39"],
     lugToLugMm: 45.8,
@@ -307,9 +299,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       finition: "microbille",
       // Cible : la « field » sport japonaise, bâtie sur la boîte de la plongeuse
       // ronde. Cadran mat à double échelle 12/24 h, jour-date, couronne 4 h, NATO.
-      "cadran-teinte": "noir-mat",
-      "cadran-finition": "mat",
-      index: "terrain-24h",
+      cadran: "diary-bleu",
       date: "jour-date",
       // Le jour de la semaine suppose le NH36 : le NH35 n'a que le quantième.
       mouvement: "nh36",
@@ -321,7 +311,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       poignet: "180",
     },
     altSelections: {
-      "cadran-teinte": "vert-sauge",
+      cadran: "diary-cuivre",
       "bracelet-teinte": "nato-sable",
     },
   },
@@ -332,7 +322,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     styleLabel: "Plongée",
     tagline: "Boîtier rond, couronne à 4 h entre ses épaulements, insert aluminium, 200 mètres.",
     summary:
-      "Le même cahier des charges que l'Abysse dans un boîtier rond plus discret : lunette unidirectionnelle à 120 crans et large insert aluminium, cadran noir mat, jour-date, couronne vissée à 4 h protégée par deux épaulements, bracelet jubilé. Je l'ai conçue pour les petits poignets, avec le même équipement de plongée.",
+      "Le même cahier des charges que l'Abysse dans un boîtier rond plus discret : lunette unidirectionnelle à 120 crans et large insert aluminium, cadran à chiffres romains or rose, jour-date, couronne vissée à 4 h protégée par deux épaulements, bracelet jubilé. Je l'ai conçue pour les petits poignets, avec le même équipement de plongée.",
     diameterMm: 39,
     availableSizes: ["39"],
     lugToLugMm: 46.0,
@@ -349,9 +339,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // Cible : la plongeuse ronde japonaise à couronne 4 h, la plus portée des
       // années 90-2000. Tout noir sur jubilé ; en second coloris, l'insert bleu
       // aux vingt premières minutes rouges, sur caoutchouc.
-      "cadran-teinte": "noir-mat",
-      "cadran-finition": "mat",
-      index: "plongee",
+      cadran: "romains-or-rose",
       date: "jour-date",
       // Le jour de la semaine suppose le NH36 : le NH35 n'a que le quantième.
       mouvement: "nh36",
@@ -364,7 +352,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       "bracelet-type": "acier-jubile",
     },
     altSelections: {
-      "cadran-teinte": "bleu-abysse",
+      cadran: "romains-turquoise",
       "insert-teinte": "bleu-nuit",
       "insert-secteur": "rouge",
       "bracelet-type": "caoutchouc",
@@ -376,9 +364,9 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Lucarne 38",
     style: "habillee",
     styleLabel: "Habillée",
-    tagline: "Cœur ouvert sur le balancier, cadran argent soleillé, sans date, cuir glacé.",
+    tagline: "Cœur ouvert sur le balancier, chiffres romains sur cadran bleu nuit, sans date, cuir glacé.",
     summary:
-      "Une ouverture à 9 h, cerclée d'un jonc poli, laisse voir le balancier battre sous son pont. Cadran argent soleillé, index facettés et aiguilles dauphine, fond saphir : une habillée qui montre un peu de mécanique sans devenir une montre-outil.",
+      "Une ouverture à 9 h, cerclée d'un jonc poli, laisse voir le balancier battre sous son pont. Cadran bleu nuit à chiffres romains, aiguilles dauphine, fond saphir : une habillée qui montre un peu de mécanique sans devenir une montre-outil.",
     diameterMm: 38,
     availableSizes: ["37", "38"],
     lugToLugMm: 44.6,
@@ -395,7 +383,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       // Cible : l'habillée japonaise à cœur ouvert. Lucarne cerclée à 9 h sur le
       // balancier et son pont, cadran soleillé argent ou bleu nuit, dauphine.
       finition: "poli",
-      "cadran-teinte": "argent",
+      cadran: "romains-bleu-nuit",
       date: "sans",
       "aiguilles-forme": "dauphine",
       luminova: "sans",
@@ -409,7 +397,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       "fond-type": "transparent",
     },
     altSelections: {
-      "cadran-teinte": "bleu-abysse",
+      cadran: "romains-noir-or",
       "bracelet-teinte": "glace-brun",
     },
   },
@@ -418,9 +406,9 @@ export const SAMPLE_MODELS: WatchModelView[] = [
     name: "Circuit 41",
     style: "chronographe",
     styleLabel: "Chronographe sport",
-    tagline: "Cadran bleu nuit, compteurs clairs, lunette tachymètre, acier.",
+    tagline: "Cadran bleu nuit à bâtons fins, compteurs clairs, lunette tachymètre, acier.",
     summary:
-      "Même base méca-quartz que la Rallye, dans la livrée inverse : cadran bleu nuit soleillé, compteurs clairs à haut contraste, lunette fixe à échelle tachymétrique et bracelet acier.",
+      "Même base méca-quartz que la Rallye, dans la livrée inverse : cadran bleu nuit à bâtons fins, compteurs clairs à haut contraste, lunette fixe à échelle tachymétrique et bracelet acier.",
     diameterMm: 41,
     availableSizes: ["41"],
     lugToLugMm: 48.4,
@@ -435,7 +423,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       ...COMMUN,
       taille: "41",
       // Cible : le même chronographe de sport japonais, en livrée inverse.
-      "cadran-teinte": "bleu-abysse",
+      cadran: "diary-bleu-nuit",
       "aiguilles-forme": "crayon",
       "lunette-style": "tachymetre",
       "couronne-signature": "lisse",
@@ -445,8 +433,7 @@ export const SAMPLE_MODELS: WatchModelView[] = [
       compteurs: "panda",
     },
     altSelections: {
-      "cadran-teinte": "noir-mat",
-      "cadran-finition": "mat",
+      cadran: "diary-blanc-or",
       "bracelet-type": "caoutchouc",
       "bracelet-teinte": "caoutchouc-noir",
     },

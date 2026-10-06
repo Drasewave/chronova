@@ -1,4 +1,5 @@
 import { createCatalogue, type Catalogue } from "@/lib/configurateur/catalogue";
+import { CADRANS } from "./cadrans";
 import type { CompatibilityRule, Part, Step } from "@/lib/configurateur/types";
 
 /**
@@ -91,114 +92,29 @@ export const STEPS: Step[] = [
   {
     key: "cadran",
     label: "Cadran",
-    intro: "C'est la pièce que vous regarderez le plus. Choisissez sa teinte, sa finition et ses index.",
+    intro: "C'est la pièce que vous regarderez le plus. Choisissez parmi les cadrans de l'atelier : famille, teinte et index vont ensemble.",
     groups: [
       {
-        key: "cadran-teinte",
-        label: "Teinte",
+        key: "cadran",
+        label: "Cadran",
+        help: "Chaque cadran est une pièce complète, photographiée : famille d'index, teinte et métal ne se combinent pas à la carte.",
         selection: "unique",
-        options: [
-          { key: "creme", label: "Crème émail", colorName: "Crème", colorHex: "#EFE7D6", priceDeltaCents: 0, partRef: "CAD-CRE", render: { dialColor: "#EFE7D6" } },
-          { key: "bleu-abysse", label: "Bleu abysse", colorName: "Bleu abysse", colorHex: "#1E3448", priceDeltaCents: 0, partRef: "CAD-BLE", render: { dialColor: "#1E3448" } },
-          { key: "vert-sauge", label: "Vert sauge", colorName: "Vert sauge", colorHex: "#3F4B39", priceDeltaCents: 0, partRef: "CAD-VER", render: { dialColor: "#3F4B39" } },
-          { key: "saumon", label: "Saumon", colorName: "Saumon", colorHex: "#C98263", priceDeltaCents: 6000, partRef: "CAD-SAU", render: { dialColor: "#C98263" } },
-          { key: "gris-ardoise", label: "Gris ardoise", colorName: "Gris ardoise", colorHex: "#474B50", priceDeltaCents: 0, partRef: "CAD-GRI", render: { dialColor: "#474B50" } },
-          { key: "noir-mat", label: "Noir mat", colorName: "Noir mat", colorHex: "#1C1E21", priceDeltaCents: 0, partRef: "CAD-NOI", render: { dialColor: "#1C1E21" } },
-          { key: "vert-montagne", label: "Vert montagne", colorName: "Vert montagne", colorHex: "#1D4A37", priceDeltaCents: 3000, partRef: "CAD-MON", render: { dialColor: "#1D4A37" } },
-          { key: "bleu-glacier", label: "Bleu glacier", colorName: "Bleu glacier", colorHex: "#9CBDD4", priceDeltaCents: 3000, partRef: "CAD-GLA", render: { dialColor: "#9CBDD4" } },
-          { key: "orange-plongee", label: "Orange plongée", colorName: "Orange plongée", colorHex: "#D6621F", priceDeltaCents: 3000, partRef: "CAD-ORA", render: { dialColor: "#D6621F" } },
-          { key: "argent", label: "Argent", colorName: "Argent", colorHex: "#D5D8DB", priceDeltaCents: 0, partRef: "CAD-ARG", render: { dialColor: "#D5D8DB" } },
-        ],
-      },
-      {
-        key: "cadran-finition",
-        label: "Finition du cadran",
-        selection: "unique",
-        options: [
-          {
-            key: "soleille",
-            label: "Soleillé",
-            description: "Rayons fins depuis le centre : la teinte change avec l'angle.",
-            priceDeltaCents: 0,
-            render: { dialTexture: "soleille" },
+        options: CADRANS.map((c) => ({
+          key: c.key,
+          label: c.label,
+          description: c.description,
+          colorName: c.colorName,
+          colorHex: c.colorHex,
+          priceDeltaCents: c.priceDeltaCents,
+          partRef: `CAD-${c.key.toUpperCase()}`,
+          render: {
+            dialColor: c.colorHex,
+            dialTexture: c.dialTexture,
+            indexStyle: c.indexStyle,
+            indexMetal: c.indexMetal,
+            ...(c.indexInk ? { indexInk: c.indexInk } : {}),
           },
-          {
-            key: "mat",
-            label: "Mat",
-            description: "Aucune réflexion : lisible en plein soleil.",
-            priceDeltaCents: 0,
-            render: { dialTexture: "mat" },
-          },
-          {
-            key: "emaille",
-            label: "Émail",
-            description: "Couches cuites puis polies. Profondeur laiteuse, teintes claires seulement.",
-            priceDeltaCents: 9000,
-            leadDaysDelta: 5,
-            render: { dialTexture: "emaille" },
-          },
-          {
-            key: "soleil-profond",
-            label: "Soleil profond",
-            description: "Soleillage gaufré sous laque transparente, fumé vers le bord : le cadran passe du clair au presque noir quand le poignet tourne.",
-            priceDeltaCents: 7000,
-            leadDaysDelta: 3,
-            render: { dialTexture: "soleil-profond" },
-          },
-        ],
-      },
-      {
-        key: "index",
-        label: "Index",
-        selection: "unique",
-        options: [
-          {
-            key: "batons",
-            label: "Index bâtons",
-            description: "Appliqués, cadre métal et remplissage luminescent.",
-            priceDeltaCents: 0,
-            render: { indexStyle: "batons" },
-          },
-          {
-            key: "arabes",
-            label: "Chiffres arabes",
-            description: "Imprimés pleins, lecture immédiate de loin.",
-            priceDeltaCents: 0,
-            render: { indexStyle: "arabes" },
-          },
-          {
-            key: "plongee",
-            label: "Ronds et triangle",
-            description: "Triangle à midi, bâtons aux quarts, ronds ailleurs : la disposition habituelle des montres de plongée.",
-            priceDeltaCents: 2000,
-            render: { indexStyle: "plongee" },
-          },
-          {
-            key: "montagne",
-            label: "Chiffres pairs appliqués",
-            description: "Chiffres en métal poli aux heures paires, index en pointe aux heures impaires, un point luminescent au pied de chacun : le cadran des montres de montagne.",
-            priceDeltaCents: 4000,
-            partRef: "IDX-MON",
-            render: { indexStyle: "montagne" },
-          },
-          {
-            key: "terrain-24h",
-            label: "Double échelle 12/24 h",
-            description: "Douze grands chiffres luminescents, et sous chacun l'heure de l'après-midi en petit, de 13 à 24 : la lecture des montres de terrain.",
-            priceDeltaCents: 2000,
-            render: { indexStyle: "terrain-24h" },
-          },
-        ],
-      },
-      {
-        key: "index-metal",
-        label: "Métal des index",
-        help: "Sans choix, les index appliqués suivent le métal du boîtier.",
-        selection: "unique",
-        optional: true,
-        options: [
-          { key: "dore", label: "Index dorés", colorName: "Doré", colorHex: "#C99A45", priceDeltaCents: 3000, render: { indexMetal: "dore" } },
-        ],
+        })),
       },
       {
         key: "date",
@@ -653,12 +569,20 @@ export const RULES: CompatibilityRule[] = [
     targets: ["lunette-style:gmt"],
     message: "L'insert bicolore n'existe que sur la lunette GMT.",
   })),
-  {
-    subject: "cadran-finition:emaille",
-    kind: "exige-une-de",
-    targets: ["cadran-teinte:creme", "cadran-teinte:saumon", "cadran-teinte:bleu-abysse"],
-    message: "L'émail n'est cuit que sur crème, saumon et bleu abysse.",
-  },
+  // Le réhaut boussole resserre la couronne d'index : aucun cadran de l'atelier n'y tient.
+  ...CADRANS.map((c) => ({
+    subject: `cadran:${c.key}`,
+    kind: "exclut" as const,
+    targets: ["rehaut:boussole"],
+    message: "Le réhaut boussole resserre les index : ce cadran se porte sans.",
+  })),
+  // Le disque 24 heures occupe la place d'un guichet élargi.
+  ...CADRANS.filter((c) => c.indexStyle === "sky").map((c) => ({
+    subject: `cadran:${c.key}`,
+    kind: "exclut" as const,
+    targets: ["date:jour-date"],
+    message: "Le guichet élargi jour-date déborderait sur le disque 24 heures.",
+  })),
   {
     subject: "date:avec",
     kind: "exclut",
@@ -839,22 +763,23 @@ export const RULES: CompatibilityRule[] = [
  * bientôt » côté configurateur et l'alerte côté CRM.
  */
 export const PARTS: Part[] = [
+  ...CADRANS.map((c) => ({
+    ref: `CAD-${c.key.toUpperCase()}`,
+    name: `Cadran ${c.label}`,
+    category: "cadran" as const,
+    supplier: "Kobayashi Dials",
+    purchasePriceCents: 5200,
+    // Le cadran or rose est le plus demandé : il ne reste qu'une pièce libre.
+    quantityOnHand: c.key === "romains-or-rose" ? 2 : 6,
+    quantityReserved: c.key === "romains-or-rose" ? 1 : 0,
+    reorderThreshold: 3,
+    restockDays: 32,
+  })),
   { ref: "BOI-37", name: "Boîtier acier 316L 37 mm", category: "boitier", supplier: "Atelier Suwa", purchasePriceCents: 8200, quantityOnHand: 6, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
   { ref: "BOI-38", name: "Boîtier acier 316L 38 mm", category: "boitier", supplier: "Atelier Suwa", purchasePriceCents: 8200, quantityOnHand: 9, quantityReserved: 2, reorderThreshold: 3, restockDays: 24 },
   { ref: "BOI-39", name: "Boîtier acier 316L 39 mm", category: "boitier", supplier: "Atelier Suwa", purchasePriceCents: 8600, quantityOnHand: 4, quantityReserved: 1, reorderThreshold: 3, restockDays: 24 },
   { ref: "BOI-40", name: "Boîtier acier 316L 40 mm, protège-couronne", category: "boitier", supplier: "Atelier Suwa", purchasePriceCents: 9400, quantityOnHand: 11, quantityReserved: 3, reorderThreshold: 4, restockDays: 24 },
   { ref: "BOI-41", name: "Boîtier acier 316L 41 mm, poussoirs", category: "boitier", supplier: "Atelier Suwa", purchasePriceCents: 10800, quantityOnHand: 5, quantityReserved: 1, reorderThreshold: 3, restockDays: 30 },
-  { ref: "CAD-CRE", name: "Cadran crème émail", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5600, quantityOnHand: 7, quantityReserved: 1, reorderThreshold: 3, restockDays: 32 },
-  { ref: "CAD-BLE", name: "Cadran bleu abysse soleillé", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 4800, quantityOnHand: 12, quantityReserved: 4, reorderThreshold: 4, restockDays: 32 },
-  { ref: "CAD-VER", name: "Cadran vert sauge", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 4800, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
-  { ref: "CAD-SAU", name: "Cadran saumon", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 7100, quantityOnHand: 2, quantityReserved: 1, reorderThreshold: 2, restockDays: 45 },
-  { ref: "CAD-GRI", name: "Cadran gris ardoise", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 4800, quantityOnHand: 6, quantityReserved: 1, reorderThreshold: 3, restockDays: 32 },
-  { ref: "CAD-NOI", name: "Cadran noir mat", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 4400, quantityOnHand: 10, quantityReserved: 2, reorderThreshold: 4, restockDays: 32 },
-  { ref: "CAD-MON", name: "Cadran vert montagne", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5200, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
-  { ref: "CAD-GLA", name: "Cadran bleu glacier", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5200, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
-  { ref: "CAD-ORA", name: "Cadran orange plongée", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 5200, quantityOnHand: 4, quantityReserved: 0, reorderThreshold: 2, restockDays: 32 },
-  { ref: "CAD-ARG", name: "Cadran argent soleillé", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 4800, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
-  { ref: "IDX-MON", name: "Jeu d'index montagne, chiffres appliqués", category: "cadran", supplier: "Kobayashi Dials", purchasePriceCents: 2100, quantityOnHand: 6, quantityReserved: 0, reorderThreshold: 3, restockDays: 32 },
   { ref: "REH-BOU", name: "Réhaut boussole tournant et sa couronne", category: "cadran", supplier: "Atelier Suwa", purchasePriceCents: 4600, quantityOnHand: 5, quantityReserved: 0, reorderThreshold: 2, restockDays: 30 },
   { ref: "AIG-GLA", name: "Jeu d'aiguilles glaive", category: "aiguilles", supplier: "Horotec Supply", purchasePriceCents: 1900, quantityOnHand: 14, quantityReserved: 3, reorderThreshold: 5, restockDays: 18 },
   { ref: "AIG-MER", name: "Jeu d'aiguilles Mercedes", category: "aiguilles", supplier: "Horotec Supply", purchasePriceCents: 2400, quantityOnHand: 8, quantityReserved: 2, reorderThreshold: 4, restockDays: 18 },

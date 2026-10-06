@@ -144,7 +144,8 @@ export function Synthese({ label, elements }: { label: string; elements: Element
   return (
     <ul
       aria-label={label}
-      className="grid gap-px overflow-hidden rounded-card border border-rule bg-rule sm:grid-cols-2 xl:grid-cols-4"
+      // Trois cases : une rangée de trois (sinon la quatrième colonne resterait vide).
+      className={`grid gap-px overflow-hidden rounded-card border border-rule bg-rule ${elements.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-4"}`}
     >
       {elements.map((element) => {
         const contenu = (

@@ -46,9 +46,9 @@ export default async function Cgu() {
       <p>
         La consultation du site et l&apos;usage du configurateur sont libres et gratuits, sans
         compte. Le compte est nécessaire pour commander. Il se crée en indiquant une adresse
-        e-mail et en acceptant les présentes conditions : un lien de connexion, valable trente
-        minutes et utilisable une seule fois, est envoyé à cette adresse. Il n&apos;y a pas de mot
-        de passe.
+        e-mail, en choisissant un mot de passe d&apos;au moins dix caractères et en acceptant les
+        présentes conditions. Le mot de passe est personnel : vous êtes responsable de sa
+        confidentialité, et vous pouvez le changer à tout moment depuis votre compte.
       </p>
       <p>
         Le compte est réservé aux personnes majeures et capables de contracter. Il est personnel :

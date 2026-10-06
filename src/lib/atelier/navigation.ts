@@ -15,14 +15,6 @@ export const NAV_CRM: { titre: string; entrees: EntreeCrm[] }[] = [
     ],
   },
   {
-    titre: "Relation",
-    entrees: [
-      { href: "/atelier/clients", label: "Clients", aide: "Fiches, historique, RGPD" },
-      { href: "/atelier/demandes", label: "Demandes", aide: "Contact et sur-mesure" },
-      { href: "/atelier/sav", label: "Après-vente", aide: "Garanties et réparations" },
-    ],
-  },
-  {
     titre: "Configuration",
     entrees: [
       { href: "/atelier/catalogue", label: "Catalogue", aide: "Modèles, options, règles" },

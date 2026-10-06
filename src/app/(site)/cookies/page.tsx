@@ -19,13 +19,6 @@ const TRACEURS = [
     duree: "30 jours, effacé à la déconnexion",
   },
   {
-    nom: "authjs.csrf-token, authjs.callback-url",
-    type: "Cookies",
-    emetteur: "Chronova",
-    finalite: "Protègent le formulaire de connexion contre les requêtes forgées et mémorisent la page où vous ramener.",
-    duree: "Le temps de la session du navigateur",
-  },
-  {
     nom: "chronova:panier",
     type: "Stockage local",
     emetteur: "Chronova",

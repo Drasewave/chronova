@@ -63,7 +63,7 @@ export function RechercheGlobale() {
         onClick={() => setOuvert(true)}
         className="type-ui flex min-h-11 flex-1 items-center justify-between gap-4 rounded-pill border border-rule bg-panel px-5 font-normal text-fg-soft transition-colors duration-200 hover:border-fg-soft sm:max-w-md"
       >
-        <span>Rechercher une commande, un client, une pièce…</span>
+        <span>Rechercher une commande, une pièce…</span>
         <kbd className="type-mono hidden shrink-0 text-fg-soft sm:block">⌘K</kbd>
       </button>
 

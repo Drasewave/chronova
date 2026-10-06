@@ -26,6 +26,8 @@ model User {
   id               String    @id @default(cuid())
   email            String    @unique
   emailVerified    DateTime?
+  // Mot de passe haché (scrypt, voir src/lib/securite/mot-de-passe.ts). Null : pas encore choisi.
+  passwordHash     String?
   name             String?
   phone            String?
   role             Role      @default(CLIENT)

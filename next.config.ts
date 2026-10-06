@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { BASE_PATH } from "./src/lib/base-path";
 
 const DEV = process.env.NODE_ENV !== "production";
 
@@ -63,6 +64,12 @@ const EN_TETES_SECURITE = [
 ];
 
 const config: NextConfig = {
+  // Le site vit sous `/chronova` (http://orvane.fr/chronova, relayé par le panel).
+  basePath: BASE_PATH,
+  async redirects() {
+    // Accès direct au port du site : la racine mène au site, plutôt qu'à un 404.
+    return [{ source: "/", destination: BASE_PATH, basePath: false, permanent: false }];
+  },
   reactStrictMode: true,
   // Inutile de dire à tout le monde quel serveur tourne (audit A-11).
   poweredByHeader: false,

@@ -58,8 +58,6 @@
 /atelier/commandes                         Kanban par étape d'atelier
 /atelier/commandes/liste                   Vue liste filtrable + export CSV
 /atelier/commandes/[numero]                Fiche : rendu, nomenclature auto, checklist, contrôle, photos, notes, suivi
-/atelier/clients
-/atelier/clients/[id]                      Coordonnées, commandes, total, poignet, tags, notes, échanges, RGPD
 /atelier/stock                             Toutes catégories, alertes en tête
 /atelier/stock/[id]                        Fiche pièce + historique des mouvements
 /atelier/stock/mouvements                  Journal (entrées, réservations, sorties, ajustements)
@@ -68,17 +66,17 @@
 /atelier/catalogue/options                 Options par groupe — nom, teinte, calque SVG, prix, pièce liée
 /atelier/catalogue/regles                  Règles de compatibilité + message affiché au client
 /atelier/catalogue/apercu                  Aperçu en direct du configurateur avant publication
-/atelier/demandes                          Contact + sur-mesure (non lues en tête)
-/atelier/demandes/[id]                     → devis → commande
-/atelier/sav                               Garanties, révisions, réparations
-/atelier/sav/[id]
 /atelier/fournisseurs
 /atelier/fournisseurs/[id]
 /atelier/fournisseurs/commandes            Commandes fournisseurs + réception
 /atelier/parametres                        Délais, frais de port, gabarits d'e-mails, informations légales, seuils
 ```
 
-Transverse : recherche globale `Cmd/Ctrl + K` (commandes, clients, pièces, options), mode sombre `--night`, cibles tactiles 44 px pour l'usage sur tablette à l'établi.
+**Relation client** : les pages clients, demandes et après-vente ont été retirées le 2026-10-04 au
+profit de Twenty, lui-même retiré le 2026-10-05 ; l'atelier n'a pas d'écran de relation client
+pour l'instant (les demandes restent enregistrées en base).
+
+Transverse : recherche globale `Cmd/Ctrl + K` (commandes, pièces, options), mode sombre `--night`, cibles tactiles 44 px pour l'usage sur tablette à l'établi.
 
 ## 4. Base de données : pourquoi Postgres partout plutôt que SQLite en local
 

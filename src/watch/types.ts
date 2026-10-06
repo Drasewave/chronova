@@ -9,17 +9,41 @@
 
 export type CaseSize = 37 | 38 | 39 | 40 | 41;
 export type CaseFinish = "brosse" | "poli" | "microbille";
-export type MetalTone = "acier" | "dore" | "noir" | "bleui";
+export type MetalTone = "acier" | "dore" | "noir" | "bleui" | "rose";
 /** Forme de la carrure vue de face : ronde, ou en coussin large aux cornes courtes. */
 export type CaseShape = "rond" | "coussin";
-/** `soleil-profond` : soleillage très contrasté, fumé vers le bord, gaufré en rayons. */
-export type DialTexture = "emaille" | "soleille" | "mat" | "soleil-profond";
+/**
+ * `soleil-profond` : soleillage très contrasté, fumé vers le bord, gaufré en rayons.
+ * `rayonne` : cannelures radiales gravées, une dent sur deux dans l'ombre — le
+ * cadran « hydraulique » des habillées, dont chaque sillon se voit à l'œil nu.
+ */
+export type DialTexture = "emaille" | "soleille" | "mat" | "soleil-profond" | "rayonne";
 /**
  * `montagne` : chiffres pairs appliqués et index en pointe aux heures impaires,
  * le cadran des montres de montagne japonaises. `terrain-24h` : chiffres arabes
  * luminescents doublés d'une petite échelle 13–24 imprimée, montre de terrain.
+ *
+ * `romains` : chiffres romains appliqués aux heures paires, bâtons aux impaires.
+ * `romains-chapitre` : onze chiffres romains laqués, triangle à midi, plot à 9 h,
+ * sous une minuterie chiffrée de 5 à 60. `arabes-orientaux` : chiffres arabes
+ * orientaux appliqués, cadran dégagé. `arabes-chapitre` : les mêmes, sous la
+ * minuterie chiffrée. `sky` : bâtons rectangulaires et disque central des
+ * vingt-quatre heures. `diary` : bâtons fins à cadre de métal, double bâton à midi,
+ * minuterie fine. `fantaisie` : heures écrites à la main, dans le désordre.
  */
-export type IndexStyle = "batons" | "arabes" | "plongee" | "montagne" | "terrain-24h";
+export type IndexStyle =
+  | "batons"
+  | "arabes"
+  | "plongee"
+  | "montagne"
+  | "terrain-24h"
+  | "romains"
+  | "romains-chapitre"
+  | "arabes-orientaux"
+  | "arabes-chapitre"
+  | "sky"
+  | "diary"
+  | "fantaisie";
 /**
  * `fleche` : jeu de plongeuse japonaise (heure en flèche courte, minute en glaive
  * large). `dauphine` : deux facettes polies, montre habillée. `cathedrale` :
@@ -69,6 +93,11 @@ export interface WatchRender {
   indexStyle: IndexStyle;
   /** Métal des index appliqués. Absent : ils suivent le métal du boîtier. */
   indexMetal?: MetalTone;
+  /**
+   * Encre des chiffres laqués (`romains-chapitre`). Absent : le vert foncé de ce
+   * cadran. Les index appliqués, eux, n'ont pas d'encre : ils sont de métal.
+   */
+  indexInk?: string;
 
   handShape: HandShape;
   handMetal: MetalTone;

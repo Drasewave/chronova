@@ -28,7 +28,7 @@ export const revalidate = 300;
  * le libellé du groupe (« Teinte », « Forme », « Style » ne disent pas de quoi).
  */
 const PIECES_COMPAREES: Record<string, string> = {
-  "cadran-teinte": "Cadran",
+  cadran: "Cadran",
   "aiguilles-forme": "Aiguilles",
   "lunette-style": "Lunette",
   "bracelet-type": "Bracelet",

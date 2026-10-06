@@ -52,9 +52,14 @@ npm run db:seed                # catalogue, stock, clients et commandes d'exempl
 npm run dev                    # http://localhost:3000
 ```
 
-Le compte d'atelier créé par l'amorçage est `atelier@chronova.test`. La connexion
-se fait par lien magique : sans clé Resend, le lien s'affiche dans la console du
-serveur.
+Le compte d'atelier créé par l'amorçage est `atelier@chronova.test`. Les comptes
+se connectent par **adresse e-mail et mot de passe** (haché en scrypt, sessions en
+base, révocables). Un compte sans mot de passe — celui de l'atelier après l'amorçage,
+ou un client inscrit du temps du lien magique — en reçoit un par
+`npm run compte:mot-de-passe -- <adresse>` : mot de passe provisoire écrit dans
+`~/.chronova-mot-de-passe-<adresse>.txt` (600), à changer depuis `/compte/profil`
+(`MOT_DE_PASSE='…'` pour l'imposer). Sans e-mail sortant, c'est aussi la voie du
+« mot de passe oublié ».
 
 > Utilisez `localhost` et non `127.0.0.1` : le serveur de développement de Next
 > bloque ses ressources internes depuis une autre origine, ce qui empêche
@@ -90,7 +95,7 @@ toutes les cinq minutes.
 
 ### Deux replis de développement, jamais actifs en production
 
-- **Sans `RESEND_API_KEY`**, les e-mails — dont les liens de connexion — sont
+- **Sans `RESEND_API_KEY`**, les e-mails sont
   écrits dans la console du serveur au lieu d'être envoyés. En production,
   l'absence de clé lève une erreur : un lien de connexion perdu dans des logs
   serait un bug silencieux.
@@ -114,7 +119,7 @@ Le service est une unité systemd utilisateur :
 ```bash
 npm run deploy                          # build + redémarrage du service
 systemctl --user status chronova        # état
-journalctl --user -u chronova -f        # journaux (liens de connexion compris)
+journalctl --user -u chronova -f        # journaux
 ```
 
 Pour retravailler le code avec rechargement à chaud : `PORT=3001 npm run dev`,
@@ -172,6 +177,13 @@ compteurs de stock contre journal, réservations contre commandes ouvertes,
 configurations figées réaffichables, règles sans message. Il liste aussi ce qui
 reste à faire avant la mise en ligne et sort en erreur sur une incohérence — de
 quoi l'enchaîner dans un script de déploiement.
+
+## Relation client
+
+Twenty, le CRM qui suivait clients, demandes et après-vente, a été retiré le 2026-10-05, avec sa
+synchronisation. Les anciennes pages de l'atelier (clients, demandes, SAV) n'ont pas été remises :
+les demandes des formulaires contact et sur-mesure sont toujours enregistrées en base (table
+`Inquiry`), mais aucun écran de l'atelier ne les montre pour l'instant.
 
 ## Ajouter une option au configurateur
 

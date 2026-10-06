@@ -199,7 +199,7 @@ async function commandeGravee(orderId: string): Promise<boolean> {
 function resumeCourt(snapshot: unknown): string {
   const summary = (snapshot as { summary?: { groupKey: string; value: string }[] } | null)?.summary;
   if (!summary) return "";
-  return ["cadran-teinte", "aiguilles-forme", "bracelet-type"]
+  return ["cadran", "aiguilles-forme", "bracelet-type"]
     .map((cle) => summary.find((ligne) => ligne.groupKey === cle)?.value)
     .filter(Boolean)
     .join(" · ");

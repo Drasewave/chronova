@@ -1,8 +1,8 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import type { Provider } from "next-auth/providers";
 import { prisma } from "@/lib/db";
-import { envoyerCourriel } from "@/lib/email";
+import { BASE_PATH } from "@/lib/base-path";
+import { COOKIE_SESSION, DUREE_SESSION_S, OPTIONS_COOKIE_SESSION } from "@/lib/securite/session";
 
 declare module "next-auth" {
   interface Session {
@@ -11,45 +11,20 @@ declare module "next-auth" {
 }
 
 /**
- * Connexion par lien magique.
+ * Comptes à adresse e-mail et mot de passe.
  *
- * Aucun mot de passe n'est stocké : il n'y a donc rien à faire fuiter, et aucun
- * parcours « mot de passe oublié » à maintenir. Le jeton de vérification vit en
- * base et expire en trente minutes.
+ * La connexion et l'inscription sont des Actions (src/app/actions/auth.ts) qui
+ * vérifient le mot de passe puis ouvrent la session en base (src/lib/securite/session.ts).
+ * Auth.js ne fait plus que lire et fermer ces sessions : `auth()`, `signOut()`.
+ * Aucun fournisseur n'est déclaré — le lien magique a été retiré.
  */
-const lienMagique: Provider = {
-  id: "resend",
-  type: "email",
-  name: "Lien par e-mail",
-  from: process.env.RESEND_FROM ?? "Chronova <atelier@exemple.fr>",
-  maxAge: 30 * 60,
-  options: {},
-  async sendVerificationRequest({ identifier, url }) {
-    await envoyerCourriel({
-      to: identifier,
-      subject: "Votre lien de connexion à Chronova",
-      text: [
-        "Bonjour,",
-        "",
-        "Voici votre lien de connexion à Chronova. Il est valable trente minutes et ne peut servir qu'une fois :",
-        "",
-        url,
-        "",
-        "Si vous n'avez pas demandé à vous connecter, ignorez ce message : personne ne peut accéder à votre compte sans ce lien.",
-        "",
-        "— L'atelier Chronova",
-      ].join("\n"),
-    });
-  },
-};
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [lienMagique],
-  session: { strategy: "database", maxAge: 60 * 60 * 24 * 30 },
+  providers: [],
+  session: { strategy: "database", maxAge: DUREE_SESSION_S },
+  cookies: { sessionToken: { name: COOKIE_SESSION, options: OPTIONS_COOKIE_SESSION } },
   pages: {
     signIn: "/connexion",
-    verifyRequest: "/connexion/verification",
     error: "/connexion",
   },
   callbacks: {
@@ -61,4 +36,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   trustHost: true,
+  // L'API d'Auth.js vit sous le préfixe du site.
+  basePath: `${BASE_PATH}/api/auth`,
 });

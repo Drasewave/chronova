@@ -28,17 +28,12 @@ export async function rechercheGlobale(requete: string): Promise<ResultatRecherc
 
   const contient = { contains: q, mode: "insensitive" as const };
 
-  const [commandes, clients, pieces, modeles] = await Promise.all([
+  const [commandes, pieces, modeles] = await Promise.all([
     prisma.order.findMany({
       where: { OR: [{ number: contient }, { email: contient }] },
       take: 5,
       orderBy: { createdAt: "desc" },
       select: { number: true, status: true, email: true },
-    }),
-    prisma.user.findMany({
-      where: { OR: [{ name: contient }, { email: contient }] },
-      take: 5,
-      select: { id: true, name: true, email: true },
     }),
     prisma.part.findMany({
       where: { OR: [{ reference: contient }, { name: contient }] },
@@ -58,12 +53,6 @@ export async function rechercheGlobale(requete: string): Promise<ResultatRecherc
       titre: commande.number,
       detail: `${libelleStatut(commande.status)} · ${commande.email}`,
       href: `/atelier/commandes/${commande.number}`,
-    })),
-    ...clients.map((client) => ({
-      groupe: "Clients",
-      titre: client.name ?? client.email,
-      detail: client.email,
-      href: `/atelier/clients/${client.id}`,
     })),
     ...pieces.map((piece) => ({
       groupe: "Stock",

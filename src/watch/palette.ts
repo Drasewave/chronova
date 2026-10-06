@@ -23,6 +23,7 @@ export const METALS: Record<MetalTone, MetalRamp> = {
   dore: { hi: "#FFF6DA", light: "#F1D48F", mid: "#C99A45", dark: "#7C5A22", edge: "#3E2B0E" },
   noir: { hi: "#AEB3BA", light: "#676C73", mid: "#33373C", dark: "#17191C", edge: "#08090A" },
   bleui: { hi: "#C9D8F5", light: "#7D93C4", mid: "#3A4E82", dark: "#1B2748", edge: "#0C1226" },
+  rose: { hi: "#FFEBE0", light: "#F3C2AA", mid: "#D68F70", dark: "#8C503A", edge: "#44241A" },
 };
 
 /** Les deux extrêmes neutres du rendu : l'ombre du studio et sa lumière. */

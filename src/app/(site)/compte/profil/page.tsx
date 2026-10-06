@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { FormulaireMotDePasse } from "@/components/compte/formulaire-mot-de-passe";
 import { FormulaireProfil } from "@/components/compte/formulaire-profil";
 import { SuppressionCompte } from "@/components/compte/suppression-compte";
 import { prisma } from "@/lib/db";
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function Profil() {
+export default async function Profil(props: PageProps<"/compte/profil">) {
+  const { mot_de_passe } = await props.searchParams;
   const session = await auth();
   const utilisateur = await prisma.user.findUniqueOrThrow({
     where: { id: session!.user.id },
@@ -21,6 +23,7 @@ export default async function Profil() {
       wristSizeMm: true,
       preferences: true,
       newsletter: true,
+      passwordHash: true,
     },
   });
 
@@ -38,6 +41,18 @@ export default async function Profil() {
             preferences={utilisateur.preferences ?? ""}
             newsletter={utilisateur.newsletter}
           />
+        </div>
+      </section>
+
+      <section className="mt-14 max-w-[34rem] border-t border-rule pt-10">
+        <h2 className="type-title-1">Mot de passe</h2>
+        {mot_de_passe === "change" && (
+          <p role="status" className="type-body mt-4 text-fg">
+            Mot de passe enregistré. Vos autres appareils ont été déconnectés.
+          </p>
+        )}
+        <div className="mt-6 rounded-card border border-rule bg-panel p-7">
+          <FormulaireMotDePasse aUnMotDePasse={utilisateur.passwordHash !== null} />
         </div>
       </section>
 

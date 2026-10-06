@@ -76,13 +76,7 @@ export default async function FicheCommande(props: PageProps<"/atelier/commandes
             {(ligne?.snapshot as { modele?: string } | null)?.modele ?? "Montre"}
           </TitrePage>
           <p className="type-ui mt-2 max-w-[72ch] font-normal text-fg-soft">
-            {commande.user ? (
-              <Link href={`/atelier/clients/${commande.user.id}`} className="link-underline text-accent-ink">
-                {commande.user.name ?? commande.email}
-              </Link>
-            ) : (
-              commande.email
-            )}
+            {commande.user?.name ?? commande.email}
             {commande.user?.wristSizeMm ? ` · poignet ${commande.user.wristSizeMm} mm` : ""}
             {commande.user?.phone ? ` · ${commande.user.phone}` : ""}
           </p>

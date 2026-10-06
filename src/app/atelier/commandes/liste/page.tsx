@@ -28,7 +28,7 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
   const commandes = await prisma.order.findMany({
     where: actif.statuts ? { status: { in: actif.statuts } } : {},
     orderBy: { createdAt: "desc" },
-    include: { items: true, user: { select: { name: true, id: true } } },
+    include: { items: true, user: { select: { name: true } } },
   });
 
   const marge = commandes.reduce(
@@ -116,12 +116,7 @@ export default async function ListeCommandes(props: PageProps<"/atelier/commande
                   </Td>
                   <Td>
                     {commande.user ? (
-                      <Link
-                        href={`/atelier/clients/${commande.user.id}`}
-                        className="type-ui link-underline text-fg"
-                      >
-                        {commande.user.name ?? commande.email}
-                      </Link>
+                      <span className="type-ui text-fg">{commande.user.name ?? commande.email}</span>
                     ) : (
                       <span className="type-ui text-fg">{commande.email}</span>
                     )}

@@ -1,7 +1,9 @@
 import { INK, METALS, isLight, rampAt, shade, tint } from "../palette";
 import { Ring, annulus } from "./conic";
 import { C, R_DIAL, R_MINUTE_TRACK, n, polar } from "../geometry";
+import { dialLayout, type DialLayout } from "../dial-layout";
 import type { DateWindow as DateWindowKind, DialTexture, MetalTone, Movement } from "../types";
+import { SCRIPT_AUTOMATIQUE } from "./glyphes";
 
 /** Bord intérieur du réhaut imprimé d'une plongeuse, et du réhaut boussole. */
 const R_CHAPTER_IN = 263;
@@ -35,10 +37,13 @@ interface DialProps {
    */
   smallSecondsAngle?: number;
   /**
-   * Nom resserré et descendu d'un cran : l'échelle 13–24 d'un cadran de terrain
-   * occupe la place habituelle du nom, qui buterait contre « 23 » et « 13 ».
+   * Mise en page propre au style d'index (`dialLayout`) : minuterie chiffrée,
+   * disque 24 h, signature cursive, nom resserré devant l'échelle 13–24 d'un
+   * cadran de terrain. Absent : cadran courant.
    */
-  compactSignature?: boolean;
+  layout?: DialLayout;
+  /** Métal du cadre du guichet de date. Absent : celui du boîtier. */
+  frameMetal?: MetalTone;
 }
 
 export function Dial({
@@ -55,7 +60,8 @@ export function Dial({
   waterResistM,
   metal = "acier",
   smallSecondsAngle = 0,
-  compactSignature = false,
+  layout = dialLayout("batons"),
+  frameMetal,
 }: DialProps) {
   const light = isLight(color);
   const printed = light ? shade(color, 0.78) : tint(color, 0.82);
@@ -88,6 +94,13 @@ export function Dial({
               opacity="0.3"
               transform={`rotate(-24 ${C - 84} ${C - 104})`}
             />
+          </>
+        )}
+        {texture === "rayonne" && (
+          <>
+            <use href={`#${uid}-conic-dial`} />
+            {/* Les sillons captent le studio : un voile de lumière doux, pas de gloss. */}
+            <circle cx={C} cy={C} r={R_DIAL} fill={`url(#${uid}-dial)`} opacity="0.22" />
           </>
         )}
         {texture === "emaille" && (
@@ -132,7 +145,13 @@ export function Dial({
       <circle cx={C} cy={C} r={R_DIAL - 10} fill="none" stroke={INK} strokeOpacity="0.55" strokeWidth="1.2" />
 
       {rehaut === "poli" ? (
-        <MinuteTrack color={printed} detail={detail} fine={movement === "VK64"} />
+        layout.minuterie === "aucune" ? null : layout.minuterie === "chiffree" ? (
+          <ChapitreNumerote color={printed} detail={detail} />
+        ) : layout.minuterie === "fine" || layout.minuterie === "ticks" ? (
+          <CheminDeFer color={printed} detail={detail} rails={layout.minuterie === "fine"} />
+        ) : (
+          <MinuteTrack color={printed} detail={detail} fine={movement === "VK64"} />
+        )
       ) : (
         <PrintedRehaut uid={uid} color={color} printed={printed} kind={rehaut} detail={detail} />
       )}
@@ -142,42 +161,206 @@ export function Dial({
       {movement === "VK64" && <ChronoSubdials color={subdialColor ?? "#EFE7D6"} detail={detail} secondsAngle={smallSecondsAngle} />}
       {hasDate && (
         <g filter={`url(#${uid}-contact-shadow)`}>
-          <DateWindow uid={uid} color={color} kind={dateWindow} />
+          <DateWindow uid={uid} color={color} kind={dateWindow} frame={frameMetal} />
         </g>
       )}
 
-      {/* Signature : le nom, puis la ligne technique, comme une tampographie. */}
-      <text
-        x={C}
-        y={compactSignature ? C - 110 : C - 128}
-        textAnchor="middle"
-        fill={printed}
-        style={{ fontFamily: "var(--font-title)", fontSize: compactSignature ? 27 : 33, fontWeight: 500, letterSpacing: "0.24em" }}
-      >
-        CHRONOVA
-      </text>
-      <text
-        x={C}
-        y={C + 148}
-        textAnchor="middle"
-        fill={printed}
-        fillOpacity="0.82"
-        style={{ fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 500, letterSpacing: "0.3em" }}
-      >
-        {movement === "VK64" ? "CHRONOGRAPHE" : "AUTOMATIQUE"}
-      </text>
-      {/* Seconde ligne : l'étanchéité de la fiche du modèle quand le rendu la
-          connaît, comme sur une plongeuse ; sinon le calibre. */}
-      <text
-        x={C}
-        y={C + 174}
-        textAnchor="middle"
-        fill={printed}
-        fillOpacity={waterResistM ? 0.78 : 0.6}
-        style={{ fontFamily: "var(--font-ui)", fontSize: waterResistM ? 14.5 : 13, fontWeight: waterResistM ? 500 : 400, letterSpacing: waterResistM ? "0.22em" : "0.3em" }}
-      >
-        {waterResistM ? `${waterResistM} m` : movement}
-      </text>
+      <Signature layout={layout} printed={printed} movement={movement} waterResistM={waterResistM} metal={frameMetal ?? "acier"} hasDate={hasDate} />
+    </g>
+  );
+}
+
+/** Nom appliqué en métal, comme les logos rapportés des cadrans de référence. */
+function LogoApplique({ y, taille, metal }: { y: number; taille: number; metal: MetalTone }) {
+  const ramp = METALS[metal];
+  const style = { fontFamily: "var(--font-title)", fontSize: taille, fontWeight: 600, letterSpacing: "0.1em" } as const;
+  return (
+    <g data-layer="logo" textAnchor="middle">
+      <text x={C + 1.4} y={y + 2} fill={ramp.edge} fillOpacity="0.9" style={style}>CHRONOVA</text>
+      <text x={C} y={y} fill={rampAt(ramp, 0.66)} stroke={ramp.hi} strokeOpacity="0.8" strokeWidth="0.7" style={style}>CHRONOVA</text>
+    </g>
+  );
+}
+
+function Ligne({ y, texte, taille, fill, gras = false, italique = false, espacement = "0.04em", opacite = 1 }: { y: number; texte: string; taille: number; fill: string; gras?: boolean; italique?: boolean; espacement?: string; opacite?: number }) {
+  return (
+    <text
+      x={C}
+      y={y}
+      textAnchor="middle"
+      fill={fill}
+      fillOpacity={opacite}
+      style={{ fontFamily: "var(--font-ui)", fontSize: taille, fontWeight: gras ? 700 : 500, fontStyle: italique ? "italic" : "normal", letterSpacing: espacement }}
+    >
+      {texte}
+    </text>
+  );
+}
+
+/**
+ * Signature. Chaque style reprend la disposition de son cadran de référence : nom
+ * appliqué en haut et bloc de lignes imprimées (étanchéité de la fiche, genre de
+ * mouvement, calibre) à la même place. Sur le cadran à disque 24 h, tout se loge
+ * dans le disque ; en cursive, « Automatique » s'écrit à la plume sous le centre ;
+ * un cadran manuscrit n'imprime rien.
+ */
+function Signature({ layout, printed, movement, waterResistM, metal, hasDate }: { layout: DialLayout; printed: string; movement: Movement; waterResistM?: number; metal: MetalTone; hasDate: boolean }) {
+  const genre = movement === "VK64" ? "CHRONOGRAPHE" : "AUTOMATIQUE";
+  const technique = waterResistM ? `${waterResistM} m` : movement;
+
+  switch (layout.signature) {
+    case "aucune":
+      return null;
+
+    case "sky":
+      return (
+        <g data-layer="signature">
+          <Ligne y={C + 30} texte="CHRONOVA" taille={22} fill={printed} gras espacement="0.2em" />
+          <Ligne y={C + 52} texte={genre} taille={11.5} fill={printed} espacement="0.22em" opacite={0.85} />
+          <Ligne y={C + 69} texte={technique} taille={10.5} fill={printed} espacement="0.22em" opacite={0.65} />
+        </g>
+      );
+
+    case "pro":
+      return (
+        <g data-layer="signature">
+          <LogoApplique y={C - 118} taille={30} metal={metal} />
+          <Ligne y={C + 74} texte={technique} taille={15} fill={printed} italique espacement="0" />
+          <Ligne y={C + 93} texte={genre} taille={17.5} fill={printed} gras espacement="0.02em" />
+        </g>
+      );
+
+    case "datejust":
+      return (
+        <g data-layer="signature">
+          <LogoApplique y={C - 136} taille={30} metal={metal} />
+          <Ligne y={C - 108} texte={genre} taille={15} fill={printed} gras espacement="0.1em" />
+          {hasDate && <Ligne y={C - 90} texte="QUANTIÈME" taille={15} fill={printed} espacement="0.1em" />}
+          <Ligne y={C + 110} texte="MOUVEMENT AUTOMATIQUE" taille={12.5} fill={printed} espacement="0.02em" />
+          <Ligne y={C + 126} texte={waterResistM ? `ÉTANCHE ${waterResistM} M` : `CALIBRE ${movement}`} taille={12.5} fill={printed} espacement="0.02em" />
+        </g>
+      );
+
+    case "diary":
+      return (
+        <g data-layer="signature">
+          <Ligne y={C + 82} texte={genre} taille={13} fill={printed} gras espacement="0.03em" />
+          <Ligne y={C + 98} texte={waterResistM ? `ÉTANCHE ${waterResistM} M` : `CALIBRE ${movement}`} taille={13} fill={printed} gras espacement="0.03em" />
+        </g>
+      );
+
+    case "cursive": {
+      const echelle = 176 / (SCRIPT_AUTOMATIQUE.box[2] - SCRIPT_AUTOMATIQUE.box[0]);
+      return (
+        <g data-layer="signature">
+          <LogoApplique y={C - 118} taille={30} metal={metal} />
+          <path
+            d={SCRIPT_AUTOMATIQUE.d}
+            fill={printed}
+            stroke={printed}
+            strokeWidth="26"
+            transform={`translate(${C} ${C + 124}) scale(${Math.round(echelle * 10000) / 10000}) translate(${n(-(SCRIPT_AUTOMATIQUE.box[0] + SCRIPT_AUTOMATIQUE.box[2]) / 2)} 0)`}
+          />
+        </g>
+      );
+    }
+
+    default:
+      return (
+        <g data-layer="signature">
+          <text
+            x={C}
+            y={layout.compactSignature ? C - 110 : C - 128}
+            textAnchor="middle"
+            fill={printed}
+            style={{ fontFamily: "var(--font-title)", fontSize: layout.compactSignature ? 27 : 33, fontWeight: 500, letterSpacing: "0.24em" }}
+          >
+            CHRONOVA
+          </text>
+          <Ligne y={C + 148} texte={genre} taille={15} fill={printed} espacement="0.3em" opacite={0.82} />
+          {/* Seconde ligne : l'étanchéité de la fiche du modèle quand le rendu la
+              connaît, comme sur une plongeuse ; sinon le calibre. */}
+          <text
+            x={C}
+            y={C + 174}
+            textAnchor="middle"
+            fill={printed}
+            fillOpacity={waterResistM ? 0.78 : 0.6}
+            style={{ fontFamily: "var(--font-ui)", fontSize: waterResistM ? 14.5 : 13, fontWeight: waterResistM ? 500 : 400, letterSpacing: waterResistM ? "0.22em" : "0.3em" }}
+          >
+            {technique}
+          </text>
+        </g>
+      );
+  }
+}
+
+/**
+ * Chemin de fer : deux rails fins sur le pourtour et soixante traits qui les
+ * relient, ceux des cinq minutes plus francs. La minuterie des cadrans de
+ * référence, tracée à l'encre fine plutôt qu'en gros traits.
+ */
+function CheminDeFer({ color, detail, rails }: { color: string; detail: "full" | "compact"; rails: boolean }) {
+  const full = detail === "full";
+  const ext = rails ? 276 : 278;
+  const int = 258;
+  const total = full ? 60 : 12;
+  return (
+    <g data-layer="minuterie">
+      {rails && (
+        <>
+          <circle cx={C} cy={C} r={ext} fill="none" stroke={color} strokeOpacity="0.9" strokeWidth="1.8" />
+          <circle cx={C} cy={C} r={int} fill="none" stroke={color} strokeOpacity="0.85" strokeWidth="1.5" />
+        </>
+      )}
+      {Array.from({ length: total }, (_, i) => {
+        const angle = (360 / total) * i;
+        const cinq = full ? i % 5 === 0 : true;
+        const a = polar(ext, angle);
+        const b = polar(rails ? (cinq ? int - 3 : int + 3) : cinq ? int - 4 : int + 8, angle);
+        return <line key={i} x1={n(a.x)} y1={n(a.y)} x2={n(b.x)} y2={n(b.y)} stroke={color} strokeOpacity="0.95" strokeWidth={rails ? (cinq ? 2.8 : 1.5) : cinq ? 3.4 : 2.2} />;
+      })}
+    </g>
+  );
+}
+
+/**
+ * Minuterie chiffrée : un chiffre tous les cinq minutes (5, 10 … 60), couchés
+ * dans l'axe de leur heure, et entre eux des traits fins. C'est la minuterie des
+ * cadrans « Datejust » ; elle remplace les gros traits de la minuterie courante.
+ */
+function ChapitreNumerote({ color, detail }: { color: string; detail: "full" | "compact" }) {
+  const full = detail === "full";
+  const rChiffre = 260;
+  const total = full ? 60 : 12;
+  const pas = 360 / total;
+  return (
+    <g data-layer="minuterie">
+      {Array.from({ length: total }, (_, i) => {
+        const angle = pas * i;
+        const cinq = full ? i % 5 === 0 : true;
+        if (cinq) {
+          const minutes = full ? (i === 0 ? 60 : i) : i === 0 ? 60 : i * 5;
+          const p = polar(rChiffre, angle);
+          return (
+            <text
+              key={i}
+              x={n(p.x)}
+              y={n(p.y)}
+              dy="7"
+              textAnchor="middle"
+              fill={color}
+              transform={`rotate(${angle} ${n(p.x)} ${n(p.y)})`}
+              style={{ fontFamily: "var(--font-ui)", fontSize: 20, fontWeight: 600, letterSpacing: "0.02em" }}
+            >
+              {minutes}
+            </text>
+          );
+        }
+        const a = polar(278, angle);
+        const b = polar(268, angle);
+        return <line key={i} x1={n(a.x)} y1={n(a.y)} x2={n(b.x)} y2={n(b.y)} stroke={color} strokeOpacity="0.9" strokeWidth="1.8" strokeLinecap="round" />;
+      })}
     </g>
   );
 }
@@ -580,15 +763,22 @@ function ChronoSubdials({ color, detail, secondsAngle }: { color: string; detail
   );
 }
 
-function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: DateWindowKind }) {
+function DateWindow({ uid, color, kind, frame }: { uid: string; color: string; kind: DateWindowKind; frame?: MetalTone }) {
+  // Sur les cadrans à index appliqués, le cadre du guichet est du même métal que les index.
+  const cadre = frame ? METALS[frame] : undefined;
+  const degrade = cadre ? `${uid}-guichet-cadre` : `${uid}-case`;
   // Jour et date : le guichet s'élargit vers le centre, le jour à gauche du
   // quantième. Deux disques superposés tournent dessous, d'où le filet qui les
   // sépare. « LUN 11 » est la pose de catalogue ; une fois la page montée,
   // l'horloge vivante y écrit le vrai jour et le vrai quantième (`data-guichet`).
   const jour = kind === "jour-date";
-  const w = jour ? 136 : 68;
+  // Cadrans appliqués (`frame`) : un guichet plus large, au cadre plus épais.
+  const grand = Boolean(frame);
+  const b = grand ? 9 : 5;
+  const h = grand ? 56 : 50;
+  const w = jour ? 136 : grand ? 84 : 68;
   const x = C + 232 - w;
-  const y = C - 25;
+  const y = C - h / 2;
   const light = isLight(color);
   const disque = light ? "#F7F5EF" : "#15171A";
   const encre = light ? "#15171A" : "#F1F2F4";
@@ -597,13 +787,21 @@ function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: Da
     // `id` stable : la loupe (`crystal.tsx`) reprend ce groupe par `<use>`, grossi
     // deux fois et demie — même disque, même quantième, mis à jour ensemble.
     <g id={`${uid}-guichet`} data-layer="guichet-date">
+      {cadre && (
+        <linearGradient id={degrade} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={cadre.mid} />
+          <stop offset="0.2" stopColor={cadre.light} />
+          <stop offset="0.5" stopColor={cadre.mid} />
+          <stop offset="1" stopColor={cadre.dark} />
+        </linearGradient>
+      )}
       {/* Cadre appliqué, poli, puis le disque de quantième en retrait. */}
-      <rect x={x} y={y} width={w} height="50" rx="3" fill={`url(#${uid}-case)`} stroke={INK} strokeOpacity="0.6" strokeWidth="0.9" />
+      <rect x={x} y={y} width={w} height={h} rx="3" fill={`url(#${degrade})`} stroke={INK} strokeOpacity="0.6" strokeWidth="0.9" />
       {/* Arête polie du cadre, côté lumière. */}
       <line x1={x + 3} y1={y + 1.4} x2={x + w - 3} y2={y + 1.4} stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1" strokeLinecap="round" />
-      <rect x={x + 5} y={y + 5} width={w - 10} height="40" rx="1.5" fill={disque} />
+      <rect x={x + b} y={y + b} width={w - 2 * b} height={h - 2 * b} rx="1.5" fill={disque} />
       {/* Le cadre porte son ombre sur le disque, du côté de la lumière. */}
-      <path d={`M ${x + 5} ${y + 45} L ${x + 5} ${y + 5} L ${x + w - 5} ${y + 5}`} fill="none" stroke={INK} strokeOpacity={light ? 0.3 : 0.7} strokeWidth="3" />
+      <path d={`M ${x + b} ${y + h - b} L ${x + b} ${y + b} L ${x + w - b} ${y + b}`} fill="none" stroke={INK} strokeOpacity={light ? 0.3 : 0.7} strokeWidth="3" />
       {jour && (
         <>
           <line x1={x + 78} y1={y + 6} x2={x + 78} y2={y + 44} stroke={encre} strokeOpacity="0.35" strokeWidth="1.2" />
@@ -612,7 +810,7 @@ function DateWindow({ uid, color, kind }: { uid: string; color: string; kind: Da
           </text>
         </>
       )}
-      <text data-guichet="quantieme" x={x + w - 34} y={y + 36} textAnchor="middle" fill={encre} style={{ ...police, fontSize: 30 }}>
+      <text data-guichet="quantieme" x={jour || !grand ? x + w - 34 : x + w / 2} y={y + h / 2 + 11} textAnchor="middle" fill={encre} style={{ ...police, fontSize: grand ? 28 : 30 }}>
         11
       </text>
     </g>

@@ -113,6 +113,24 @@ export function Defs({
         />
       )}
 
+      {/* Rayonné : des cannelures radiales gravées. Une dent sur deux est dans
+          l'ombre, la suivante dans la lumière — le contraste franc des sillons
+          qu'on voit à l'œil nu — sous un voile de lumière large, du haut-gauche. */}
+      {render.dialTexture === "rayonne" && (
+        <ConicDisk
+          id={`${uid}-conic-dial`}
+          count={full ? 220 : 60}
+          radius={300}
+          colorAt={(angle, i) => {
+            const bow = 0.5 + 0.5 * Math.cos((2 * (angle - 318) * Math.PI) / 180);
+            const dent = i % 2 === 0 ? 0.24 : -0.24;
+            const lum = 0.4 + 0.3 * bow + dent + (jitter(i) - 0.5) * 0.05;
+            const bright = isLight(dial) ? tint(dial, 0.5) : glow(dial, 1.15);
+            return mix(shade(dial, isLight(dial) ? 0.3 : 0.52), bright, Math.max(0, Math.min(1, lum)));
+          }}
+        />
+      )}
+
       {/* Cornes : un seul dégradé dans le repère de la montre, pour que les
           quatre partagent la même lumière — la corne haut-gauche est la plus
           claire, la corne bas-droite la plus sombre. */}

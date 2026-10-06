@@ -17,7 +17,7 @@ function decoder(brut: string): string | undefined {
 /**
  * Configuration ⇄ paramètre d'URL.
  *
- * Volontairement lisible (`?c=taille:40~cadran-teinte:bleu-abysse`) plutôt que
+ * Volontairement lisible (`?c=taille:40~cadran:romains-bleu-nuit`) plutôt que
  * compressé : un lien partagé se relit, se corrige à la main et se débogue sans
  * outil. La longueur reste très en deçà des limites d'URL.
  */

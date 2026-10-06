@@ -32,7 +32,7 @@ Points utiles pour répondre à une question sur Chronova :
 - Contrôles avant expédition : étanchéité sous pression et marche suivie pendant 72 heures ; une fiche de contrôle accompagne la montre.
 - Une configuration tient dans un lien partageable ; le prix se met à jour à chaque choix.
 - Droit de rétractation de 14 jours après réception, sauf montre avec gravure personnalisée et pièce unique sur devis. Garanties légales de conformité (2 ans) et des vices cachés.
-- Paiement par carte via Stripe. Compte client sans mot de passe (lien de connexion par e-mail).
+- Paiement par carte via Stripe. Compte client par adresse e-mail et mot de passe.
 - Le site ne dépose aucun traceur publicitaire ni mesure d'audience.
 
 ## Modèles

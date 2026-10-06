@@ -3,6 +3,7 @@ import { Case, Lugs } from "./parts/case";
 import { Crown, CrownGuards } from "./parts/crown";
 import { Crystal } from "./parts/crystal";
 import { Defs } from "./parts/defs";
+import { dialLayout, heuresPrises } from "./dial-layout";
 import { Dial } from "./parts/dial";
 import { Hands } from "./parts/hands";
 import { Indices } from "./parts/indices";
@@ -207,6 +208,7 @@ function FaceView({
   showDate: boolean;
 }) {
   const id = uid;
+  const layout = dialLayout(render.indexStyle);
   // La minuterie d'une plongeuse vit sur son réhaut : elle suit les index de
   // plongée. Le réhaut boussole, lui, est une option à part entière.
   const rehaut = flank.boussole ? "boussole" : render.indexStyle === "plongee" ? "minuterie" : "poli";
@@ -275,7 +277,8 @@ function FaceView({
           waterResistM={render.waterResistM}
           metal={render.caseMetal}
           smallSecondsAngle={time.seconds * 6}
-          compactSignature={render.indexStyle === "terrain-24h"}
+          layout={layout}
+          frameMetal={layout.cadreDate ? (render.indexMetal ?? render.caseMetal) : undefined}
         />
 
         <g filter={`url(#${id}-contact-shadow)`}>
@@ -284,10 +287,11 @@ function FaceView({
             style={render.indexStyle}
             metal={render.indexMetal ?? render.caseMetal}
             dialColor={render.dialColor}
+            ink={render.indexInk}
             lume={render.lume}
             outerRadius={flank.boussole ? 227 : gmtScale ? 230 : undefined}
             innerRadius={flank.boussole ? 194 : gmtScale ? 196 : undefined}
-            skipHour={showDate ? 3 : undefined}
+            skipHour={heuresPrises(render.movement, showDate)}
           />
         </g>
 

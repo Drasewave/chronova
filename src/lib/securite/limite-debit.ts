@@ -80,9 +80,11 @@ export function ipDepuisEnTetes(enTetes: { get(nom: string): string | null }): s
 }
 
 export const REGLES = {
-  /** Envoi d'un lien magique : par IP, et par adresse visée (bombardement d'un tiers). */
-  lienParIp: { max: 8, fenetreMs: 10 * 60_000 },
-  lienParEmail: { max: 3, fenetreMs: 15 * 60_000 },
+  /** Connexion par mot de passe : par IP, et par compte visé (essais de mots de passe). */
+  connexionParIp: { max: 10, fenetreMs: 10 * 60_000 },
+  connexionParEmail: { max: 6, fenetreMs: 15 * 60_000 },
+  /** Création de compte : par IP (fabrication de comptes en série). */
+  inscriptionParIp: { max: 5, fenetreMs: 30 * 60_000 },
   /** Formulaires contact / pièce unique. */
   demandeParIp: { max: 5, fenetreMs: 10 * 60_000 },
   demandeParEmail: { max: 3, fenetreMs: 10 * 60_000 },

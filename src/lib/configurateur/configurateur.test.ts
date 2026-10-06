@@ -23,7 +23,7 @@ describe("prix", () => {
   });
 
   it("ne liste que les choix qui coûtent quelque chose", () => {
-    const prix = computePrice(catalogue, 100000, { finition: "brosse", index: "batons" });
+    const prix = computePrice(catalogue, 100000, { finition: "brosse", date: "avec" });
     expect(prix.lines).toHaveLength(0);
     expect(prix.totalCents).toBe(100000);
   });
@@ -82,9 +82,14 @@ describe("règles de compatibilité", () => {
     expect(evaluateOption(catalogue, "bracelet-teinte:fauve", { "bracelet-type": "cuir" }).selectable).toBe(true);
   });
 
-  it("l'émail ne se fait que sur les teintes claires", () => {
-    expect(evaluateOption(catalogue, "cadran-finition:emaille", { "cadran-teinte": "noir-mat" }).selectable).toBe(false);
-    expect(evaluateOption(catalogue, "cadran-finition:emaille", { "cadran-teinte": "creme" }).selectable).toBe(true);
+  it("le disque 24 heures ne se pose pas sous un guichet jour-date élargi", () => {
+    expect(evaluateOption(catalogue, "cadran:sky-noir-or", { date: "jour-date" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "cadran:sky-noir-or", { date: "avec" }).selectable).toBe(true);
+  });
+
+  it("le réhaut boussole resserre les index : aucun cadran de l'atelier ne s'y pose", () => {
+    expect(evaluateOption(catalogue, "cadran:romains-or-rose", { rehaut: "boussole" }).selectable).toBe(false);
+    expect(evaluateOption(catalogue, "cadran:romains-or-rose", { rehaut: "aucun" }).selectable).toBe(true);
   });
 
   it("le jour-date suit le quantième : ni NH38 ni VK64", () => {
@@ -187,7 +192,7 @@ describe("stock", () => {
   });
 
   it("signale une dernière pièce", () => {
-    expect(resolveStockState(catalogue, "CAD-SAU")).toBe("derniere-piece");
+    expect(resolveStockState(catalogue, "CAD-ROMAINS-OR-ROSE")).toBe("derniere-piece");
   });
 
   it("compte le réservé comme indisponible", () => {
@@ -204,15 +209,15 @@ describe("nomenclature", () => {
     const bom = buildBom(catalogue, abysse.defaultSelections);
     const refs = bom.map((ligne) => ligne.part.ref);
     expect(refs).toContain("BOI-40");
-    expect(refs).toContain("CAD-BLE");
+    expect(refs).toContain("CAD-ARABES-CHAPITRE-BLEU");
     expect(refs).toContain("MOU-NH36");
     expect(refs).toContain("LUN-PLO");
     expect(new Set(refs).size).toBe(refs.length);
   });
 
   it("chaque ligne rappelle le choix client qui l'a provoquée", () => {
-    const ligne = buildBom(catalogue, abysse.defaultSelections).find((l) => l.part.ref === "CAD-BLE");
-    expect(ligne?.becauseOf).toContain("Bleu abysse");
+    const ligne = buildBom(catalogue, abysse.defaultSelections).find((l) => l.part.ref === "CAD-ARABES-CHAPITRE-BLEU");
+    expect(ligne?.becauseOf).toContain("Bleu");
   });
 
   it("le coût des pièces reste bien en dessous du prix de vente", () => {
@@ -234,7 +239,7 @@ describe("configuration dans l'URL", () => {
   });
 
   it("ignore une option disparue du catalogue plutôt que d'échouer", () => {
-    expect(decodeConfig(catalogue, "cadran-teinte:turquoise~index:batons")).toEqual({ index: "batons" });
+    expect(decodeConfig(catalogue, "cadran:fuchsia-fluo~finition:brosse")).toEqual({ finition: "brosse" });
     expect(decodeConfig(catalogue, "groupe-inconnu:valeur")).toEqual({});
     expect(decodeConfig(catalogue, null)).toEqual({});
   });
@@ -278,8 +283,8 @@ describe("lien partagé abîmé (audit A-10)", () => {
 
   it("ignore la paire fautive et garde le reste du lien", () => {
     expect(decodeConfig(catalogue, "taille:%E0%A4%A")).toEqual({});
-    expect(decodeConfig(catalogue, "taille:%E0%A4%A~index:batons")).toEqual({ index: "batons" });
-    expect(decodeConfig(catalogue, "gravure:%ZZ~index:batons")).toEqual({ index: "batons" });
+    expect(decodeConfig(catalogue, "taille:%E0%A4%A~finition:brosse")).toEqual({ finition: "brosse" });
+    expect(decodeConfig(catalogue, "gravure:%ZZ~finition:brosse")).toEqual({ finition: "brosse" });
   });
 
   it("retombe sur la configuration de départ du modèle", () => {
@@ -304,7 +309,8 @@ describe("rendu déduit des sélections", () => {
     const render = resolveRender(catalogue, abysse.defaultSelections);
     expect(render).toMatchObject({
       caseSize: 40,
-      dialColor: "#1E3448",
+      dialColor: "#1E48C8",
+      indexStyle: "arabes-chapitre",
       bezelStyle: "plongee",
       insertMaterial: "ceramique",
       handShape: "fleche",
@@ -319,13 +325,13 @@ describe("rendu déduit des sélections", () => {
       crownAt: 4,
       showDate: true,
       dateWindow: "jour-date",
-      indexStyle: "plongee",
+      indexStyle: "arabes-chapitre",
       crownStyle: "lisse",
     });
   });
 
   it("une configuration sans les nouveaux choix garde le rendu d'avant", () => {
-    const render = resolveRender(catalogue, { "cadran-teinte": "creme", date: "avec" });
+    const render = resolveRender(catalogue, { cadran: "romains-blanc-argent", date: "avec" });
     expect(render.caseShape).toBeUndefined();
     expect(render.crownAt).toBeUndefined();
     expect(render.dateWindow).toBeUndefined();
@@ -338,7 +344,7 @@ describe("rendu déduit des sélections", () => {
     expect(render.lume).toBe(false);
     expect(render.caseback).toBe("transparent");
     expect(render.handShape).toBe("dauphine");
-    expect(render.dialTexture).toBe("soleil-profond");
+    expect(render).toMatchObject({ indexStyle: "romains", indexMetal: "dore" });
     expect(render).toMatchObject({ crystal: "box", crownStyle: "oignon", strapKind: "cuir-glace" });
   });
 
@@ -369,7 +375,7 @@ describe("rendu déduit des sélections", () => {
   });
 
   it("sans les nouveaux choix, ni loupe, ni teinte d'aiguille, ni métal d'index", () => {
-    const render = resolveRender(catalogue, { "cadran-teinte": "creme" });
+    const render = resolveRender(catalogue, {});
     expect(render.cyclops).toBeUndefined();
     expect(render.accentHandColor).toBeUndefined();
     expect(render.indexMetal).toBeUndefined();
@@ -417,9 +423,9 @@ describe("configuration complète", () => {
 
 describe("lien partagé", () => {
   it("le lien prime sur la configuration signature, qui comble les trous", () => {
-    const partiel = decodeConfig(catalogue, "cadran-teinte:saumon");
+    const partiel = decodeConfig(catalogue, "cadran:romains-or-rose");
     const config = buildConfiguration(catalogue, abysse, { ...abysse.defaultSelections, ...partiel });
-    expect(config.selections["cadran-teinte"]).toBe("saumon");
+    expect(config.selections["cadran"]).toBe("romains-or-rose");
     expect(config.selections["lunette-style"]).toBe("plongee");
     expect(config.selections["taille"]).toBe("40");
   });

@@ -17,7 +17,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "tsx prisma/purge.ts && tsx prisma/seed.ts",
     "db:purge": "tsx prisma/purge.ts",
-    "db:verifier": "tsx prisma/verifier.ts"
+    "db:verifier": "tsx prisma/verifier.ts",
+    "compte:mot-de-passe": "tsx prisma/mot-de-passe.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

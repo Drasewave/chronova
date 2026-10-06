@@ -48,10 +48,10 @@ export default async function Confidentialite() {
 
       <h3>Votre compte client</h3>
       <p>
-        <strong>Données</strong> : adresse e-mail, et si vous les renseignez : nom, téléphone,
-        carnet d&apos;adresses. La connexion se fait par un lien envoyé par e-mail : aucun mot de
-        passe n&apos;est créé ni stocké. Un jeton de connexion à usage unique est conservé trente
-        minutes, puis un identifiant de session trente jours au plus. La date et la version des
+        <strong>Données</strong> : adresse e-mail, mot de passe (conservé uniquement sous forme
+        d&apos;empreinte chiffrée, jamais en clair), et si vous les renseignez : nom, téléphone,
+        carnet d&apos;adresses. La connexion se fait par votre adresse et votre mot de passe ; un
+        identifiant de session est ensuite conservé trente jours au plus. La date et la version des
         conditions d&apos;utilisation que vous acceptez sont conservées comme preuve.
       </p>
       <p>
@@ -127,7 +127,7 @@ export default async function Confidentialite() {
 
       <h3>Les e-mails de service</h3>
       <p>
-        Lien de connexion, confirmation de commande, avancement de l&apos;assemblage, expédition.
+        Confirmation de commande, avancement de l&apos;assemblage, expédition.
         Ce ne sont pas des messages publicitaires : ils sont nécessaires à l&apos;exécution du
         contrat et ne peuvent pas être désactivés.
       </p>

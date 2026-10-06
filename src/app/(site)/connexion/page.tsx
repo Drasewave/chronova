@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { FormulaireConnexion } from "@/components/compte/formulaire-connexion";
+import { FormulaireConnexion, FormulaireInscription } from "@/components/compte/formulaire-connexion";
 import { Section } from "@/components/ui/section";
 
 export const metadata: Metadata = {
@@ -22,17 +22,22 @@ export default async function Connexion(props: PageProps<"/connexion">) {
       <div className="mx-auto max-w-[34rem]">
         <h1 className="type-display-2">Se connecter</h1>
         <p className="type-body mt-6 text-fg-soft">
-          Pas de mot de passe à retenir : indiquez votre adresse, vous recevez un lien de connexion
-          valable trente minutes. C&apos;est aussi ce lien qui crée votre compte la première fois.
+          Avec votre adresse e-mail et votre mot de passe. Pas encore de compte ? Créez-le juste
+          en dessous : il sert à suivre vos commandes et vos demandes à l&apos;atelier.
         </p>
 
         <div className="mt-10 rounded-card border border-rule bg-panel p-7 sm:p-8">
           <FormulaireConnexion suite={destination} />
         </div>
 
+        <h2 className="type-title-1 mt-14">Créer un compte</h2>
+        <div className="mt-6 rounded-card border border-rule bg-panel p-7 sm:p-8">
+          <FormulaireInscription suite={destination} />
+        </div>
+
         <p className="type-caption mt-8 text-fg-soft">
-          Votre adresse e-mail sert à vous identifier et à vous envoyer le lien de connexion, puis
-          les e-mails de suivi de vos commandes. Rien d&apos;autre : le détail est dans la{" "}
+          Votre adresse e-mail sert à vous identifier, puis à vous envoyer les e-mails de suivi de
+          vos commandes. Votre mot de passe n&apos;est jamais conservé en clair. Rien d&apos;autre : le détail est dans la{" "}
           <Link href="/confidentialite" className="link-underline text-accent-ink">
             politique de confidentialité
           </Link>

@@ -1,19 +1,22 @@
-import { INK, LUME_EDGE, LUME_FILL, METALS, isLight, rampAt, shade, tint, type MetalRamp } from "../palette";
+import { INK, LUME_EDGE, LUME_FILL, METALS, isLight, rampAt, shade, tint } from "../palette";
 import { C, R_INDEX_IN, R_INDEX_OUT, n, polar } from "../geometry";
 import type { IndexStyle, MetalTone } from "../types";
 import { studioLum } from "./conic";
+import { ArabesChapitre, ArabesOrientaux, Diary, Fantaisie, Romains, RomainsChapitre, Sky, facet } from "./indices-cadrans";
 
 interface IndicesProps {
   style: IndexStyle;
   /** Les index appliqués suivent le métal du boîtier, jamais celui des aiguilles. */
   metal: MetalTone;
   dialColor: string;
+  /** Encre des chiffres laqués (`romains-chapitre`). */
+  ink?: string;
   lume: boolean;
   /** Un cadran GMT raccourcit ses index pour loger l'échelle 24 h. */
   outerRadius?: number;
   innerRadius?: number;
   /** Position horaire supprimée, remplacée par le guichet de date. */
-  skipHour?: number;
+  skipHour?: number | number[];
   /** `full` : relief du luminova et arêtes polies ; `compact` (vignettes) s'en passe. */
   detail?: "full" | "compact";
 }
@@ -22,6 +25,7 @@ export function Indices({
   style,
   metal,
   dialColor,
+  ink,
   lume,
   outerRadius = R_INDEX_OUT,
   innerRadius = R_INDEX_IN,
@@ -29,17 +33,28 @@ export function Indices({
   detail = "full",
 }: IndicesProps) {
   const relief = detail === "full";
+  const skipUn = Array.isArray(skipHour) ? skipHour[0] : skipHour;
+  // Les styles de la planche « cadrans » occupent tout le disque : les règles du
+  // catalogue les écartent des montages qui resserrent les index (GMT, boussole).
+  const commun = { metal, dialColor, lume, skipHour, detail };
+  if (style === "romains") return <Romains {...commun} />;
+  if (style === "romains-chapitre") return <RomainsChapitre {...commun} ink={ink} />;
+  if (style === "arabes-orientaux") return <ArabesOrientaux {...commun} />;
+  if (style === "arabes-chapitre") return <ArabesChapitre {...commun} />;
+  if (style === "sky") return <Sky {...commun} />;
+  if (style === "diary") return <Diary {...commun} />;
+  if (style === "fantaisie") return <Fantaisie {...commun} />;
   if (style === "plongee") {
-    return <Plongee metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} relief={relief} />;
+    return <Plongee metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipUn} relief={relief} />;
   }
   if (style === "montagne") {
-    return <Montagne metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} />;
+    return <Montagne metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipUn} />;
   }
   if (style === "terrain-24h") {
-    return <Terrain24 dialColor={dialColor} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} />;
+    return <Terrain24 dialColor={dialColor} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipUn} />;
   }
   return style === "batons" ? (
-    <Batons metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipHour} relief={relief} />
+    <Batons metal={metal} lume={lume} outer={outerRadius} inner={innerRadius} skipHour={skipUn} relief={relief} />
   ) : (
     <Arabes
       metal={metal}
@@ -47,14 +62,9 @@ export function Indices({
       lume={lume}
       outer={outerRadius}
       inner={innerRadius}
-      skipHour={skipHour}
+      skipHour={skipUn}
     />
   );
-}
-
-/** Une facette polie inclinée à 45° : jamais tout à fait noire, elle voit aussi le plafond. */
-function facet(ramp: MetalRamp, normal: number): string {
-  return rampAt(ramp, 0.24 + 0.76 * studioLum(normal, "poli"));
 }
 
 /** Direction de la boîte à lumière principale (0° = midi, sens horaire). */

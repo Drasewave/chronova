@@ -141,7 +141,7 @@ export function CartDrawer() {
 
 /** Trois choix suffisent à reconnaître une configuration dans une liste. */
 function resumeCourt(summary: readonly { groupKey: string; value: string }[]): string {
-  const cles = ["cadran-teinte", "aiguilles-forme", "bracelet-type"];
+  const cles = ["cadran", "aiguilles-forme", "bracelet-type"];
   return cles
     .map((cle) => summary.find((ligne) => ligne.groupKey === cle)?.value)
     .filter(Boolean)
