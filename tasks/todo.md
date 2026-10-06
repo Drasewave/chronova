@@ -68,9 +68,29 @@ Décisions prises avec le propriétaire :
 - [x] typecheck, lint (0 erreur, 12 warnings), tests (185), `next build` (dans `.next-verif`)
 - [x] Contrôle visuel desktop + mobile ; LCP mobile CPU ×4 : accueil 0,36 s, fiche 1,01 s,
       configurateur 0,75–0,84 s ; CLS 0 (après retrait du squelette du configurateur)
-- [ ] Revue du diff (opus)
-- [ ] Merge, build séparé, bascule, redémarrage du service, contrôle en ligne
+- [x] Revue du diff (opus) : aucun bloquant ; 2 importants et 5 mineurs corrigés (`84f3d9f`)
+- [x] Merge, build séparé, bascule, redémarrage du service, contrôle en ligne (santé 200, 3D sur 6 cas, CLS 0)
 - [ ] `graphify update .`
 
 ## Revue
-(à remplir après déploiement)
+
+Déployé le 2026-10-06 (`84f3d9f`, service `chronova`, build précédent gardé dans `.next-precedent`).
+
+- Audit : 31 constats design, 24 techniques (`docs/audit-2026-10-06.md`). Corrigés : tous les P0 et P1
+  qui relèvent du code ; restent ceux qui demandent une décision ou une donnée du propriétaire.
+- Montres 3D : fabrique three.js paramétrique sur `WatchRender`, branchée sur le héros, la fiche et le
+  configurateur ; le SVG reste le premier affichage et le repli. LCP mobile (CPU ×4) en prod :
+  accueil 0,39 s, fiche 0,97 s, configurateur 0,74 s ; CLS 0.
+- Vérifications : typecheck, lint (0 erreur), 185 tests, build, contrôle visuel 1440/390 px, revue opus.
+
+À décider par le propriétaire :
+- T1 : `CHRONOVA_DEMO=1` et aucune clé Stripe : le paiement est simulé (commande confirmée sans encaissement).
+- T2 : site en HTTP (cookie de session non `Secure`) : TLS sur le panneau, puis `AUTH_URL` et
+  `NEXT_PUBLIC_SITE_URL` en https.
+- T6 : domaine final (robots.txt et llms.txt servis sous `/chronova`, ignorés par les robots).
+- D2 : identité légale (SIRET, TVA, adresse, médiateur) encore « À REMPLIR » dans le pied de page.
+- T8/D10 : mot de passe oublié, qui demande un e-mail sortant (clé Resend).
+- Port 3000 écouté sur toutes les interfaces (le pare-feu le ferme au public) : `-H 127.0.0.1` si
+  aucun accès direct par Tailscale n'est voulu.
+- Différé : D18 (typographie française sur ~800 chaînes), D30, T13 (Cache Components), T24 (E2E),
+  rayures du NATO en 3D, échelle formelle img2threejs au-delà de la passe « blockout ».
