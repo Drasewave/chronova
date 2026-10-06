@@ -28,6 +28,7 @@ const LIBELLE_BON: Record<PurchaseStatus, string> = {
 };
 
 export async function generateMetadata(props: PageProps<"/atelier/fournisseurs/[id]">) {
+  await exigerAdmin();
   const { id } = await props.params;
   const fournisseur = await prisma.supplier.findUnique({ where: { id }, select: { name: true } });
   return { title: fournisseur?.name ?? "Fournisseur" };

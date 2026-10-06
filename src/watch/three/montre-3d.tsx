@@ -37,6 +37,9 @@ export function Montre3D({
   const toile = useRef<HTMLCanvasElement>(null);
   const scene = useRef<SceneMontre | null>(null);
   const [prete, setPrete] = useState(false);
+  // Clé de la configuration que la toile montre vraiment : tant que la suivante
+  // charge (rastérisation des plaques), la toile reste cachée derrière le dessin.
+  const [affichee, setAffichee] = useState<string | null>(null);
   // Un objet `render` neuf à chaque rendu du parent ne doit pas recharger la scène.
   const cle = JSON.stringify(render);
   const configuration = useMemo(() => JSON.parse(cle) as WatchRender, [cle]);
@@ -56,6 +59,7 @@ export function Montre3D({
           .then((montee) => {
             if (annule) return montee.detruire();
             scene.current = montee;
+            setAffichee(JSON.stringify(depart));
             setPrete(true);
           })
           // Sans WebGL (ou contexte perdu au montage) : le dessin SVG reste.
@@ -74,18 +78,27 @@ export function Montre3D({
 
   // La dernière configuration envoyée à la scène (par sa clé) : on recharge dès
   // qu'elle change, y compris pour revenir à celle de départ.
-  const chargee = useRef(cle);
+  const envoyee = useRef(cle);
   useEffect(() => {
-    if (!scene.current || chargee.current === cle) return;
-    chargee.current = cle;
-    void scene.current.configuration(configuration).catch(() => undefined);
+    if (!scene.current || envoyee.current === cle) return;
+    const precedente = envoyee.current;
+    envoyee.current = cle;
+    scene.current
+      .configuration(configuration)
+      .then(() => {
+        if (envoyee.current === cle) setAffichee(cle);
+      })
+      // Échec : on retentera au prochain changement, le dessin reste affiché.
+      .catch(() => {
+        if (envoyee.current === cle) envoyee.current = precedente;
+      });
   }, [cle, configuration, prete]);
 
   useEffect(() => {
     scene.current?.vue(vue);
   }, [vue, prete]);
 
-  const visible = prete && !masquee;
+  const visible = prete && !masquee && affichee === cle;
   return (
     <div className={cn("relative", className)}>
       <div className={cn("h-full w-full transition-opacity duration-(--d-slow) ease-atelier", visible && "opacity-0")}>{children}</div>

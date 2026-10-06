@@ -247,6 +247,9 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
     textures.forEach((texture) => texture.dispose());
     brossage.dispose();
     environnement.dispose();
+    // `dispose` ne rend pas le contexte : sans cela, les allers-retours de page
+    // en accumulent jusqu'à la limite du navigateur (≈ 16).
+    rendu.forceContextLoss();
     rendu.dispose();
   };
 

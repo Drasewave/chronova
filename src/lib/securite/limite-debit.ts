@@ -72,14 +72,13 @@ export function messageLimite(attendreMs: number): string {
 }
 
 /**
- * Adresse du client : `X-Real-IP` (écrasé par le proxy de confiance), sinon la
- * DERNIÈRE valeur de `X-Forwarded-For` (celle que le proxy a ajoutée ; les
- * précédentes sont choisies par le client), sinon « inconnue ».
+ * Adresse du client : la DERNIÈRE valeur de `X-Forwarded-For`, celle qu'ajoute
+ * le panneau qui relaie le site ; les précédentes sont choisies par le client.
+ * Surtout pas `X-Real-IP` : le panneau recopie les en-têtes du client sans le
+ * poser, n'importe qui pourrait donc le fixer à sa guise.
  */
 export function ipDepuisEnTetes(enTetes: { get(nom: string): string | null }): string {
-  const reelle = enTetes.get("x-real-ip")?.trim();
-  const transmise = enTetes.get("x-forwarded-for")?.split(",").at(-1)?.trim();
-  const ip = reelle || transmise || "inconnue";
+  const ip = enTetes.get("x-forwarded-for")?.split(",").at(-1)?.trim() || "inconnue";
   // Une « IP » de 2 Ko ne doit pas servir de clé.
   return ip.slice(0, 64);
 }

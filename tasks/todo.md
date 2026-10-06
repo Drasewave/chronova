@@ -51,22 +51,26 @@ Décisions prises avec le propriétaire :
 
 ## 3. Montres 3D (img2threejs)
 - [x] Analyse, admission, évaluation, inventaire, voie de projection (`.img2threejs/`)
-- [ ] Spec de sculpture stricte
-- [ ] Fabrique `src/watch/three/` : `createWatchModel(render)` paramétrique
+- [x] Spec de sculpture stricte (31 composants, validation `--strict-quality` PASS, preuves PBR 0,74–0,89)
+- [x] Fabrique `src/watch/three/modele.ts` : `creerMontre3D(render)` paramétrique
       (carrure ronde/coussin, lunette, cadran projeté depuis le SVG, verre, aiguilles à l'heure réelle,
-      couronne, fond, bracelets)
-- [ ] Composant `Montre3D` : SVG affiché d'abord (LCP), three chargé à l'approche, fondu,
-      repli SVG sans WebGL, rotation à la souris/au doigt, `prefers-reduced-motion`
-- [ ] Branchement : héros d'accueil, fiche modèle, configurateur (vues = caméras)
-- [ ] Passes de revue img2threejs (rendu vs référence, face/profil/dos/¾) sur les 9 modèles
-- [ ] Poids : three dans un chunk séparé, jamais dans le bundle initial
+      couronnes, poussoirs, fond gravé, bracelet acier instancié ou brin souple balayé, brossage rayonnant)
+- [x] Composant `Montre3D` : SVG affiché d'abord (LCP), three chargé à l'approche, fondu,
+      repli SVG sans WebGL ou contexte perdu, glisser (pan-y conservé), `prefers-reduced-motion`
+- [x] Branchement : héros (une scène pour tout le défilé), fiche modèle, configurateur (vues = orientations)
+- [x] Revues sur rendus réels : 9 modèles de face, profil et dos sur les pilotes ; 2 revues consignées
+- [x] Poids : three dans un morceau à part (151 Ko gzip), absent du HTML initial
+- [ ] Échelle formelle img2threejs (7 passes) non menée au bout : la passe « blockout » exige un rendu
+      sans éclairage ni texture ; consigné dans `.img2threejs/object-sculpt-spec.json` (reviewHistory)
+- [ ] Rayures du bracelet NATO non reproduites en 3D (couleur unie)
 
 ## 4. Vérification et mise en prod
-- [ ] typecheck, lint, tests, `next build` (dans le worktree)
-- [ ] Contrôle visuel desktop + mobile, Lighthouse accueil / fiche
-- [ ] Revue du diff (code-review-and-quality)
+- [x] typecheck, lint (0 erreur, 12 warnings), tests (185), `next build` (dans `.next-verif`)
+- [x] Contrôle visuel desktop + mobile ; LCP mobile CPU ×4 : accueil 0,36 s, fiche 1,01 s,
+      configurateur 0,75–0,84 s ; CLS 0 (après retrait du squelette du configurateur)
+- [ ] Revue du diff (opus)
 - [ ] Merge, build séparé, bascule, redémarrage du service, contrôle en ligne
 - [ ] `graphify update .`
 
 ## Revue
-(à remplir)
+(à remplir après déploiement)

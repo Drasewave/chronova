@@ -31,8 +31,9 @@ describe("limitation de débit (audit A-12)", () => {
     const enTetes = (valeurs: Record<string, string>) => ({ get: (nom: string) => valeurs[nom] ?? null });
     // La dernière valeur est celle du proxy de confiance ; la première est forgeable.
     expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "6.6.6.6, 203.0.113.7" }))).toBe("203.0.113.7");
-    expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "6.6.6.6", "x-real-ip": "203.0.113.9" }))).toBe("203.0.113.9");
-    expect(ipDepuisEnTetes(enTetes({ "x-real-ip": "203.0.113.9" }))).toBe("203.0.113.9");
+    // X-Real-IP vient du client (le panneau ne le pose pas) : ignoré.
+    expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "6.6.6.6, 203.0.113.7", "x-real-ip": "1.2.3.4" }))).toBe("203.0.113.7");
+    expect(ipDepuisEnTetes(enTetes({ "x-real-ip": "203.0.113.9" }))).toBe("inconnue");
     expect(ipDepuisEnTetes(enTetes({}))).toBe("inconnue");
     expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "x".repeat(5000) }))).toHaveLength(64);
   });

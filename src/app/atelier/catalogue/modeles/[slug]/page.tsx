@@ -15,6 +15,7 @@ import { BLOC, CODE, FilAriane, Filtre, Filtres, TitrePage } from "@/components/
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/atelier/catalogue/modeles/[slug]">) {
+  await exigerAdmin();
   const { slug } = await props.params;
   const modele = await prisma.watchModel.findUnique({ where: { slug }, select: { name: true } });
   return { title: modele?.name ?? "Modèle" };
