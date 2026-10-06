@@ -26,8 +26,12 @@ const VUES: Record<WatchView, THREE.Quaternion> = {
   dos: new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.08, Math.PI - 0.16, 0, "YXZ")),
 };
 
-/** Demi-hauteur cadrée, en unités : le cadre 1000 × 1000 du SVG, un peu de marge. */
-const DEMI_CADRE = 540;
+/**
+ * Demi-hauteur cadrée, en unités. Plus large que le cadre 1000 × 1000 du SVG :
+ * la perspective grossit ce qui avance vers l'objectif (verre, lunette), et la
+ * montre doit garder la taille du dessin qu'elle remplace.
+ */
+const DEMI_CADRE = 600;
 const FOV = 22;
 
 export interface SceneMontre {
@@ -78,6 +82,7 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
   const pivot = new THREE.Group();
   scene.add(pivot);
   const cote = tactile ? 1024 : 2048;
+  const brossage = texturesBrossage();
   let montre: Montre3D | null = null;
   let textures: THREE.Texture[] = [];
   let detruit = false;
@@ -147,7 +152,7 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
       dos?.dispose();
       return;
     }
-    const suivante = creerMontre3D(configuration, { face, dos });
+    const suivante = creerMontre3D(configuration, { face, dos, brossage });
     if (montre) {
       pivot.remove(montre.racine);
       montre.liberer();
@@ -231,6 +236,7 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
     toile.removeEventListener("pointercancel", haut);
     montre?.liberer();
     textures.forEach((texture) => texture.dispose());
+    brossage.dispose();
     environnement.dispose();
     rendu.dispose();
   };
@@ -254,4 +260,37 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
     configuration: charger,
     detruire,
   };
+}
+
+/**
+ * Brossage rayonnant : de fins traits clairs et sombres partant du centre, en
+ * carte de relief. Repère du moteur SVG (UV des capots d'extrusion en unités
+ * 0–1000, ramenées à 0–1 par `repeat`). Tirage déterministe : même grain à
+ * chaque chargement.
+ */
+function texturesBrossage(): THREE.Texture {
+  const cote = 1024;
+  const toile = document.createElement("canvas");
+  toile.width = cote;
+  toile.height = cote;
+  const ctx = toile.getContext("2d");
+  if (ctx) {
+    ctx.fillStyle = "#808080";
+    ctx.fillRect(0, 0, cote, cote);
+    let graine = 7;
+    const hasard = () => ((graine = (graine * 16807) % 2147483647) / 2147483647);
+    ctx.lineWidth = 0.8;
+    for (let i = 0; i < 5000; i++) {
+      const a = hasard() * Math.PI * 2;
+      const clair = hasard() > 0.5;
+      ctx.strokeStyle = `rgba(${clair ? 255 : 0},${clair ? 255 : 0},${clair ? 255 : 0},${0.04 + hasard() * 0.1})`;
+      ctx.beginPath();
+      ctx.moveTo(cote / 2 + Math.cos(a) * cote * 0.05, cote / 2 + Math.sin(a) * cote * 0.05);
+      ctx.lineTo(cote / 2 + Math.cos(a) * cote * 0.72, cote / 2 + Math.sin(a) * cote * 0.72);
+      ctx.stroke();
+    }
+  }
+  const texture = new THREE.CanvasTexture(toile);
+  texture.repeat.set(1 / 1000, 1 / 1000);
+  return texture;
 }

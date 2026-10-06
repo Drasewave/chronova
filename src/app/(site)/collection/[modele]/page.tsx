@@ -18,6 +18,8 @@ import { altConfiguration, defaultConfiguration, prixAPartirDeCents } from "@/li
 import { cheminGamme, gammesAvecModeles } from "@/lib/content/gammes";
 import { getCatalogue, getModel, getModels } from "@/lib/data/queries";
 import { formatPrice } from "@/lib/utils";
+import { SITE } from "@/lib/env";
+import { Montre3D } from "@/watch/three/montre-3d";
 
 export const revalidate = 300;
 
@@ -31,8 +33,6 @@ const PIECES_COMPAREES: Record<string, string> = {
   "lunette-style": "Lunette",
   "bracelet-type": "Bracelet",
 };
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
 
 export async function generateStaticParams() {
   const modeles = await getModels();
@@ -105,13 +105,16 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
     grande:
       plan.cle === "face" ? (
         <ViewTransition name={`montre-${model.slug}`} share="morph" default="none">
-          <InteractiveWatch
-            id="fiche"
-            render={base.render}
-            label={`${model.name}, configuration de départ, ${plan.libelle}`}
-            className="h-full w-full"
-            svgClassName="block h-full w-full"
-          />
+          {/* En 3D, posée sur son dessin : le dessin fait le premier affichage. */}
+          <Montre3D id="fiche" render={base.render} className="h-full w-full">
+            <InteractiveWatch
+              id="fiche"
+              render={base.render}
+              label={`${model.name}, configuration de départ, ${plan.libelle}`}
+              className="h-full w-full"
+              svgClassName="block h-full w-full"
+            />
+          </Montre3D>
         </ViewTransition>
       ) : (
         // Vues cachées au chargement : un composant client, que la galerie ne

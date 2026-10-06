@@ -19,6 +19,7 @@ export function Montre3D({
   render,
   vue = "face",
   interactif = true,
+  masquee = false,
   className,
   children,
 }: {
@@ -27,6 +28,8 @@ export function Montre3D({
   vue?: WatchView;
   /** Glisser pour tourner la montre. */
   interactif?: boolean;
+  /** Rend la main au dessin le temps d'une animation qui lui appartient (passage du défilé). */
+  masquee?: boolean;
   className?: string;
   /** Le dessin SVG de la même montre : affiché d'abord, et repli sans WebGL. */
   children: ReactNode;
@@ -69,24 +72,30 @@ export function Montre3D({
     };
   }, [id]);
 
+  // La dernière configuration envoyée à la scène (par sa clé) : on recharge dès
+  // qu'elle change, y compris pour revenir à celle de départ.
+  const chargee = useRef(cle);
   useEffect(() => {
-    if (scene.current && configuration !== initiale.current.configuration) void scene.current.configuration(configuration).catch(() => undefined);
-  }, [configuration, prete]);
+    if (!scene.current || chargee.current === cle) return;
+    chargee.current = cle;
+    void scene.current.configuration(configuration).catch(() => undefined);
+  }, [cle, configuration, prete]);
 
   useEffect(() => {
     scene.current?.vue(vue);
   }, [vue, prete]);
 
+  const visible = prete && !masquee;
   return (
     <div className={cn("relative", className)}>
-      <div className={cn("h-full w-full transition-opacity duration-(--d-slow) ease-atelier", prete && "opacity-0")}>{children}</div>
+      <div className={cn("h-full w-full transition-opacity duration-(--d-slow) ease-atelier", visible && "opacity-0")}>{children}</div>
       <canvas
         ref={toile}
         aria-hidden="true"
         className={cn(
           "absolute inset-0 h-full w-full transition-opacity duration-(--d-slow) ease-atelier",
-          prete ? "opacity-100" : "pointer-events-none opacity-0",
-          interactif && prete && "cursor-grab active:cursor-grabbing",
+          visible ? "opacity-100" : "pointer-events-none opacity-0",
+          interactif && visible && "cursor-grab active:cursor-grabbing",
         )}
       />
     </div>

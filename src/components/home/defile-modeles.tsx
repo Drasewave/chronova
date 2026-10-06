@@ -22,6 +22,7 @@ import { IconChevron } from "@/components/ui/icons";
 import { SamplePill } from "@/components/ui/pill";
 import { cn } from "@/lib/utils";
 import { InteractiveWatch } from "@/watch/interactive-watch";
+import { Montre3D } from "@/watch/three/montre-3d";
 import type { WatchRender } from "@/watch/types";
 
 /**
@@ -486,28 +487,34 @@ export function DefileScene({ graduation }: { graduation: ReactNode }) {
           {/* L'ombre au sol, qui s'allonge puis se rassemble. */}
           <span aria-hidden="true" className="defile-ombre" />
 
-          {couches.map(({ index, role }) => {
-            const modele = modeles[index];
-            if (!modele) return null;
-            const visible = role === "courante" || role === "entrante";
-            return (
-              <div
-                key={modele.slug}
-                role="group"
-                aria-roledescription="diapositive"
-                aria-label={`${index + 1} sur ${total} : ${modele.name}`}
-                aria-hidden={visible ? undefined : true}
-                data-defile={role}
-                className="defile-couche"
-              >
-                <MontreCouche modele={modele} />
-                {/* Passage de lumière sur l'entrante, masqué à l'ellipse. */}
-                <span aria-hidden="true" className="defile-lueur">
-                  <span />
-                </span>
-              </div>
-            );
-          })}
+          {/* Une seule montre 3D pour tout le défilé, posée sur la pile de dessins :
+              au repos elle montre le modèle affiché ; pendant un passage elle
+              s'efface et le fondu des dessins joue seul. Pas de glisser ici :
+              le balayage horizontal change déjà de modèle. */}
+          <Montre3D id="defile" render={modeleAffiche.render} interactif={false} masquee={passage} className="absolute inset-0">
+            {couches.map(({ index, role }) => {
+              const modele = modeles[index];
+              if (!modele) return null;
+              const visible = role === "courante" || role === "entrante";
+              return (
+                <div
+                  key={modele.slug}
+                  role="group"
+                  aria-roledescription="diapositive"
+                  aria-label={`${index + 1} sur ${total} : ${modele.name}`}
+                  aria-hidden={visible ? undefined : true}
+                  data-defile={role}
+                  className="defile-couche"
+                >
+                  <MontreCouche modele={modele} />
+                  {/* Passage de lumière sur l'entrante, masqué à l'ellipse. */}
+                  <span aria-hidden="true" className="defile-lueur">
+                    <span />
+                  </span>
+                </div>
+              );
+            })}
+          </Montre3D>
         </div>
       </div>
 

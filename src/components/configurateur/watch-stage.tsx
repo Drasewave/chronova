@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
+import { Montre3D } from "@/watch/three/montre-3d";
 import { WatchSvg } from "@/watch/watch-svg";
 import { FonduStudio } from "@/components/motion/vue-montre";
 import { IconCroix, IconZoom } from "@/components/ui/icons";
@@ -15,11 +16,11 @@ const VUES: { key: WatchView; label: string }[] = [
 ];
 
 /**
- * Scène de la montre : trois vues fixes (face, profil, dos), choisies par le
- * sélecteur — sans platine tournante ni glisser : un clic affiche directement
- * le dessin complet de la vue demandée, dans un fondu de studio (`FonduStudio`),
- * comme les gros plans d'une fiche modèle. Un clic sur la montre ouvre le zoom,
- * qui reprend la même vue.
+ * Scène de la montre : la montre 3D, qu'on fait tourner au glisser, et trois
+ * vues (face, profil, dos) choisies par le sélecteur, vers lesquelles elle
+ * pivote. Tant que la 3D charge — ou sans WebGL — c'est le dessin de la vue
+ * demandée, dans un fondu de studio (`FonduStudio`). La loupe ouvre le zoom
+ * vectoriel, qui reprend la même vue.
  */
 export function WatchStage({
   render,
@@ -55,12 +56,7 @@ export function WatchStage({
           écran de 780 px, une montre pleine largeur ne laisserait presque rien
           aux options qui défilent dessous. */}
       <div className="cadre-montre relative h-[27vh] w-full lg:aspect-square lg:h-auto lg:p-6" role="group" aria-label={`${label} : montre`}>
-        <button
-          type="button"
-          onClick={ouvrirZoom}
-          className="absolute inset-0 z-0 h-full w-full cursor-zoom-in"
-          aria-label={`Agrandir la montre, vue ${LIBELLES[vue]}`}
-        >
+        <Montre3D id="configurateur" render={render} vue={vue} className="h-full w-full">
           <FonduStudio cle={vue} className="h-full w-full" classeCouche="flex h-full w-full items-center justify-center">
             {(v) => (
               <InteractiveWatch
@@ -73,10 +69,15 @@ export function WatchStage({
               />
             )}
           </FonduStudio>
-        </button>
-        <span className="pointer-events-none absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-pill border border-rule bg-panel text-fg-soft">
+        </Montre3D>
+        <button
+          type="button"
+          onClick={ouvrirZoom}
+          className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-pill border border-rule bg-panel text-fg-soft transition-colors duration-(--d-fast) ease-atelier hover:text-accent-ink"
+          aria-label={`Agrandir la montre, vue ${LIBELLES[vue]}`}
+        >
           <IconZoom />
-        </span>
+        </button>
       </div>
 
       <SelecteurVue vue={vue} onChoisir={setVue} className="mt-4" />

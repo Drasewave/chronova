@@ -49,6 +49,8 @@ export interface TexturesMontre {
   face: THREE.Texture;
   /** Fond vu de dos, même repère. */
   dos: THREE.Texture;
+  /** Relief du brossage rayonnant, même repère (absent hors navigateur). */
+  brossage?: THREE.Texture;
 }
 
 type Garder = <T extends { dispose: () => void }>(objet: T) => T;
@@ -94,7 +96,14 @@ export function creerMontre3D(render: WatchRender, textures: TexturesMontre): Mo
 
   // ── Carrure, cornes ─────────────────────────────────────────────────────
   if (flank.coussin) {
-    const corps = mesh(extruder(cushionOutline(), H_CARRURE - 8, 4), boitier, "carrure");
+    // Le grand plat du coussin est brossé en rayons depuis le centre : c'est ce
+    // qui accroche la lumière en éventail sur la vue de face.
+    const matiere = textures.brossage && render.caseFinish === "brosse" ? garder(boitier.clone()) : boitier;
+    if (matiere !== boitier && textures.brossage) {
+      matiere.bumpMap = textures.brossage;
+      matiere.bumpScale = 0.35;
+    }
+    const corps = mesh(extruder(cushionOutline(), H_CARRURE - 8, 4), matiere, "carrure");
     corps.position.z = 4;
     racine.add(plan(corps));
   } else {
@@ -185,8 +194,9 @@ export function creerMontre3D(render: WatchRender, textures: TexturesMontre): Mo
   racine.add(cadran);
 
   // ── Aiguilles ───────────────────────────────────────────────────────────
-  const metalAiguilles = metal(render.handMetal, 0.12);
-  const lume = garder(new THREE.MeshStandardMaterial({ color: LUME_FILL, roughness: 0.6, emissive: LUME_FILL, emissiveIntensity: 0.06 }));
+  // Satinées plutôt que miroir : polies, elles reflètent le fond sombre du studio et disparaissent.
+  const metalAiguilles = metal(render.handMetal, 0.28);
+  const lume = garder(new THREE.MeshStandardMaterial({ color: LUME_FILL, roughness: 0.6, emissive: LUME_FILL, emissiveIntensity: 0.18 }));
   const accent = render.accentHandColor ? garder(new THREE.MeshPhysicalMaterial({ color: render.accentHandColor, roughness: 0.25, clearcoat: 1 })) : metalAiguilles;
   const aiguille = (forme: Forme, z: number, matiere: THREE.Material) => {
     const groupe = new THREE.Group();
@@ -433,7 +443,7 @@ function formeAiguille(style: HandShape, role: "heure" | "minute"): Forme {
   // Largeurs du moteur SVG (`PROPORTIONS` de parts/hands.tsx), ramenées à la
   // plaque pleine : le dessin les élargit de ses facettes et de son ombre.
   const LARGEURS: Record<HandShape, readonly [number, number]> = { glaive: [36, 26], mercedes: [36, 26], crayon: [36, 26], fleche: [62, 34], dauphine: [42, 32], cathedrale: [54, 28] };
-  const largeur = LARGEURS[style][role === "heure" ? 0 : 1] * 0.62;
+  const largeur = LARGEURS[style][role === "heure" ? 0 : 1] * 0.9;
   const w = largeur / 2;
   const queue = 34;
   const corps = new THREE.Shape();
@@ -444,7 +454,7 @@ function formeAiguille(style: HandShape, role: "heure" | "minute"): Forme {
   }
   if (style === "crayon") {
     corps.moveTo(-w * 0.6, -queue).lineTo(w * 0.6, -queue).lineTo(w * 0.6, longueur - 24).lineTo(0, longueur).lineTo(-w * 0.6, longueur - 24).closePath();
-    lume.moveTo(-w * 0.35, 40).lineTo(w * 0.35, 40).lineTo(w * 0.35, longueur - 30).lineTo(-w * 0.35, longueur - 30).closePath();
+    lume.moveTo(-w * 0.45, 36).lineTo(w * 0.45, 36).lineTo(w * 0.45, longueur - 30).lineTo(-w * 0.45, longueur - 30).closePath();
     return { corps, lume };
   }
   if (style === "fleche" && role === "heure") {
@@ -460,7 +470,7 @@ function formeAiguille(style: HandShape, role: "heure" | "minute"): Forme {
   }
   // Glaive, cathédrale (silhouette pleine) et minutes des styles sans forme propre.
   corps.moveTo(-3, -queue).lineTo(3, -queue).lineTo(w, 24).lineTo(w * 0.8, longueur - 30).lineTo(0, longueur).lineTo(-w * 0.8, longueur - 30).lineTo(-w, 24).closePath();
-  lume.moveTo(-w * 0.45, 40).lineTo(w * 0.45, 40).lineTo(w * 0.35, longueur - 34).lineTo(0, longueur - 14).lineTo(-w * 0.35, longueur - 34).closePath();
+  lume.moveTo(-w * 0.6, 34).lineTo(w * 0.6, 34).lineTo(w * 0.5, longueur - 32).lineTo(0, longueur - 12).lineTo(-w * 0.5, longueur - 32).closePath();
   return { corps, lume };
 }
 
