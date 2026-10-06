@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ButtonLink } from "@/components/ui/button";
 import { BoutonPaiement } from "@/components/panier/bouton-paiement";
+import { AvisRetrait } from "@/components/panier/avis-retrait";
 import { ChampQuantite } from "@/components/panier/champ-quantite";
 import { IconCroix } from "@/components/ui/icons";
 import { SamplePill } from "@/components/ui/pill";
@@ -53,6 +54,8 @@ export function CartDrawer() {
           </button>
         </header>
 
+        <AvisRetrait className="px-6 empty:hidden [&>*]:mt-4" />
+
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-start justify-center gap-5 px-6">
             <p className="type-body text-fg-soft">
@@ -96,7 +99,7 @@ export function CartDrawer() {
                         <ChampQuantite
                           quantite={ligne.quantity}
                           onChange={(quantite) => setQuantity(ligne.id, quantite)}
-                          className="type-ui h-9 w-14 rounded-field border border-rule bg-panel px-2 text-center text-fg"
+                          className="champ h-9 w-14 rounded-field border border-rule bg-panel px-2 text-center text-fg"
                         />
                       </label>
                       <span className="type-ui text-fg" data-numeric>

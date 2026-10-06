@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SamplePill } from "@/components/ui/pill";
 import { OptionGrid } from "./option-grid";
@@ -100,13 +100,32 @@ export function Configurator({
     setSelections(normalizeSelections(catalogue, model.defaultSelections, exclus));
   }, [catalogue, model, selections, exclus]);
 
+  const champLien = useRef<HTMLInputElement>(null);
+  const [lienManuel, setLienManuel] = useState(false);
+
+  /** `navigator.clipboard` n'existe qu'en contexte sécurisé : sinon, le champ du lien est sélectionné pour un copier-coller. */
   const copierLien = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
+      setLienManuel(false);
       setLienCopie(true);
       window.setTimeout(() => setLienCopie(false), 2400);
     } catch {
-      // Presse-papiers refusé : l'adresse reste visible et sélectionnable.
+      setLienManuel(true);
+      requestAnimationFrame(() => {
+        champLien.current?.focus();
+        champLien.current?.select();
+        // Repli ancien navigateur : copie la sélection si le droit existe.
+        try {
+          if (document.execCommand("copy")) {
+            setLienManuel(false);
+            setLienCopie(true);
+            window.setTimeout(() => setLienCopie(false), 2400);
+          }
+        } catch {
+          // Le champ reste sélectionné : copie manuelle.
+        }
+      });
     }
   }, []);
 
@@ -125,6 +144,9 @@ export function Configurator({
 
   return (
     <div className={cn("mx-auto max-w-wide pb-32", GRAND_ECRAN.sansBarre)} style={{ paddingInline: "var(--gutter)" }}>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        Total {formatPrice(configuration.price.totalCents)}, assemblage {configuration.leadTime.days} jours.
+      </p>
       <nav aria-label="Fil d'Ariane" className="py-5">
         <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
           <li>
@@ -186,6 +208,19 @@ export function Configurator({
                 {lienCopie ? "Lien copié" : "Copier le lien de la configuration"}
               </Button>
             </div>
+            {lienManuel && (
+              <input
+                ref={champLien}
+                readOnly
+                aria-label="Adresse de la configuration"
+                value={typeof window === "undefined" ? "" : window.location.href}
+                onFocus={(event) => event.currentTarget.select()}
+                className="champ mt-3 h-11 w-full rounded-field border border-rule bg-panel px-4 text-fg"
+              />
+            )}
+            <p className="sr-only" role="status" aria-live="polite">
+              {lienCopie ? "Lien copié" : lienManuel ? "Copiez l'adresse affichée ci-dessous" : ""}
+            </p>
           </header>
 
           <div className="border-t border-rule">
@@ -331,11 +366,11 @@ function Resume({
       <p className="type-mono text-fg-soft">Assemblage estimé · {configuration.leadTime.days} jours</p>
       {configuration.leadTime.reasons.length > 0 && (
         <p className="type-caption mt-1 line-clamp-2 text-fg-soft">
-          Dont{" "}
           {configuration.leadTime.reasons
-            .map((raison) => `${raison.days} j pour ${raison.label.toLowerCase()}`)
-            .join(", ")}
-          .
+            .map((raison) =>
+              `${raison.groupLabel === raison.label ? raison.label : `${raison.groupLabel} ${raison.label}`} : +${raison.days} j`,
+            )
+            .join(" · ")}
         </p>
       )}
 
@@ -442,25 +477,29 @@ function GravureField({
   priceCents: number;
   onChange: (valeur: string) => void;
 }) {
+  const id = useId();
   return (
     <div>
-      <label htmlFor="gravure" className="type-ui block text-fg">
+      <label htmlFor={id} className="type-ui block text-fg">
         {label}
       </label>
       {help && <p className="type-caption measure mt-1 text-fg-soft">{help}</p>}
 
       <input
-        id="gravure"
+        id={id}
         type="text"
+        autoComplete="off"
+        spellCheck={false}
+        aria-describedby={`${id}-compteur`}
         value={value}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Pour Camille, 12 juin"
-        className="type-ui mt-4 h-11 w-full rounded-field border border-rule bg-panel px-4 text-fg placeholder:text-fg-soft"
+        className="champ mt-4 h-11 w-full rounded-field border border-rule bg-panel px-4 text-fg placeholder:text-fg-soft"
       />
 
       <p className="mt-2 flex items-center justify-between gap-4">
-        <span className="type-mono text-fg-soft" data-numeric>
+        <span id={`${id}-compteur`} className="type-mono text-fg-soft" data-numeric>
           {value.length} / {maxLength}
         </span>
         {value.trim() && priceCents > 0 && (

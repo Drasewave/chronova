@@ -34,7 +34,7 @@ export function FormulaireMotDePasse({ aUnMotDePasse }: { aUnMotDePasse: boolean
               aria-invalid={erreur ? true : undefined}
               aria-describedby={erreur ? `${id}-${c.nom}-erreur` : c.aide ? `${id}-${c.nom}-aide` : undefined}
               className={cn(
-                "type-ui mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
+                "champ mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
                 erreur ? "border-alert" : "border-field",
               )}
             />

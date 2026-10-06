@@ -60,7 +60,7 @@ export function FormulaireDemande({
           <select
             id={`${id}-sujet`}
             name="sujet"
-            className="type-ui h-11 w-full rounded-field border border-field bg-panel px-3 text-fg"
+            className="champ h-11 w-full rounded-field border border-field bg-panel px-3 text-fg"
           >
             {sujets.map((sujet) => (
               <option key={sujet} value={sujet}>
@@ -208,7 +208,7 @@ function Entree({
       id={id}
       aria-describedby={erreur ? `${id}-erreur` : undefined}
       className={cn(
-        "type-ui h-11 w-full rounded-field border bg-panel px-4 text-fg placeholder:text-fg-soft",
+        "champ h-11 w-full rounded-field border bg-panel px-4 text-fg placeholder:text-fg-soft",
         erreur ? "border-alert" : "border-field",
         className,
       )}

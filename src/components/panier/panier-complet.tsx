@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
+import { AvisRetrait } from "@/components/panier/avis-retrait";
 import { BoutonPaiement } from "@/components/panier/bouton-paiement";
 import { ChampQuantite } from "@/components/panier/champ-quantite";
 import { SamplePill } from "@/components/ui/pill";
 import { Section } from "@/components/ui/section";
 import { useCart } from "@/lib/panier/cart";
 import { WatchSvg } from "@/watch/watch-svg";
+import { grouperParEtape } from "@/lib/configurateur/configuration";
 import { formatPrice } from "@/lib/utils";
 
 export function PanierComplet() {
-  const { items, ready, totalCents, remove, setQuantity } = useCart();
+  const { items, ready, totalCents, remove, setQuantity, isOpen } = useCart();
 
   if (!ready) {
     return (
@@ -24,6 +26,7 @@ export function PanierComplet() {
   if (items.length === 0) {
     return (
       <Section fond="papier">
+        {!isOpen && <AvisRetrait className="mb-8 max-w-md" />}
         <h1 className="type-display-2">Votre panier est vide</h1>
         <p className="type-lead measure mt-5 text-fg-soft">
           Je monte chaque montre à la demande : je ne réserve aucune pièce tant que vous
@@ -39,6 +42,7 @@ export function PanierComplet() {
   return (
     <Section fond="papier">
       <h1 className="type-display-2">Votre panier</h1>
+      {!isOpen && <AvisRetrait className="mt-6 max-w-md" />}
 
       <ul className="mt-12 border-t border-rule">
         {items.map((ligne) => (
@@ -58,14 +62,21 @@ export function PanierComplet() {
 
             <div>
               <h2 className="type-title-2">{ligne.snapshot.modelName}</h2>
-              <dl className="mt-4 grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
-                {ligne.snapshot.summary.map((entree) => (
-                  <div key={entree.groupKey} className="flex justify-between gap-4 sm:justify-start">
-                    <dt className="type-caption text-fg-soft">{entree.groupLabel}</dt>
-                    <dd className="type-caption text-fg">{entree.value}</dd>
-                  </div>
+              <div className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                {grouperParEtape(ligne.snapshot.summary).map(([etape, lignes]) => (
+                  <section key={etape}>
+                    <h3 className="type-mono border-b border-rule pb-1 text-fg-soft">{etape}</h3>
+                    <dl className="mt-1.5 grid gap-y-1">
+                      {lignes.map((entree) => (
+                        <div key={entree.groupKey} className="flex justify-between gap-4">
+                          <dt className="type-caption text-fg-soft">{entree.groupLabel}</dt>
+                          <dd className="type-caption text-right text-fg">{entree.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
                 ))}
-              </dl>
+              </div>
               <p className="type-mono mt-4 text-fg-soft">
                 Assemblage estimé {ligne.snapshot.leadTimeDays} jours
               </p>
@@ -75,7 +86,7 @@ export function PanierComplet() {
                   <ChampQuantite
                     quantite={ligne.quantity}
                     onChange={(quantite) => setQuantity(ligne.id, quantite)}
-                    className="type-ui h-10 w-16 rounded-field border border-field bg-panel px-2 text-center text-fg"
+                    className="champ h-10 w-16 rounded-field border border-field bg-panel px-2 text-center text-fg"
                   />
                 </label>
                 <Link

@@ -71,7 +71,7 @@ export function FormulaireAdresse() {
           id={`${id}-pays`}
           name="pays"
           defaultValue="FR"
-          className="type-ui mt-2 h-11 w-full rounded-field border border-field bg-bg px-3 text-fg"
+          className="champ mt-2 h-11 w-full rounded-field border border-field bg-bg px-3 text-fg"
         >
           <option value="FR">France</option>
           <option value="BE">Belgique</option>
@@ -113,7 +113,7 @@ function Champ({
         id={id}
         aria-describedby={erreur ? `${id}-erreur` : undefined}
         className={cn(
-          "type-ui mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
+          "champ mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
           erreur ? "border-alert" : "border-field",
         )}
         {...props}

@@ -37,7 +37,7 @@ function Champ({
         aria-invalid={erreur ? true : undefined}
         aria-describedby={decrit}
         className={cn(
-          "type-ui mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
+          "champ mt-2 h-11 w-full rounded-field border bg-bg px-4 text-fg",
           erreur ? "border-alert" : "border-field",
         )}
         {...attributs}

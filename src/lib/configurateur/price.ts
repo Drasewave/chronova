@@ -69,7 +69,7 @@ export function computePrice(
 export interface LeadTime {
   days: number;
   /** Ce qui rallonge le délai, nommé : on n'annonce jamais une attente sans motif. */
-  reasons: { label: string; days: number }[];
+  reasons: { groupLabel: string; label: string; days: number }[];
 }
 
 /**
@@ -83,7 +83,7 @@ export function computeLeadTime(
   assemblyDays: number,
   selections: Selections,
 ): LeadTime {
-  const reasons: { label: string; days: number }[] = [];
+  const reasons: LeadTime["reasons"] = [];
 
   for (const [groupKey, valeur] of Object.entries(selections)) {
     const entree = catalogue.groupIndex.get(groupKey);
@@ -91,12 +91,14 @@ export function computeLeadTime(
 
     if (entree.group.selection === "texte") {
       const jours = entree.group.filledLeadDays ?? 0;
-      if (valeur.trim() && jours > 0) reasons.push({ label: entree.group.label, days: jours });
+      if (valeur.trim() && jours > 0) reasons.push({ groupLabel: entree.group.label, label: entree.group.label, days: jours });
       continue;
     }
 
     const option = catalogue.optionIndex.get(`${groupKey}:${valeur}`)?.option;
-    if (option?.leadDaysDelta) reasons.push({ label: option.label, days: option.leadDaysDelta });
+    if (option?.leadDaysDelta) {
+      reasons.push({ groupLabel: catalogue.groupIndex.get(groupKey)?.group.label ?? "", label: option.label, days: option.leadDaysDelta });
+    }
   }
 
   const total = reasons.reduce((somme, raison) => somme + raison.days, assemblyDays);

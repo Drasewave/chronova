@@ -139,7 +139,7 @@ function OptionChoice({
         compact && "min-w-[6rem] items-center p-3",
         checked ? "border-accent-ink bg-panel" : "border-rule bg-bg hover:border-accent-decor",
         bloque && "cursor-not-allowed border-rule bg-bg opacity-55 hover:border-rule",
-        "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)]",
+        "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus)]",
       )}
     >
       {champ}

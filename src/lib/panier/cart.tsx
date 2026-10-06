@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -51,9 +52,14 @@ interface CartApi {
   close: () => void;
   add: (modelSlug: string, shareParam: string, snapshot: CartSnapshot) => void;
   remove: (id: string) => void;
+  /** Dernière ligne retirée, restaurable quelques secondes. */
+  retire: { item: CartItem } | null;
+  annulerRetrait: () => void;
   setQuantity: (id: string, quantity: number) => void;
   clear: () => void;
 }
+
+const DELAI_ANNULATION_MS = 6000;
 
 const Contexte = createContext<CartApi | null>(null);
 
@@ -61,6 +67,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [ready, setReady] = useState(false);
   const [isOpen, setOpen] = useState(false);
+  const [retire, setRetire] = useState<{ item: CartItem; index: number } | null>(null);
+  const minuteur = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     try {
@@ -110,9 +118,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setOpen(true);
   }, []);
 
-  const remove = useCallback((id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+  const remove = useCallback(
+    (id: string) => {
+      const index = items.findIndex((item) => item.id === id);
+      const item = items[index];
+      if (!item) return;
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      setRetire({ item, index });
+      window.clearTimeout(minuteur.current);
+      minuteur.current = window.setTimeout(() => setRetire(null), DELAI_ANNULATION_MS);
+    },
+    [items],
+  );
+
+  const annulerRetrait = useCallback(() => {
+    if (!retire) return;
+    window.clearTimeout(minuteur.current);
+    setItems((prev) =>
+      prev.some((item) => item.id === retire.item.id)
+        ? prev
+        : [...prev.slice(0, retire.index), retire.item, ...prev.slice(retire.index)],
+    );
+    setRetire(null);
+  }, [retire]);
 
   /**
    * Ne supprime JAMAIS une ligne (audit A-02) : une quantité vide, nulle ou
@@ -139,10 +167,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       close: () => setOpen(false),
       add,
       remove,
+      retire: retire && { item: retire.item },
+      annulerRetrait,
       setQuantity,
       clear,
     }),
-    [items, ready, isOpen, add, remove, setQuantity, clear],
+    [items, ready, isOpen, add, remove, retire, annulerRetrait, setQuantity, clear],
   );
 
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;

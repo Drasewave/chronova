@@ -318,6 +318,13 @@
     line-height: 1.4;
   }
 
+  /* Champs de saisie : 16 px minimum, sinon iOS Safari zoome la page au focus. */
+  .champ {
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
   /* 13 px : plancher absolu du projet. */
   .type-caption {
     font-size: 0.8125rem;
