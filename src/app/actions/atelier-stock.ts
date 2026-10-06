@@ -1,15 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { exigerAdminAction } from "@/lib/securite/acces";
 import { prisma } from "@/lib/db";
 import { ajouterMouvement, recalculer } from "@/lib/atelier/stock-service";
-
-async function exigerAdmin() {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") throw new Error("Accès refusé.");
-  return session.user;
-}
 
 /** Un entier signé issu d'un champ de formulaire, ou zéro. */
 function entier(valeur: FormDataEntryValue | null): number {
@@ -25,7 +19,7 @@ function entier(valeur: FormDataEntryValue | null): number {
  * puisque c'est précisément son rôle.
  */
 export async function enregistrerMouvement(donnees: FormData): Promise<void> {
-  const admin = await exigerAdmin();
+  const admin = await exigerAdminAction();
   const reference = String(donnees.get("reference") ?? "");
   const saisie = entier(donnees.get("quantite"));
   // Une quantité nulle ne change rien : on ne l'inscrit pas au journal.
@@ -49,7 +43,7 @@ export async function enregistrerMouvement(donnees: FormData): Promise<void> {
  * Les quantités ne sont pas modifiables ici — elles viennent du journal.
  */
 export async function enregistrerPiece(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const reference = String(donnees.get("reference") ?? "");
   const fournisseur = String(donnees.get("fournisseur") ?? "");
 
@@ -75,7 +69,7 @@ export async function enregistrerPiece(donnees: FormData): Promise<void> {
 
 /** Coordonnées et délai d'un fournisseur. */
 export async function enregistrerFournisseur(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("id") ?? "");
 
   await prisma.supplier.update({
@@ -102,7 +96,7 @@ export async function enregistrerFournisseur(donnees: FormData): Promise<void> {
  * juste le seuil ferait repartir l'alerte au premier montage.
  */
 export async function creerBonDeCommande(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const supplierId = String(donnees.get("fournisseur") ?? "");
 
   const pieces = await prisma.part.findMany({
@@ -149,7 +143,7 @@ export async function creerBonDeCommande(donnees: FormData): Promise<void> {
  * vaut une fonction juste qu'une fonction à moitié.
  */
 export async function recevoirBonDeCommande(donnees: FormData): Promise<void> {
-  const admin = await exigerAdmin();
+  const admin = await exigerAdminAction();
   const id = String(donnees.get("bon") ?? "");
 
   const bon = await prisma.purchaseOrder.findUniqueOrThrow({
@@ -191,7 +185,7 @@ export async function recevoirBonDeCommande(donnees: FormData): Promise<void> {
 
 /** Passe un brouillon à « envoyée », ou annule un bon. */
 export async function changerStatutBon(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("bon") ?? "");
   const statut = String(donnees.get("statut") ?? "");
   if (statut !== "ENVOYEE" && statut !== "ANNULEE") return;

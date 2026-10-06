@@ -1,4 +1,5 @@
 import { enregistrerGabarit, enregistrerParametres } from "@/app/actions/atelier-parametres";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { Bouton, CASE, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
@@ -45,6 +46,7 @@ const VARIABLES = ["{{prenom}}", "{{modele}}", "{{numero}}", "{{lien_suivi}}", "
  * disparaît de lui-même à la première saisie.
  */
 export default async function Parametres() {
+  await exigerAdmin();
   const [reglages, gabarits] = await Promise.all([
     prisma.setting.findMany({ orderBy: { key: "asc" } }),
     prisma.emailTemplate.findMany({ orderBy: { key: "asc" } }),

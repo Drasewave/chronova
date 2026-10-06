@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { changerEtape } from "@/app/actions/atelier-commandes";
 import { BandeauExemple } from "@/components/atelier/bandeau-exemple";
 import { TableauDefilant } from "@/components/atelier/tableau-defilant";
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
  * il reste utilisable au clavier sans une ligne de code supplémentaire.
  */
 export default async function Kanban() {
+  await exigerAdmin();
   const commandes = await prisma.order.findMany({
     where: { status: { notIn: ["EN_ATTENTE_PAIEMENT", "ANNULEE", "REMBOURSEE"] } },
     orderBy: [{ promisedAt: "asc" }],

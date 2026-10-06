@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
 import { etatPiece } from "@/lib/atelier/stock";
@@ -16,6 +17,7 @@ export const dynamic = "force-dynamic";
  * remontent en tête.
  */
 export default async function Fournisseurs() {
+  await exigerAdmin();
   const fournisseurs = await prisma.supplier.findMany({
     orderBy: { name: "asc" },
     include: {

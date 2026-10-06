@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { notFound } from "next/navigation";
 import {
   ajouterPhoto,
@@ -27,6 +28,7 @@ export async function generateMetadata(props: PageProps<"/atelier/commandes/[num
 }
 
 export default async function FicheCommande(props: PageProps<"/atelier/commandes/[numero]">) {
+  await exigerAdmin();
   const { numero } = await props.params;
 
   const commande = await prisma.order.findUnique({

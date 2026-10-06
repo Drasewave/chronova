@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { BarresHorizontales, HistogrammeMois, Panneau, Synthese } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
@@ -15,6 +16,7 @@ export const dynamic = "force-dynamic";
 const JOUR = 24 * 60 * 60 * 1000;
 
 export default async function TableauDeBord() {
+  await exigerAdmin();
   const maintenant = new Date();
   const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
 

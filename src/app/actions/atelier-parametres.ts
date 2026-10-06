@@ -1,18 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { exigerAdminAction } from "@/lib/securite/acces";
 import { CLE_IDENTITE, IDENTITE_VIDE } from "@/lib/content/legal";
 import { prisma } from "@/lib/db";
 
-/**
- * Paramètres de l'atelier : délais, port, garantie, identité légale, gabarits d'e-mail.
- */
-async function exigerAdmin() {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") throw new Error("Accès refusé.");
-  return session.user;
-}
+/* Paramètres de l'atelier : délais, port, garantie, identité légale, gabarits d'e-mail. */
 
 /* ────────────────────────────── Paramètres ───────────────────────────── */
 
@@ -29,7 +22,7 @@ function estMontant(cle: string) {
 }
 
 export async function enregistrerParametres(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const reglages = await prisma.setting.findMany();
 
   for (const reglage of reglages) {
@@ -84,7 +77,7 @@ export async function enregistrerParametres(donnees: FormData): Promise<void> {
 
 /** Sujet et corps d'un e-mail automatique. */
 export async function enregistrerGabarit(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const key = String(donnees.get("gabarit") ?? "");
 
   await prisma.emailTemplate.update({

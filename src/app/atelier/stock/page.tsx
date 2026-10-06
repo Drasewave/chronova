@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { BandeauExemple } from "@/components/atelier/bandeau-exemple";
 import { Panneau, Synthese } from "@/components/atelier/graphiques";
 import { Pill } from "@/components/ui/pill";
@@ -26,6 +27,7 @@ export const dynamic = "force-dynamic";
  * directement, ce qui garantit qu'on peut toujours expliquer un chiffre.
  */
 export default async function Stock(props: PageProps<"/atelier/stock">) {
+  await exigerAdmin();
   const { categorie, filtre } = await props.searchParams;
   const categorieActive = CATEGORIES_PIECES.find((c) => c === categorie);
 

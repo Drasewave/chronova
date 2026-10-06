@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { notFound } from "next/navigation";
 import {
   changerStatutBon,
@@ -41,6 +42,7 @@ export async function generateMetadata(props: PageProps<"/atelier/fournisseurs/[
  * repartir l'alerte au premier montage.
  */
 export default async function FicheFournisseur(props: PageProps<"/atelier/fournisseurs/[id]">) {
+  await exigerAdmin();
   const { id } = await props.params;
 
   const fournisseur = await prisma.supplier.findUnique({

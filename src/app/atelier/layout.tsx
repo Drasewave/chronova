@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { CrmShell } from "@/components/atelier/crm-shell";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { COOKIE_THEME, lireTheme } from "@/lib/atelier/theme";
 
 export const metadata = {
@@ -16,14 +15,12 @@ export const metadata = {
  * « interdit » confirmerait que l'adresse existe.
  */
 export default async function AtelierLayout(props: LayoutProps<"/atelier">) {
-  const session = await auth();
-  if (!session?.user) redirect("/connexion?suite=/atelier");
-  if (session.user.role !== "ADMIN") notFound();
+  const admin = await exigerAdmin();
 
   const theme = lireTheme((await cookies()).get(COOKIE_THEME)?.value);
 
   return (
-    <CrmShell nom={session.user.name ?? session.user.email ?? "Atelier"} theme={theme}>
+    <CrmShell nom={admin.name ?? admin.email ?? "Atelier"} theme={theme}>
       {props.children}
     </CrmShell>
   );

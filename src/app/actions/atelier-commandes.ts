@@ -1,23 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { exigerAdminAction } from "@/lib/securite/acces";
 import { prisma } from "@/lib/db";
 import { appliquerEtape, enregistrerSuiviCommande } from "@/lib/commandes/etapes-service";
 import { OrderStatus } from "@/generated/prisma/enums";
-
-async function exigerAdmin() {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") throw new Error("Accès refusé.");
-  return session.user;
-}
 
 /**
  * Changement d'étape depuis l'atelier : le contrôle du rôle, puis le service
  * (src/lib/commandes/etapes-service.ts) — statut, frise, sortie de stock, garantie, e-mail.
  */
 export async function changerEtape(donnees: FormData): Promise<void> {
-  const admin = await exigerAdmin();
+  const admin = await exigerAdminAction();
   const numero = String(donnees.get("numero") ?? "");
   const etape = String(donnees.get("etape") ?? "");
   // Valeur de formulaire : on vérifie qu'elle est bien un statut avant de l'écrire.
@@ -31,7 +25,7 @@ export async function changerEtape(donnees: FormData): Promise<void> {
 
 
 export async function basculerTache(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("id") ?? "");
   const numero = String(donnees.get("numero") ?? "");
 
@@ -47,7 +41,7 @@ export async function basculerTache(donnees: FormData): Promise<void> {
 }
 
 export async function enregistrerControle(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const numero = String(donnees.get("numero") ?? "");
   const commande = await prisma.order.findUniqueOrThrow({ where: { number: numero } });
 
@@ -79,7 +73,7 @@ export async function enregistrerControle(donnees: FormData): Promise<void> {
 }
 
 export async function enregistrerSuivi(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const numero = String(donnees.get("numero") ?? "");
 
   await enregistrerSuiviCommande(numero, {
@@ -93,7 +87,7 @@ export async function enregistrerSuivi(donnees: FormData): Promise<void> {
 }
 
 export async function enregistrerNotes(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const numero = String(donnees.get("numero") ?? "");
 
   await prisma.order.update({
@@ -112,7 +106,7 @@ export async function enregistrerNotes(donnees: FormData): Promise<void> {
  * ne changera que la valeur de `url`.
  */
 export async function ajouterPhoto(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const numero = String(donnees.get("numero") ?? "");
   const commande = await prisma.order.findUniqueOrThrow({ where: { number: numero } });
   const alt = String(donnees.get("alt") ?? "").trim();

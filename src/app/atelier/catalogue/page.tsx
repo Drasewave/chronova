@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { basculerOption, enregistrerEtape, enregistrerGroupe } from "@/app/actions/atelier-catalogue";
 import { BandeauExemple } from "@/components/atelier/bandeau-exemple";
 import { BoutonLeger, Bouton, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
@@ -27,6 +28,7 @@ const CLES_COULEUR = ["dialColor", "insertColor", "strapColor"];
  * d'enregistrer.
  */
 export default async function Catalogue(props: PageProps<"/atelier/catalogue">) {
+  await exigerAdmin();
   const { etape: etapeChoisie } = await props.searchParams;
 
   const [etapes, pieces, catalogue, modeles] = await Promise.all([

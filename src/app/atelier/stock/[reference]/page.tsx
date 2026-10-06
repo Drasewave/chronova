@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { notFound } from "next/navigation";
 import { enregistrerMouvement, enregistrerPiece } from "@/app/actions/atelier-stock";
 import { Bouton, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
@@ -36,6 +37,7 @@ export async function generateMetadata(props: PageProps<"/atelier/stock/[referen
  * rend le stock explicable — c'est ce qui distingue un inventaire d'un compteur.
  */
 export default async function FichePiece(props: PageProps<"/atelier/stock/[reference]">) {
+  await exigerAdmin();
   const { reference } = await props.params;
 
   const piece = await prisma.part.findUnique({

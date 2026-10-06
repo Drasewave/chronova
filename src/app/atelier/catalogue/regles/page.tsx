@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { enregistrerRegle, supprimerRegle } from "@/app/actions/atelier-catalogue";
 import { Bouton, BoutonLeger, CASE, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
 import { Panneau } from "@/components/atelier/graphiques";
@@ -23,6 +24,7 @@ const LIBELLE_TYPE = {
  * indisponible » ne dit rien ; « Nécessite le mouvement GMT » dit tout.
  */
 export default async function Regles() {
+  await exigerAdmin();
   const [regles, etapes] = await Promise.all([
     prisma.compatibilityRule.findMany({
       include: { subject: { include: { group: { include: { step: true } } } } },

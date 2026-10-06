@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { notFound } from "next/navigation";
 import { enregistrerModele } from "@/app/actions/atelier-catalogue";
 import { Bouton, CASE, Champ, Saisie, Zone } from "@/components/atelier/formulaire";
@@ -27,6 +28,7 @@ export async function generateMetadata(props: PageProps<"/atelier/catalogue/mode
  * qu'un changement de prix ne se fasse pas à l'aveugle.
  */
 export default async function FicheModele(props: PageProps<"/atelier/catalogue/modeles/[slug]">) {
+  await exigerAdmin();
   const { slug } = await props.params;
 
   const [enregistre, catalogue, modeles] = await Promise.all([

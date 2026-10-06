@@ -1,15 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { exigerAdminAction } from "@/lib/securite/acces";
 import { prisma } from "@/lib/db";
 import type { RuleKind } from "@/generated/prisma/enums";
-
-async function exigerAdmin() {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") throw new Error("Accès refusé.");
-  return session.user;
-}
 
 /**
  * Le catalogue est lu par le site public, lui-même mis en cache.
@@ -47,7 +41,7 @@ function couleur(valeur: FormDataEntryValue | null): string | null {
  * les configurations déjà commandées. La renommer casserait les deux.
  */
 export async function enregistrerOption(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("option") ?? "");
   const piece = String(donnees.get("piece") ?? "");
   const hex = couleur(donnees.get("hex"));
@@ -86,7 +80,7 @@ export async function enregistrerOption(donnees: FormData): Promise<void> {
 
 /** Active ou coupe une option sans ouvrir son formulaire. */
 export async function basculerOption(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("option") ?? "");
   const option = await prisma.option.findUniqueOrThrow({ where: { id }, select: { isActive: true } });
   await prisma.option.update({ where: { id }, data: { isActive: !option.isActive } });
@@ -95,7 +89,7 @@ export async function basculerOption(donnees: FormData): Promise<void> {
 
 /** Intitulé et aide d'un groupe, tels qu'ils apparaissent dans le configurateur. */
 export async function enregistrerGroupe(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("groupe") ?? "");
 
   await prisma.optionGroup.update({
@@ -111,7 +105,7 @@ export async function enregistrerGroupe(donnees: FormData): Promise<void> {
 
 /** Titre et phrase d'introduction d'une étape. */
 export async function enregistrerEtape(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("etape") ?? "");
 
   await prisma.configStep.update({
@@ -127,7 +121,7 @@ export async function enregistrerEtape(donnees: FormData): Promise<void> {
 
 /** Fiche d'un modèle de base : prix, cotes, textes, publication. */
 export async function enregistrerModele(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const slug = String(donnees.get("modele") ?? "");
   const nombre = (cle: string) => Number(String(donnees.get(cle) ?? "").replace(",", "."));
 
@@ -167,7 +161,7 @@ export async function enregistrerModele(donnees: FormData): Promise<void> {
  * choisir. Une règle sans message est refusée.
  */
 export async function enregistrerRegle(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("regle") ?? "");
   const sujet = String(donnees.get("sujet") ?? "");
   const message = String(donnees.get("message") ?? "").trim();
@@ -200,7 +194,7 @@ export async function enregistrerRegle(donnees: FormData): Promise<void> {
 
 /** Supprime une règle. Le configurateur cesse aussitôt de griser l'option. */
 export async function supprimerRegle(donnees: FormData): Promise<void> {
-  await exigerAdmin();
+  await exigerAdminAction();
   const id = String(donnees.get("regle") ?? "");
   await prisma.compatibilityRule.delete({ where: { id } });
   rafraichirVitrine();

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { exigerAdmin } from "@/lib/securite/acces";
 import { BandeauExemple } from "@/components/atelier/bandeau-exemple";
 import { Pill } from "@/components/ui/pill";
 import { prisma } from "@/lib/db";
@@ -22,6 +23,7 @@ const FILTRES: { cle: string; label: string; statuts?: OrderStatus[] }[] = [
 ];
 
 export default async function ListeCommandes(props: PageProps<"/atelier/commandes/liste">) {
+  await exigerAdmin();
   const { filtre } = await props.searchParams;
   const actif = FILTRES.find((f) => f.cle === filtre) ?? FILTRES[0]!;
 
