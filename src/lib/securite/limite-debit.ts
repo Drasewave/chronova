@@ -71,10 +71,15 @@ export function messageLimite(attendreMs: number): string {
   return `Trop de tentatives en peu de temps. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
 }
 
-/** Première adresse de `X-Forwarded-For`, sinon `X-Real-IP`, sinon « inconnue ». */
+/**
+ * Adresse du client : `X-Real-IP` (écrasé par le proxy de confiance), sinon la
+ * DERNIÈRE valeur de `X-Forwarded-For` (celle que le proxy a ajoutée ; les
+ * précédentes sont choisies par le client), sinon « inconnue ».
+ */
 export function ipDepuisEnTetes(enTetes: { get(nom: string): string | null }): string {
-  const transmise = enTetes.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const ip = transmise || enTetes.get("x-real-ip")?.trim() || "inconnue";
+  const reelle = enTetes.get("x-real-ip")?.trim();
+  const transmise = enTetes.get("x-forwarded-for")?.split(",").at(-1)?.trim();
+  const ip = reelle || transmise || "inconnue";
   // Une « IP » de 2 Ko ne doit pas servir de clé.
   return ip.slice(0, 64);
 }

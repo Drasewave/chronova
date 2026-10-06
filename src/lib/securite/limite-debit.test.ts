@@ -29,7 +29,9 @@ describe("limitation de débit (audit A-12)", () => {
 
   it("lit l'adresse du visiteur dans les en-têtes du proxy", () => {
     const enTetes = (valeurs: Record<string, string>) => ({ get: (nom: string) => valeurs[nom] ?? null });
-    expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }))).toBe("203.0.113.7");
+    // La dernière valeur est celle du proxy de confiance ; la première est forgeable.
+    expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "6.6.6.6, 203.0.113.7" }))).toBe("203.0.113.7");
+    expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "6.6.6.6", "x-real-ip": "203.0.113.9" }))).toBe("203.0.113.9");
     expect(ipDepuisEnTetes(enTetes({ "x-real-ip": "203.0.113.9" }))).toBe("203.0.113.9");
     expect(ipDepuisEnTetes(enTetes({}))).toBe("inconnue");
     expect(ipDepuisEnTetes(enTetes({ "x-forwarded-for": "x".repeat(5000) }))).toHaveLength(64);
