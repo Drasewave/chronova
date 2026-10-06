@@ -91,9 +91,3 @@ export async function enregistrerGabarit(donnees: FormData): Promise<void> {
 
   revalidatePath("/atelier/parametres");
 }
-
-/** Valeur de formulaire → type de dossier connu ; sinon « réparation ». */
-function typeDossier(valeur: FormDataEntryValue | null): "GARANTIE" | "REVISION" | "REPARATION" {
-  const texte = String(valeur ?? "");
-  return texte === "GARANTIE" || texte === "REVISION" ? texte : "REPARATION";
-}

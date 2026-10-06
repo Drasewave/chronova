@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { exigerAdmin } from "@/lib/securite/acces";
 import { enregistrerRegle, supprimerRegle } from "@/app/actions/atelier-catalogue";
 import { Bouton, BoutonLeger, CASE, Champ, Liste, Saisie, Zone } from "@/components/atelier/formulaire";
