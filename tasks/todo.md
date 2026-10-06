@@ -15,19 +15,19 @@ Décisions prises avec le propriétaire :
 - [x] Worktree isolé, `next` 16.3.8 (T3), `three`, `.npmrc` retiré (T23), `npm audit fix`
 
 ## 1. Correctifs techniques (audit T*)
-- [ ] T4 contrôle ADMIN par page atelier (DAL `exigerAdmin` mis en cache, copies supprimées)
-- [ ] T5 `global-error.tsx`, `(site)/error.tsx`, `atelier/error.tsx`
-- [ ] T10 `src/lib/env.ts` : URL du site unique et validée, garde démo en prod
-- [ ] T9 `instrumentation.ts` (`onRequestError`, validation env) + `GET /api/sante`
-- [ ] T7a IP du client : en-tête posé par le proxy de confiance, pas la 1re valeur XFF
-- [ ] T11 déploiement : build dans un dossier séparé puis bascule atomique, `db:deploy`
-- [ ] T12 ESLint flat config (`eslint-config-next`), `lint` = `eslint .`
-- [ ] T14 `loading.tsx` (atelier, compte, composer)
-- [ ] T15 CSP `img-src 'self' data: blob:`
-- [ ] T17 panier hors du layout racine (pas sur le CRM)
-- [ ] T19 sitemap `lastModified` réel
-- [ ] T21 e-mail du webhook dans `after()`
-- [ ] T18 `summary_large_image` + image OG statique
+- [x] T4 contrôle ADMIN par page atelier (DAL `exigerAdmin` mis en cache, copies supprimées)
+- [x] T5 `global-error.tsx`, `(site)/error.tsx`, `atelier/error.tsx`
+- [x] T10 `src/lib/env.ts` : URL du site unique et validée, garde démo en prod
+- [x] T9 `instrumentation.ts` (`onRequestError`, validation env) + `GET /api/sante`
+- [x] T7a IP du client : en-tête posé par le proxy de confiance, pas la 1re valeur XFF
+- [x] T11 déploiement : build dans un dossier séparé puis bascule atomique, `db:deploy`
+- [x] T12 ESLint flat config (`eslint-config-next`), `lint` = `eslint .`
+- [x] T14 `loading.tsx` (atelier, compte, composer)
+- [x] T15 CSP `img-src 'self' data: blob:`
+- [x] T17 panier hors du layout racine (pas sur le CRM)
+- [x] T19 sitemap `lastModified` réel
+- [x] T21 e-mail du webhook dans `after()`
+- [x] T18 `summary_large_image` + image OG statique (public/og-chronova.png, référencée dans les métadonnées)
 - [ ] Hors périmètre ou à décider par le propriétaire : T1 (clé Stripe live / mode démo),
       T2 (TLS sur le proxy), T6 (domaine final / basePath), T8 (mot de passe oublié : il faut Resend),
       T13 (Cache Components, chantier séparé), T22a (Vercel uniquement), T24 (E2E)

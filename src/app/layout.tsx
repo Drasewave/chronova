@@ -40,11 +40,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     siteName: "Chronova",
+    // Dans public/ et non en `opengraph-image.png` : avec un `metadataBase` qui porte
+    // déjà le préfixe /chronova, Next le doublait (/chronova/chronova/…) pour le fichier.
+    images: [{ url: "/og-chronova.png", width: 1200, height: 630, alt: "Chronova, montres mécaniques assemblées à la main" }],
     title: "Chronova, montres mécaniques assemblées à la main",
     description:
       "Composez votre montre mécanique en ligne. L'horloger l'assemble et la règle à la main, pièce par pièce, dans son atelier indépendant.",
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", images: ["/og-chronova.png"] },
   robots: { index: true, follow: true },
 };
 
