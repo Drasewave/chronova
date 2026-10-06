@@ -1,13 +1,14 @@
 import "server-only";
+import { after } from "next/server";
 import { prisma } from "@/lib/db";
 import { envoyerCourriel } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
 import { confirmerPaiement } from "./creation";
 import { SITE } from "@/lib/env";
 
-
 /**
- * Confirme la commande puis envoie l'e-mail, sans jamais bloquer sur l'e-mail.
+ * Confirme la commande, puis envoie l'e-mail APRÈS la réponse (`after`) : une
+ * lenteur de Resend ne retarde ni l'acquittement du webhook Stripe ni le client.
  *
  * Vit dans `src/lib` sous `server-only`, PAS dans un fichier `"use server"` :
  * toute fonction exportée d'un tel fichier est une action publique, appelable
@@ -25,6 +26,11 @@ export async function finaliser(
   });
   if (resultat.deja) return { deja: true };
 
+  after(() => envoyerConfirmation(orderId).catch((e) => console.error("E-mail de confirmation non envoyé :", e)));
+  return { deja: false };
+}
+
+async function envoyerConfirmation(orderId: string): Promise<void> {
   const commande = await prisma.order.findUniqueOrThrow({
     where: { id: orderId },
     include: { items: true, user: { select: { name: true } } },
@@ -63,6 +69,4 @@ export async function finaliser(
     // trace, la commande reste valide, et le CRM pourra relancer l'envoi.
     console.error("E-mail de confirmation non envoyé :", erreur);
   }
-
-  return { deja: false };
 }
