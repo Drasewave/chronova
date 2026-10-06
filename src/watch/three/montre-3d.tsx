@@ -52,7 +52,7 @@ export function Montre3D({
         approche.disconnect();
         const { configuration: depart, vue: vueDepart, interactif: geste } = initiale.current;
         import("./scene")
-          .then(({ monterScene }) => monterScene(noeud, id, depart, { vue: vueDepart, interactif: geste }))
+          .then(({ monterScene }) => monterScene(noeud, id, depart, { vue: vueDepart, interactif: geste, surPerte: () => setPrete(false) }))
           .then((montee) => {
             if (annule) return montee.detruire();
             scene.current = montee;

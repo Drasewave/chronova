@@ -44,6 +44,8 @@ export interface OptionsScene {
   vue: WatchView;
   /** Glisser pour tourner la montre. */
   interactif: boolean;
+  /** Le navigateur a repris le contexte WebGL (onglet en arrière-plan sur téléphone…). */
+  surPerte?: () => void;
 }
 
 /**
@@ -223,6 +225,12 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
   toile.addEventListener("pointermove", deplace);
   toile.addEventListener("pointerup", haut);
   toile.addEventListener("pointercancel", haut);
+  // Contexte perdu : la toile reste vide, on rend la main au dessin.
+  const perte = (event: Event) => {
+    event.preventDefault();
+    options.surPerte?.();
+  };
+  toile.addEventListener("webglcontextlost", perte);
 
   const detruire = () => {
     detruit = true;
@@ -234,6 +242,7 @@ export async function monterScene(toile: HTMLCanvasElement, id: string, render: 
     toile.removeEventListener("pointermove", deplace);
     toile.removeEventListener("pointerup", haut);
     toile.removeEventListener("pointercancel", haut);
+    toile.removeEventListener("webglcontextlost", perte);
     montre?.liberer();
     textures.forEach((texture) => texture.dispose());
     brossage.dispose();
