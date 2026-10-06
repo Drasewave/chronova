@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Hanken_Grotesk, Jost } from "next/font/google";
 import { INTRO_BOOT } from "@/components/intro/intro-boot";
-import { CartDrawer } from "@/components/panier/cart-drawer";
-import { CartProvider } from "@/lib/panier/cart";
+import { SITE } from "@/lib/env";
 import { HorlogeVivante } from "@/watch/horloge-vivante";
 import "./globals.css";
 
@@ -28,9 +27,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // [À REMPLIR : domaine définitif] — via NEXT_PUBLIC_SITE_URL, comme le sitemap,
+  // [À REMPLIR : domaine définitif] — via src/lib/env.ts, comme le sitemap,
   // robots.txt et llms.txt : une seule variable décide de toutes les URL absolues.
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr"),
+  metadataBase: new URL(SITE),
   title: {
     default: "Chronova, montres mécaniques assemblées à la main",
     template: "%s · Chronova",
@@ -45,12 +44,16 @@ export const metadata: Metadata = {
     description:
       "Composez votre montre mécanique en ligne. L'horloger l'assemble et la règle à la main, pièce par pièce, dans son atelier indépendant.",
   },
-  twitter: { card: "summary" },
+  twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0B1118",
+  // Alignés sur --color-papier et --color-nuit (globals.css).
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0b0d" },
+  ],
   colorScheme: "light",
 };
 
@@ -70,13 +73,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             En tête de <body> : le script s'exécute avant que le rideau ne soit
             analysé, donc avant tout affichage. */}
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT }} />
-        {/* Le panier est fourni à la racine : l'en-tête, et donc son bouton
-            panier, apparaît aussi sur des pages hors du groupe (site) — la 404
-            par exemple. */}
-        <CartProvider>
-          {children}
-          <CartDrawer />
-        </CartProvider>
+        {/* Le panier vit dans (site)/layout.tsx et not-found.tsx : le CRM n'en charge pas le JS. */}
+        {children}
         {/* Met toutes les montres du site (public et atelier) à l'heure du visiteur, d'un même battement. */}
         <HorlogeVivante />
       </body>

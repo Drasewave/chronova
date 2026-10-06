@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { ButtonLink } from "@/components/ui/button";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { CartDrawer } from "@/components/panier/cart-drawer";
+import { CartProvider } from "@/lib/panier/cart";
 
 export const metadata: Metadata = {
   title: "Page introuvable",
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function Introuvable() {
   return (
-    <>
+    <CartProvider>
       <Header />
       <main
         id="contenu"
@@ -31,6 +33,7 @@ export default function Introuvable() {
         </div>
       </main>
       <Footer />
-    </>
+      <CartDrawer />
+    </CartProvider>
   );
 }
