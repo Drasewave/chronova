@@ -26,6 +26,9 @@ export function Header() {
   // Sur l'accueil, l'en-tête flotte sur la scène nuit du héros tant que la page
   // n'a pas défilé : il en prend le thème, sans fond.
   const surScene = chemin === "/" && !defile && !ouvert;
+  // Dans le configurateur, le bouton « Composer » ne mène nulle part : il s'efface devant
+  // « Ajouter au panier », et l'en-tête reste opaque pour ne pas laisser transparaître les étapes.
+  const surComposer = chemin.startsWith("/composer");
   // Plus bas, il suit le thème de la section qui passe dessous : un en-tête
   // clair posé sur une scène nuit couperait la page en deux palettes.
   const nuit = surScene || (surNuit && !ouvert);
@@ -129,7 +132,7 @@ export function Header() {
         // reposer sur un fond plein.
         surScene
           ? "border-b border-transparent bg-transparent"
-          : defile && !ouvert
+          : defile && !ouvert && !surComposer
             ? "entete-voile border-b border-rule"
             : "border-b border-transparent bg-bg",
       )}
@@ -195,7 +198,12 @@ export function Header() {
               </span>
             )}
           </button>
-          <ButtonLink href="/composer" className="ml-2 hidden whitespace-nowrap md:inline-flex" size="sm">
+          <ButtonLink
+            href="/composer"
+            variant={surComposer ? "discret" : undefined}
+            className="ml-2 hidden whitespace-nowrap md:inline-flex"
+            size="sm"
+          >
             Composer ma montre
           </ButtonLink>
           <button
@@ -258,9 +266,11 @@ export function Header() {
               </li>
             ))}
           </ul>
-          <ButtonLink href="/composer" className="mt-8 w-full">
-            Composer ma montre
-          </ButtonLink>
+          {!surComposer && (
+            <ButtonLink href="/composer" className="mt-8 w-full">
+              Composer ma montre
+            </ButtonLink>
+          )}
         </nav>
       </div>
     </>

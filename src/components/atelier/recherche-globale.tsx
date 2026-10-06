@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { rechercheGlobale, type ResultatRecherche } from "@/app/actions/recherche";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,8 @@ export function RechercheGlobale() {
   const [resultats, setResultats] = useState<ResultatRecherche[]>([]);
   const [actif, setActif] = useState(0);
   const dialogue = useRef<HTMLDialogElement>(null);
+  const id = useId();
+  const liste = resultats.length > 0 && requete.trim().length >= 2;
   const router = useRouter();
 
   useEffect(() => {
@@ -76,10 +78,15 @@ export function RechercheGlobale() {
         aria-label="Recherche"
         className="mx-auto mt-[10vh] w-[min(94vw,40rem)] rounded-card bg-panel p-0 text-fg shadow-lift night:border night:border-rule night:shadow-none backdrop:bg-[color-mix(in_srgb,var(--color-nuit)_55%,transparent)]"
       >
-        <div className="border-b border-rule p-4">
+        <div className="border-b border-rule p-4 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-[var(--focus)]">
           <input
             autoFocus
             type="search"
+            role="combobox"
+            aria-expanded={liste}
+            aria-controls={`${id}-liste`}
+            aria-autocomplete="list"
+            aria-activedescendant={liste ? `${id}-${actif}` : undefined}
             value={requete}
             onChange={(event) => setRequete(event.target.value)}
             onKeyDown={(event) => {
@@ -113,11 +120,15 @@ export function RechercheGlobale() {
           ) : resultats.length === 0 ? (
             <p className="type-caption p-4 text-fg-soft">Aucun résultat.</p>
           ) : (
-            <ul>
+            <ul role="listbox" id={`${id}-liste`} aria-label="Résultats">
               {resultats.map((resultat, index) => (
-                <li key={`${resultat.href}-${index}`}>
+                <li key={`${resultat.href}-${index}`} role="presentation">
                   <button
                     type="button"
+                    role="option"
+                    id={`${id}-${index}`}
+                    aria-selected={index === actif}
+                    tabIndex={-1}
                     onMouseEnter={() => setActif(index)}
                     onClick={() => aller(resultat.href)}
                     className={cn(

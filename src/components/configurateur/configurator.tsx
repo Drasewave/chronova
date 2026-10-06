@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { FilAriane } from "@/components/ui/fil-ariane";
 import { SamplePill } from "@/components/ui/pill";
 import { OptionGrid } from "./option-grid";
 import { StepSection } from "./step-section";
@@ -143,27 +143,19 @@ export function Configurator({
   }, [panier, model, configuration]);
 
   return (
-    <div className={cn("mx-auto max-w-wide pb-32", GRAND_ECRAN.sansBarre)} style={{ paddingInline: "var(--gutter)" }}>
+    <div className={cn("mx-auto box-content max-w-wide pb-32", GRAND_ECRAN.sansBarre)} style={{ paddingInline: "var(--gutter)" }}>
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         Total {formatPrice(configuration.price.totalCents)}, assemblage {configuration.leadTime.days} jours.
       </p>
-      <nav aria-label="Fil d'Ariane" className="py-5">
-        <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
-          <li>
-            <Link href="/collection" className="link-underline hover:text-accent-ink">
-              Collection
-            </Link>
-          </li>
-          <li aria-hidden="true">·</li>
-          <li>
-            <Link href={`/collection/${model.slug}`} className="link-underline hover:text-accent-ink">
-              {model.name}
-            </Link>
-          </li>
-          <li aria-hidden="true">·</li>
-          <li className="text-fg">Composer</li>
-        </ol>
-      </nav>
+      <div className="py-5">
+        <FilAriane
+          liens={[
+            { href: "/collection", label: "Collection" },
+            { href: `/collection/${model.slug}`, label: model.name },
+          ]}
+          courant="Composer"
+        />
+      </div>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,30rem)] lg:gap-14">
         {/* Scène : collée en haut sur mobile, colonne fixe en grand écran.
@@ -368,9 +360,9 @@ function Resume({
         <p className="type-caption mt-1 line-clamp-2 text-fg-soft">
           {configuration.leadTime.reasons
             .map((raison) =>
-              `${raison.groupLabel === raison.label ? raison.label : `${raison.groupLabel} ${raison.label}`} : +${raison.days} j`,
+              `${raison.groupLabel === raison.label ? raison.label : `${raison.groupLabel} · ${raison.label}`} : +${raison.days} j`,
             )
-            .join(" · ")}
+            .join(" ; ")}
         </p>
       )}
 

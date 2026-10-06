@@ -1,10 +1,14 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Emplacement d'une photo qui n'existe pas encore. On décrit la prise de vue
- * attendue plutôt que d'afficher une image générique : l'horloger sait quoi
- * photographier, et personne ne prend le bloc pour du contenu définitif.
+ * Emplacement d'une photo qui n'existe pas encore. Tant qu'aucune photo n'est
+ * fournie, il ne s'affiche pas : un cadre en pointillés sur un site en ligne
+ * passerait pour un oubli. Les appelants décrivent la prise de vue attendue (la
+ * description reste dans le code, pour l'horloger) ; pour réafficher les cadres
+ * pendant la préparation du site, passer `AFFICHER_CADRES_PHOTO` à `true`.
  */
+const AFFICHER_CADRES_PHOTO = false;
+
 export function PhotoPlaceholder({
   description,
   className,
@@ -14,6 +18,7 @@ export function PhotoPlaceholder({
   className?: string;
   ratio?: string;
 }) {
+  if (!AFFICHER_CADRES_PHOTO) return null;
   return (
     <div
       className={cn(

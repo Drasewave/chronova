@@ -62,7 +62,7 @@ export function FormulaireConnexion({ suite }: { suite: string }) {
   return (
     <form action={action} className="flex flex-col gap-5">
       <input type="hidden" name="suite" value={suite} />
-      <Champ id={id} nom="email" libelle="Adresse e-mail" etat={etat} type="email" autoComplete="email" autoFocus />
+      <Champ id={id} nom="email" libelle="Adresse e-mail" etat={etat} type="email" autoComplete="email" spellCheck={false} />
       <Champ id={id} nom="mot_de_passe" libelle="Mot de passe" etat={etat} type="password" autoComplete="current-password" />
       <Button type="submit" disabled={enCours}>
         {enCours ? "Connexion…" : "Se connecter"}

@@ -238,7 +238,7 @@
 
   ::selection {
     background-color: var(--color-bleu);
-    color: var(--color-panneau);
+    color: #fff;
   }
 
   /* Les prix, quantités et mesures s'alignent en colonne. */
@@ -665,7 +665,7 @@
    les jambages. */
 @keyframes leve-ligne {
   from {
-    opacity: 0;
+    opacity: 0.4;
     transform: translateY(100%);
     clip-path: inset(0 -5% 100% -5%);
   }
@@ -679,9 +679,11 @@
   }
 }
 
+/* Part d'une opacité non nulle : le chapô est l'élément LCP, un texte à opacité 0
+   ne compte pas et retarderait la mesure jusqu'à la fin de l'intro. */
 @keyframes montee-texte {
   from {
-    opacity: 0;
+    opacity: 0.4;
     transform: translateY(18px);
   }
   to {

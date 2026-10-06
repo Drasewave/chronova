@@ -37,10 +37,10 @@ export const GAMMES: Record<WatchStyleKey, ContenuGamme> = {
     ],
   },
   terrain: {
-    phrase: "Chiffres arabes pleins, aiguilles luminescentes, cuir ou sangle NATO.",
+    phrase: "Cadrans nets, aiguilles à segments luminescents, cuir ou sangle NATO.",
     presentation: [
-      "Des montres de terrain à chiffres arabes pleins et aiguilles luminescentes.",
-      "Selon le modèle : un cadran noir mat sans reflet sur boîtier microbillé, ou un cadran vert soleillé avec un réhaut boussole qu'une seconde couronne, à 4 h, fait tourner pour s'orienter au soleil.",
+      "Des montres de terrain, pensées pour se lire d'un coup d'œil : cadran net, minuterie fine, aiguilles à segments luminescents.",
+      "Selon le modèle : un cadran champagne soleillé, chiffres romains dorés et aiguilles cathédrale, ou un cadran bleu soleillé à bâtons fins et aiguilles flèche, sur un boîtier microbillé dont la couronne, à 4 h, se déporte.",
       "Je les assemble au départ sur cuir ou sur une sangle NATO qui passe sous le boîtier ; vous changez le bracelet dans le configurateur.",
     ],
   },

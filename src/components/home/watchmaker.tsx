@@ -1,25 +1,12 @@
 import { ButtonLink } from "@/components/ui/button";
-import { PhotoPlaceholder, FillMe } from "@/components/ui/placeholder";
+import { FillMe } from "@/components/ui/placeholder";
 import { Reveal } from "@/components/motion/reveal";
 import { Section } from "@/components/ui/section";
 
 export function Watchmaker() {
   return (
     <Section fond="alterne" id="l-horloger">
-      <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
-        {/* Deux emplacements côte à côte : empilés, ils dépassaient de 600 px la
-            colonne de texte et laissaient un grand vide à droite. */}
-        <Reveal className="grid grid-cols-2 items-start gap-4 sm:gap-5">
-          <PhotoPlaceholder
-            description="portrait à l'établi, lumière naturelle, loupe d'horloger relevée"
-            ratio="4 / 5"
-          />
-          <PhotoPlaceholder
-            description="plan large de l'établi : tapis vert, brucelles, boîtes à pièces"
-            ratio="4 / 5"
-          />
-        </Reveal>
-
+      <div className="grid items-start gap-12">
         <Reveal delay={60}>
           <h2 className="type-display-2 max-w-[20ch]">L&apos;horloger et son atelier</h2>
 

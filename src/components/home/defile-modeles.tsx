@@ -617,7 +617,7 @@ export function LienComposerModele() {
   const modele = modeles[affiche];
   if (!modele) return null;
   return (
-    <ButtonLink href={`/composer/${modele.slug}`} variant="contour" aria-label={`Composer ce modèle : ${modele.name}`}>
+    <ButtonLink href={`/composer/${modele.slug}`} aria-label={`Composer ce modèle : ${modele.name}`}>
       Composer ce modèle
     </ButtonLink>
   );
@@ -638,10 +638,12 @@ export function DefileFiche() {
       <Spec terme="Calibre" valeurs={modeles.map((m) => m.movement)} actif={affiche} rang={2.75} />
       <div className="col-span-2 flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1 lg:justify-end">
         <dt className="sr-only">Prix</dt>
-        <dd className="type-title-2 text-fg" data-numeric>
-          <Pile valeurs={modeles.map((m) => `À partir de ${m.priceLabel}`)} actif={affiche} rang={3.25} />
+        <dd className="flex flex-wrap items-center gap-3 lg:justify-end">
+          <div className="type-title-2 text-fg" data-numeric>
+            <Pile valeurs={modeles.map((m) => `À partir de ${m.priceLabel}`)} actif={affiche} rang={3.25} />
+          </div>
+          {exemple && <SamplePill />}
         </dd>
-        {exemple && <SamplePill />}
       </div>
     </dl>
   );

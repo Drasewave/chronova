@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ButtonLink } from "@/components/ui/button";
-import { FillMe, PhotoPlaceholder } from "@/components/ui/placeholder";
+import { FillMe } from "@/components/ui/placeholder";
 import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeader } from "@/components/ui/section";
 
@@ -38,7 +38,7 @@ export default function Horloger() {
   return (
     <>
       <Section fond="papier">
-        <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+        <div className="grid items-start gap-12">
           <div>
             <h1 className="type-display-1 text-balance">Je monte chaque montre moi-même</h1>
             <p className="type-lead measure mt-8 text-fg-soft">
@@ -47,11 +47,6 @@ export default function Horloger() {
               sous-traitant.
             </p>
           </div>
-
-          <PhotoPlaceholder
-            description="portrait à l'établi, lumière naturelle, loupe d'horloger relevée"
-            ratio="4 / 5"
-          />
         </div>
       </Section>
 
@@ -112,11 +107,7 @@ export default function Horloger() {
           intro="Vous les trouverez sur l'établi de n'importe quel horloger. J'explique ici à quoi me sert chacun."
         />
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-16">
-          <PhotoPlaceholder
-            description="plan large de l'établi : tapis vert, brucelles, boîtes à pièces, potence"
-            ratio="4 / 3"
-          />
+        <div className="mt-12 grid gap-12">
           <dl className="grid gap-px bg-rule">
             {ETABLI.map((outil) => (
               <div key={outil.titre} className="bg-bg-alt p-6">

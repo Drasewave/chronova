@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GalerieModele, type VueGalerie } from "@/components/collection/galerie-modele";
 import { GrilleModeles } from "@/components/collection/grille-modeles";
 import { RappelComposer } from "@/components/collection/rappel-composer";
 import { ModelCard } from "@/components/home/model-card";
+import { FilAriane } from "@/components/ui/fil-ariane";
 import { ButtonLink } from "@/components/ui/button";
 import { IconChevron, IconFleche } from "@/components/ui/icons";
 import { SamplePill } from "@/components/ui/pill";
-import { PhotoPlaceholder } from "@/components/ui/placeholder";
 import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { ViewTransition } from "react";
 import { InteractiveWatch } from "@/watch/interactive-watch";
 import { MontreCliente, MontreDifferee } from "@/components/ui/montre-differee";
 import { cadrageCadran } from "@/components/home/cadrages";
-import { deLa } from "@/lib/content/articles";
 import { altConfiguration, defaultConfiguration, prixAPartirDeCents } from "@/lib/configurateur/configuration";
 import { cheminGamme, gammesAvecModeles } from "@/lib/content/gammes";
 import { getCatalogue, getModel, getModels } from "@/lib/data/queries";
@@ -211,43 +209,27 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
           <GalerieModele vues={vues} nom={model.name} render={base.render} />
 
           <div className="lg:sticky lg:top-28">
-            <nav aria-label="Fil d'Ariane">
-              <ol className="type-mono flex flex-wrap items-center gap-2 text-fg-soft">
-                <li>
-                  <Link href="/collection" className="link-underline relative after:absolute after:inset-x-0 after:-inset-y-[13px] after:content-[''] hover:text-accent-ink">
-                    Collection
-                  </Link>
-                </li>
-                <li aria-hidden="true">›</li>
-                <li>
-                  <Link href={hrefGamme} className="link-underline relative after:absolute after:inset-x-0 after:-inset-y-[13px] after:content-[''] hover:text-accent-ink">
-                    {model.styleLabel}
-                  </Link>
-                </li>
-                <li aria-hidden="true">›</li>
-                <li className="text-fg" aria-current="page">
-                  {model.name}
-                </li>
-              </ol>
-            </nav>
+            <FilAriane
+              liens={[
+                { href: "/collection", label: "Collection" },
+                { href: hrefGamme, label: model.styleLabel },
+              ]}
+              courant={model.name}
+            />
 
             <h1 className="type-display-2 mt-6">{model.name}</h1>
-            <p className="type-mono mt-2 text-fg-soft">
-              <span className="sr-only">Référence </span>
-              {model.slug.toUpperCase()}
-            </p>
             <p className="type-lead measure mt-5 text-fg">{model.tagline}</p>
             <p className="type-body measure mt-4 text-fg-soft">{model.summary}</p>
 
             <p className="mt-7 flex flex-wrap items-baseline gap-4 border-t border-rule pt-6">
               <span className="type-title-1 text-fg" data-numeric>
-                À partir de {formatPrice(model.basePriceCents)}
+                {formatPrice(base.price.totalCents)}
               </span>
               <SamplePill />
             </p>
             <p className="type-caption mt-2 text-fg-soft">
-              Configuration de départ à {formatPrice(base.price.totalCents)} · assemblage estimé{" "}
-              {base.leadTime.days} jours.
+              Configuration montrée ci-contre. À partir de {formatPrice(model.basePriceCents)} selon les
+              options · assemblage estimé {base.leadTime.days} jours.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
@@ -337,19 +319,6 @@ export default async function FicheModele(props: PageProps<"/collection/[modele]
               </p>
             </Reveal>
           ))}
-        </div>
-      </Section>
-
-      <Section fond="alterne">
-        <div className="grid gap-5 sm:grid-cols-2">
-          <PhotoPlaceholder
-            description={`${model.name} au poignet, lumière naturelle, manchette de chemise`}
-            ratio="4 / 5"
-          />
-          <PhotoPlaceholder
-            description={`Détail du cadran ${deLa(model.name)} en lumière rasante`}
-            ratio="4 / 5"
-          />
         </div>
       </Section>
 

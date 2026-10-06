@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 import { ButtonLink } from "@/components/ui/button";
-import { IconFleche } from "@/components/ui/icons";
 import { DefileFiche, DefileModeles, DefileScene, LienComposerModele, type ModeleDefile } from "./defile-modeles";
 import { defaultConfiguration } from "@/lib/configurateur/configuration";
 import type { Catalogue } from "@/lib/configurateur/catalogue";
@@ -16,9 +15,9 @@ const rang = (n: number) => ({ "--rang": n }) as CSSProperties;
  * toute sa dynamique ; l'en-tête flotte dessus tant que la page n'a pas défilé
  * (d'où la marge négative qui glisse la scène sous lui).
  *
- * L'ordre du DOM est l'ordre de lecture sur petit écran : titre, montre, puis
- * promesse et bouton. En grand écran, la grille replace la montre à droite sur
- * deux rangées — sans jamais recourir à `order`, qui aurait désolidarisé
+ * L'ordre du DOM est l'ordre de lecture sur petit écran : titre, promesse et
+ * bouton, puis montre : l'action est visible au premier écran. En grand écran, la
+ * grille replace la montre à droite sur deux rangées — sans jamais recourir à `order`, qui aurait désolidarisé
  * l'ordre visuel de l'ordre au clavier et au lecteur d'écran.
  *
  * La montre n'est plus seule : toute la collection défile (`defile-modeles.tsx`).
@@ -70,10 +69,6 @@ export function Hero({
             </h1>
           </div>
 
-          <div className="entree-montre lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
-            <DefileScene graduation={<Graduation />} />
-          </div>
-
           <div className="lg:col-start-1 lg:row-start-2 lg:self-start lg:pb-16">
             <p className="type-lead measure entree-texte max-w-[44ch] text-fg-soft" style={rang(1)}>
               Vous partez de l&apos;un des modèles de la collection, puis vous choisissez le cadran,
@@ -83,15 +78,15 @@ export function Hero({
             </p>
 
             <div className="entree-texte mt-9 flex flex-wrap items-center gap-x-7 gap-y-4" style={rang(2)}>
-              <ButtonLink href="/composer">
-                Composer ma montre
-                <IconFleche className="fleche-glisse" />
-              </ButtonLink>
               <LienComposerModele />
               <ButtonLink href="/collection" variant="discret">
                 Voir la collection
               </ButtonLink>
             </div>
+          </div>
+
+          <div className="entree-montre lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+            <DefileScene graduation={<Graduation />} />
           </div>
         </div>
 

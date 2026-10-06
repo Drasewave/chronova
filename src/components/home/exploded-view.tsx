@@ -979,7 +979,7 @@ export function ExplodedView() {
                 Les sept pièces d&apos;une montre
               </h2>
               <p className="type-body mt-3 max-w-[44ch] text-fg-soft lg:mt-6">
-                L&apos;Abysse 40, ouverte du verre jusqu&apos;au fond. Je pose chaque pièce à la main, l&apos;une
+                Une plongeuse, ouverte du verre jusqu&apos;au fond. Je pose chaque pièce à la main, l&apos;une
                 sur l&apos;autre.
               </p>
               {anime && (
@@ -1001,7 +1001,7 @@ export function ExplodedView() {
                 viewBox={`0 0 ${LARGEUR} ${HAUTEUR}`}
                 className="h-full w-auto max-w-full"
                 role="img"
-                aria-label="Vue éclatée de l'Abysse 40 : verre, lunette, aiguilles, cadran, mouvement, boîtier, fond"
+                aria-label="Vue éclatée d'une plongeuse : verre, lunette, aiguilles, cadran, mouvement, boîtier, fond"
               >
                 <Definitions />
 
