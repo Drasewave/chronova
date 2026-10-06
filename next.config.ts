@@ -30,8 +30,9 @@ const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${DEV ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  // `https:` : les photos d'atelier et de commandes pourront venir d'un stockage externe.
-  "img-src 'self' data: blob: https:",
+  // Aucune image externe aujourd'hui. Le jour où les photos viendront d'un stockage
+  // externe, ajouter SON origine ici, pas `https:`.
+  "img-src 'self' data: blob:",
   "font-src 'self' data:",
   `connect-src 'self'${DEV ? " ws: wss:" : ""}`,
   "media-src 'self'",
@@ -64,6 +65,9 @@ const EN_TETES_SECURITE = [
 ];
 
 const config: NextConfig = {
+  // Dossier de build : `.next` par défaut ; `scripts/deployer.sh` construit ailleurs
+  // (`.next-build`) pour ne pas écraser le build en service, puis bascule.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Le site vit sous `/chronova` (http://orvane.fr/chronova, relayé par le panel).
   basePath: BASE_PATH,
   async redirects() {
