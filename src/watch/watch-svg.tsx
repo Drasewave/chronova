@@ -183,6 +183,34 @@ export function WatchSvg({ id, render, view = "face", detail = "full", sheen, cr
   );
 }
 
+/**
+ * Plaque imprimée de la montre 3D : lunette, cadran et index, sans bracelet,
+ * boîtier, aiguilles ni verre — la 3D les porte en volume. Même repère
+ * 1000 × 1000 que la vue de face, à l'échelle 1 : la texture se plaque en UV
+ * planaires sur le disque du cadran et l'anneau de la lunette.
+ */
+export function PlaqueCadranSvg({ id, render }: { id: string; render: WatchRender }) {
+  const flank = flankLayout(render);
+  const showDate = (render.showDate ?? true) && render.movement !== "NH38" && render.movement !== "VK64";
+  return (
+    <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+      <Defs uid={id} render={render} detail="full" />
+      <FaceView
+        uid={id}
+        render={render}
+        detail="full"
+        frame={500}
+        time={render.time ?? DEFAULT_TIME}
+        flank={flank}
+        isGmt={render.movement === "NH34"}
+        isChrono={render.movement === "VK64"}
+        showDate={showDate}
+        plaque
+      />
+    </svg>
+  );
+}
+
 /** Vue de face : l'empilement complet, du bracelet au reflet du verre. */
 function FaceView({
   uid,
@@ -195,6 +223,7 @@ function FaceView({
   isGmt,
   isChrono,
   showDate,
+  plaque = false,
 }: {
   uid: string;
   render: WatchRender;
@@ -206,6 +235,8 @@ function FaceView({
   isGmt: boolean;
   isChrono: boolean;
   showDate: boolean;
+  /** Seulement ce qui est imprimé ou appliqué : la plaque de la montre 3D. */
+  plaque?: boolean;
 }) {
   const id = uid;
   const layout = dialLayout(render.indexStyle);
@@ -228,6 +259,8 @@ function FaceView({
   ) : null;
   return (
     <>
+        {!plaque && (
+          <>
         <Strap
           uid={id}
           kind={render.strapKind}
@@ -248,6 +281,8 @@ function FaceView({
         {!flank.coussin && secondeCouronne}
         {flank.guards && couronne}
         {flank.guards && <CrownGuards uid={id} metal={render.caseMetal} at={flank.crownAt} />}
+          </>
+        )}
 
         <Bezel
           uid={id}
@@ -295,6 +330,8 @@ function FaceView({
           />
         </g>
 
+        {!plaque && (
+          <>
         <Hands
           uid={id}
           shape={render.handShape}
@@ -309,6 +346,8 @@ function FaceView({
         />
 
         <Crystal uid={id} kind={render.crystal} antiGlare={render.antiGlare} sheen={sheen} cyclops={cyclops} dialColor={render.dialColor} />
+          </>
+        )}
         </g>
     </>
   );
