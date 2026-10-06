@@ -98,7 +98,8 @@ export function Crystal({
       <g
         data-sheen
         style={{
-          transform: `translate(${sheen.x * 120}px, ${sheen.y * 120}px)`,
+          // `--sheen-x/y` : posés par `InteractiveWatch` sur son conteneur, sans re-rendu React.
+          transform: `translate(calc(var(--sheen-x, ${sheen.x}) * 120px), calc(var(--sheen-y, ${sheen.y}) * 120px))`,
           transformOrigin: "500px 500px",
           transition: "transform 120ms linear",
         }}

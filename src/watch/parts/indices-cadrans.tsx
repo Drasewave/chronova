@@ -420,7 +420,7 @@ export function ArabesOrientaux(props: CommunProps) {
 
 /** Les mêmes, rentrés pour laisser la place à la minuterie chiffrée. */
 export function ArabesChapitre(props: CommunProps) {
-  return <ArabesOrientauxGenerique {...props} taille={92} rayon={208} />;
+  return <ArabesOrientauxGenerique {...props} taille={84} rayon={202} />;
 }
 
 /* ------------------------------------------------------------------ */

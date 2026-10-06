@@ -1,64 +1,54 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { WatchSvg, type WatchSvgProps } from "./watch-svg";
 
 /**
- * Enveloppe cliente du rendu : le reflet du verre suit le pointeur, ou
- * l'inclinaison du téléphone. Lissé en `requestAnimationFrame`, coupé sous
- * `prefers-reduced-motion`. Le SVG lui-même reste un composant sans état : seul
- * le décalage du dégradé change.
+ * Enveloppe cliente du rendu : le reflet du verre suit le pointeur. Le décalage
+ * s'écrit dans deux variables CSS du conteneur (`--sheen-x`, `--sheen-y`) : aucun
+ * état React, donc le SVG (un millier de nœuds) n'est jamais re-rendu au
+ * mouvement. Lissé en `requestAnimationFrame`, coupé sous `prefers-reduced-motion`
+ * et sur les écrans tactiles (`pointer: coarse`). Pas d'inclinaison du téléphone :
+ * la Permissions-Policy du site interdit l'accéléromètre.
  */
 export function InteractiveWatch({
   className,
   svgClassName = "h-auto w-full",
   ...props
 }: WatchSvgProps & { svgClassName?: string }) {
-  const [sheen, setSheen] = useState({ x: 0, y: 0 });
   const boite = useRef<HTMLDivElement>(null);
-  const trame = useRef(0);
-  const cible = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    let trame = 0;
+    let x = 0;
+    let y = 0;
     const appliquer = () => {
-      trame.current = 0;
-      setSheen({ ...cible.current });
-    };
-    const planifier = () => {
-      if (trame.current) return;
-      trame.current = requestAnimationFrame(appliquer);
+      trame = 0;
+      boite.current?.style.setProperty("--sheen-x", String(x));
+      boite.current?.style.setProperty("--sheen-y", String(y));
     };
 
     const surPointeur = (event: PointerEvent) => {
       const rect = boite.current?.getBoundingClientRect();
       if (!rect) return;
-      cible.current = {
-        x: clamp(((event.clientX - rect.left) / rect.width - 0.5) * 2),
-        y: clamp(((event.clientY - rect.top) / rect.height - 0.5) * 2),
-      };
-      planifier();
-    };
-
-    const surInclinaison = (event: DeviceOrientationEvent) => {
-      if (event.gamma === null || event.beta === null) return;
-      cible.current = { x: clamp(event.gamma / 40), y: clamp((event.beta - 45) / 40) };
-      planifier();
+      x = clamp(((event.clientX - rect.left) / rect.width - 0.5) * 2);
+      y = clamp(((event.clientY - rect.top) / rect.height - 0.5) * 2);
+      if (!trame) trame = requestAnimationFrame(appliquer);
     };
 
     window.addEventListener("pointermove", surPointeur, { passive: true });
-    window.addEventListener("deviceorientation", surInclinaison);
     return () => {
       window.removeEventListener("pointermove", surPointeur);
-      window.removeEventListener("deviceorientation", surInclinaison);
-      if (trame.current) cancelAnimationFrame(trame.current);
+      if (trame) cancelAnimationFrame(trame);
     };
   }, []);
 
   return (
     <div ref={boite} className={className}>
-      <WatchSvg {...props} sheen={sheen} className={svgClassName} />
+      <WatchSvg {...props} className={svgClassName} />
     </div>
   );
 }

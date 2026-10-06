@@ -190,7 +190,7 @@ function Ligne({ y, texte, taille, fill, gras = false, italique = false, espacem
       textAnchor="middle"
       fill={fill}
       fillOpacity={opacite}
-      style={{ fontFamily: "var(--font-ui)", fontSize: taille, fontWeight: gras ? 700 : 500, fontStyle: italique ? "italic" : "normal", letterSpacing: espacement }}
+      style={{ fontFamily: "var(--font-ui)", fontSize: taille, fontWeight: gras ? 700 : 500, fontStyle: italique ? "italic" : "normal", letterSpacing: espacement, fontKerning: "none", textRendering: "geometricPrecision" }}
     >
       {texte}
     </text>
@@ -215,9 +215,9 @@ function Signature({ layout, printed, movement, waterResistM, metal, hasDate }: 
     case "sky":
       return (
         <g data-layer="signature">
-          <Ligne y={C + 30} texte="CHRONOVA" taille={22} fill={printed} gras espacement="0.2em" />
-          <Ligne y={C + 52} texte={genre} taille={11.5} fill={printed} espacement="0.22em" opacite={0.85} />
-          <Ligne y={C + 69} texte={technique} taille={10.5} fill={printed} espacement="0.22em" opacite={0.65} />
+          <Ligne y={C + 64} texte="CHRONOVA" taille={21} fill={printed} gras espacement="0.2em" />
+          <Ligne y={C + 84} texte={genre} taille={11.5} fill={printed} espacement="0.22em" opacite={0.85} />
+          <Ligne y={C + 100} texte={technique} taille={10.5} fill={printed} espacement="0.22em" opacite={0.65} />
         </g>
       );
 
@@ -233,11 +233,12 @@ function Signature({ layout, printed, movement, waterResistM, metal, hasDate }: 
     case "datejust":
       return (
         <g data-layer="signature">
-          <LogoApplique y={C - 136} taille={30} metal={metal} />
-          <Ligne y={C - 108} texte={genre} taille={15} fill={printed} gras espacement="0.1em" />
-          {hasDate && <Ligne y={C - 90} texte="QUANTIÈME" taille={15} fill={printed} espacement="0.1em" />}
-          <Ligne y={C + 110} texte="MOUVEMENT AUTOMATIQUE" taille={12.5} fill={printed} espacement="0.02em" />
-          <Ligne y={C + 126} texte={waterResistM ? `ÉTANCHE ${waterResistM} M` : `CALIBRE ${movement}`} taille={12.5} fill={printed} espacement="0.02em" />
+          {/* Tout tient à l'intérieur du cercle des chiffres (rayon ~160) : rien ne touche un chiffre. */}
+          <LogoApplique y={C - 104} taille={24} metal={metal} />
+          <Ligne y={C - 80} texte={genre} taille={12} fill={printed} gras espacement="0.1em" />
+          {hasDate && <Ligne y={C - 64} texte="QUANTIÈME" taille={12} fill={printed} espacement="0.1em" />}
+          <Ligne y={C + 96} texte="MOUVEMENT AUTOMATIQUE" taille={11} fill={printed} espacement="0.02em" />
+          <Ligne y={C + 111} texte={waterResistM ? `ÉTANCHE ${waterResistM} M` : `CALIBRE ${movement}`} taille={11} fill={printed} espacement="0.02em" />
         </g>
       );
 
