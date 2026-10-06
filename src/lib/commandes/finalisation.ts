@@ -3,8 +3,8 @@ import { prisma } from "@/lib/db";
 import { envoyerCourriel } from "@/lib/email";
 import { formatPrice } from "@/lib/utils";
 import { confirmerPaiement } from "./creation";
+import { SITE } from "@/lib/env";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 /**
  * Confirme la commande puis envoie l'e-mail, sans jamais bloquer sur l'e-mail.

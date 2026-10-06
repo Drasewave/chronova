@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { gammesAvecModeles } from "@/lib/content/gammes";
 import { getModels } from "@/lib/data/queries";
+import { SITE as BASE } from "@/lib/env";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
 
 /** Pages fixes, de la plus importante à la moins consultée. */
 const STATIQUES: { chemin: string; priorite: number; frequence: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [

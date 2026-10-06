@@ -10,8 +10,8 @@ import { finaliser } from "@/lib/commandes/finalisation";
 import { REGLES } from "@/lib/securite/limite-debit";
 import { limiter } from "@/lib/securite/limite-requete";
 import { VERSION_CGV } from "@/lib/content/versions";
+import { SITE } from "@/lib/env";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const LIGNES_MAX = 20;
 
 /**

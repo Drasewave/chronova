@@ -1,8 +1,8 @@
 import { defaultConfiguration, prixAPartirDeCents } from "@/lib/configurateur/configuration";
 import { getCatalogue, getModels } from "@/lib/data/queries";
 import { formatPrice } from "@/lib/utils";
+import { SITE as BASE } from "@/lib/env";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
 
 export const revalidate = 3600;
 

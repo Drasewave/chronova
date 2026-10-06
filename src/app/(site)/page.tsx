@@ -9,6 +9,7 @@ import { Process } from "@/components/home/process";
 import { Testimonials } from "@/components/home/testimonials";
 import { Watchmaker } from "@/components/home/watchmaker";
 import { getCatalogue, getModels } from "@/lib/data/queries";
+import { SITE } from "@/lib/env";
 
 export const metadata: Metadata = {
   // `absolute` : sans lui le gabarit « %s · Chronova » ajouterait une seconde
@@ -20,7 +21,6 @@ export const metadata: Metadata = {
   openGraph: { url: "/" },
 };
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
 
 /**
  * Données structurées de l'atelier : ce que les moteurs et les assistants IA

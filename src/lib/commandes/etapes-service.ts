@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { envoyerCourriel } from "@/lib/email";
 import type { OrderStatus } from "@/generated/prisma/enums";
+import { SITE } from "@/lib/env";
 
 /**
  * Étapes d'une commande — le service, sans session.
@@ -10,7 +11,6 @@ import type { OrderStatus } from "@/generated/prisma/enums";
  * src/lib/commandes/finalisation.ts, audit A-14).
  */
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 /** Gabarit d'e-mail associé à chaque étape. Absent : aucun e-mail n'est envoyé. */
 const GABARITS: Partial<Record<OrderStatus, string>> = {

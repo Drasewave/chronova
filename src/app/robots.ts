@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
+import { SITE as BASE } from "@/lib/env";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chronova.fr";
 
 // Le CRM, le compte client, le panier et le tunnel de commande n'ont rien à
 // faire dans un index, quel que soit le robot.
