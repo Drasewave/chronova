@@ -15,7 +15,7 @@ import { BASE_PATH } from "@/lib/base-path";
  */
 export const DUREE_SESSION_S = 60 * 60 * 24 * 30;
 
-// Le site est servi en http sur le tailnet ; en https, le cookie devient Secure.
+// En https (vps.orvanes.tech), le cookie devient Secure.
 const SECURISE = (process.env.AUTH_URL ?? "").startsWith("https:");
 
 /** Nom standard d'Auth.js : le proxy (src/proxy.ts) et la page /cookies le connaissent. */

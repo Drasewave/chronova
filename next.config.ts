@@ -68,7 +68,7 @@ const config: NextConfig = {
   // Dossier de build : `.next` par défaut ; `scripts/deployer.sh` construit ailleurs
   // (`.next-build`) pour ne pas écraser le build en service, puis bascule.
   distDir: process.env.NEXT_DIST_DIR || ".next",
-  // Le site vit sous `/chronova` (http://orvane.fr/chronova, relayé par le panel).
+  // Le site vit sous `/chronova` (https://vps.orvanes.tech/chronova, relayé par le panel).
   basePath: BASE_PATH,
   async redirects() {
     // Accès direct au port du site : la racine mène au site, plutôt qu'à un 404.

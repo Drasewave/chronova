@@ -1,5 +1,5 @@
 /**
- * Préfixe sous lequel le site est servi : `http://orvane.fr/chronova`.
+ * Préfixe sous lequel le site est servi : `https://vps.orvanes.tech/chronova`.
  *
  * Next l'ajoute tout seul aux liens (`<Link>`), aux ressources et aux
  * `redirect()`. Il ne le fait PAS pour les adresses qu'on remet à un tiers —
